@@ -123,7 +123,7 @@ export default function SettingsPage() {
         {
           user_id: user.id,
           date: format(subDays(today, 1), 'yyyy-MM-dd'),
-          summary: 'Lots of meetings today, couldn\\'t focus on deep work.',
+          summary: "Lots of meetings today, couldn't focus on deep work.",
           mood: 'okay'
         },
         {
