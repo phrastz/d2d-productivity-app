@@ -1,0 +1,71 @@
+'use client'
+
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Task, TaskStatus } from '@/types'
+import TaskCard from './TaskCard'
+import { cn } from '@/lib/utils'
+import { Plus } from 'lucide-react'
+
+const columnConfig: Record<TaskStatus, { label: string; color: string; bg: string; ring: string }> = {
+  todo:        { label: 'To Do',       color: 'text-slate-300',   bg: 'bg-slate-500/10',   ring: 'border-slate-500/20' },
+  in_progress: { label: 'In Progress', color: 'text-amber-300',   bg: 'bg-amber-500/10',   ring: 'border-amber-500/20' },
+  done:        { label: 'Done',        color: 'text-emerald-300', bg: 'bg-emerald-500/10', ring: 'border-emerald-500/20' },
+}
+
+interface KanbanColumnProps {
+  status: TaskStatus
+  tasks: Task[]
+  onTaskClick: (task: Task) => void
+  onAddTask: (status: TaskStatus) => void
+}
+
+export default function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: KanbanColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: status })
+  const { label, color, bg, ring } = columnConfig[status]
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'flex-1 flex flex-col min-w-[280px] rounded-2xl border transition-colors',
+        ring,
+        isOver ? 'bg-primary/5 border-primary/30' : 'bg-secondary/30'
+      )}
+    >
+      {/* Column header */}
+      <div className={cn('flex items-center justify-between px-4 py-3 rounded-t-2xl', bg)}>
+        <div className="flex items-center gap-2">
+          <h3 className={cn('text-sm font-semibold', color)}>{label}</h3>
+          <span className={cn(
+            'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+            bg, color, 'border', ring
+          )}>
+            {tasks.length}
+          </span>
+        </div>
+        <button
+          onClick={() => onAddTask(status)}
+          className="w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Cards */}
+      <div className="flex-1 p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-280px)]">
+        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.map(task => (
+            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+          ))}
+        </SortableContext>
+
+        {tasks.length === 0 && (
+          <div className="flex items-center justify-center h-24 border-2 border-dashed border-white/10 rounded-xl">
+            <p className="text-xs text-muted-foreground/50">Drop tasks here</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
