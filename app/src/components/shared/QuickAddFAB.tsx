@@ -175,11 +175,11 @@ export default function QuickAddFAB() {
               <select
                 value={projectId}
                 onChange={e => setProjectId(e.target.value)}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
               >
-                <option value="">No Project</option>
+                <option value="" className="bg-[#0f1322] text-foreground">No Project</option>
                 {projects.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-[#0f1322] text-foreground">{p.name}</option>
                 ))}
               </select>
               <button
@@ -212,9 +212,9 @@ export default function QuickAddFAB() {
                 onChange={e => setNoteProjectId(e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-2"
               >
-                <option value="">-- Attach to Project (Optional) --</option>
+                <option value="" className="bg-[#0f1322] text-foreground">-- Attach to Project (Optional) --</option>
                 {projects.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-[#0f1322] text-foreground">{p.name}</option>
                 ))}
               </select>
               <select
@@ -222,9 +222,9 @@ export default function QuickAddFAB() {
                 onChange={e => setNoteTaskId(e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
               >
-                <option value="">-- Attach to Task (Optional) --</option>
+                <option value="" className="bg-[#0f1322] text-foreground">-- Attach to Task (Optional) --</option>
                 {tasks.map(t => (
-                  <option key={t.id} value={t.id}>
+                  <option key={t.id} value={t.id} className="bg-[#0f1322] text-foreground">
                     {t.title} {t.project_id ? `(Proj: ${projects.find(p => p.id === t.project_id)?.name})` : ''}
                   </option>
                 ))}

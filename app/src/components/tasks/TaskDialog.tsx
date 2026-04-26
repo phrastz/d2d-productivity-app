@@ -153,7 +153,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               >
                 {statuses.map(s => (
-                  <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                  <option key={s} value={s} className="bg-[#0f1322] text-foreground">{s.replace('_', ' ')}</option>
                 ))}
               </select>
             </div>
@@ -167,9 +167,9 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
                 onChange={e => set('project_id', e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               >
-                <option value="">-- No Project --</option>
+                <option value="" className="bg-[#0f1322] text-foreground">-- No Project --</option>
                 {projects.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-[#0f1322] text-foreground">{p.name}</option>
                 ))}
               </select>
             </div>
