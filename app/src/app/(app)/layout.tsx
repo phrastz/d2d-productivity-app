@@ -1,5 +1,5 @@
 import Sidebar from '@/components/layout/Sidebar'
-import TopNav from '@/components/layout/TopNav'
+import BottomNav from '@/components/layout/BottomNav'
 import QuickAddFAB from '@/components/shared/QuickAddFAB'
 
 export default function AppLayout({
@@ -10,14 +10,12 @@ export default function AppLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-[hsl(var(--background))]">
       <Sidebar />
-      <div
-        className="flex-1 flex flex-col overflow-hidden"
-        style={{ marginLeft: 'var(--sidebar-width)' }}
-      >
-        <main className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 flex flex-col overflow-hidden w-full md:ml-[var(--sidebar-width)]">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
           {children}
         </main>
       </div>
+      <BottomNav />
       <QuickAddFAB />
     </div>
   )

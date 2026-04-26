@@ -75,7 +75,7 @@ export default function QuickAddFAB() {
 
       {/* Quick panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 glass rounded-2xl border border-white/10 p-4 animate-fade-in shadow-2xl">
+        <div className="fixed bottom-[130px] md:bottom-24 right-4 md:right-6 z-50 w-[calc(100vw-32px)] md:w-80 glass rounded-2xl border border-white/10 p-4 animate-fade-in shadow-2xl">
           {!mode ? (
             <>
               <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-widest">Quick Add</p>

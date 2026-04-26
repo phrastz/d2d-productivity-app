@@ -56,7 +56,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen flex flex-col glass border-r border-white/5 z-40"
+      className="fixed left-0 top-0 h-screen hidden md:flex flex-col glass border-r border-white/5 z-40"
       style={{ width: 'var(--sidebar-width)' }}
     >
       {/* Logo */}
