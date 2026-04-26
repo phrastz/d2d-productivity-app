@@ -8,24 +8,13 @@ import TaskDialog from '@/components/tasks/TaskDialog'
 import TopNav from '@/components/layout/TopNav'
 import { Plus, Filter } from 'lucide-react'
 
+import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
+
 export default function TasksPage() {
-  const supabase = createClient()
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const { tasks, loading, setTasks } = useRealtimeTasks()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>('todo')
-
-  const fetchTasks = useCallback(async () => {
-    const { data } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setTasks(data ?? [])
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchTasks() }, [fetchTasks])
 
   const openCreate = (status: TaskStatus = 'todo') => {
     setEditingTask(null)

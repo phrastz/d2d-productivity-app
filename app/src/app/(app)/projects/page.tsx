@@ -9,6 +9,8 @@ import TopNav from '@/components/layout/TopNav'
 import { Plus, LayoutList, GanttChart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
+
 const statusColors = {
   active:    'bg-violet-500/20 text-violet-300 border-violet-500/30',
   completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
@@ -19,20 +21,10 @@ const statusColors = {
 type ViewMode = 'list' | 'timeline'
 
 export default function ProjectsPage() {
-  const supabase = createClient()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
+  const { projects, loading, setProjects } = useRealtimeProjects()
   const [view, setView] = useState<ViewMode>('timeline')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
-
-  const fetchProjects = useCallback(async () => {
-    const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
-    setProjects(data ?? [])
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const handleSaved = (p: Project) => {
     setProjects(prev => {

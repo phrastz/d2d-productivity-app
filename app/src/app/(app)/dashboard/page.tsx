@@ -8,30 +8,21 @@ import ProjectProgress from '@/components/dashboard/ProjectProgress'
 import WeeklyChart from '@/components/dashboard/WeeklyChart'
 import TopNav from '@/components/layout/TopNav'
 import { useWeeklyData, useStats } from '@/hooks/useDashboard'
+import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
+import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 import { CheckCircle2, Clock3, Flame, Timer } from 'lucide-react'
 
 export default function DashboardPage() {
   const supabase = createClient()
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const fetchData = useCallback(async () => {
-    const [{ data: t }, { data: p }] = await Promise.all([
-      supabase.from('tasks').select('*').order('due_date', { ascending: true }),
-      supabase.from('projects').select('*').order('created_at', { ascending: false }),
-    ])
-    setTasks(t ?? [])
-    setProjects(p ?? [])
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchData() }, [fetchData])
+  const { tasks, loading: tasksLoading, setTasks } = useRealtimeTasks()
+  const { projects, loading: projectsLoading } = useRealtimeProjects()
+  const loading = tasksLoading || projectsLoading
 
   const handleToggle = useCallback(async (id: string, newStatus: Task['status']) => {
-    await supabase.from('tasks').update({ status: newStatus }).eq('id', id)
+    // Optimistic update
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t))
-  }, [])
+    await supabase.from('tasks').update({ status: newStatus }).eq('id', id)
+  }, [setTasks, supabase])
 
   const weeklyData = useWeeklyData(tasks)
   const stats = useStats(tasks)

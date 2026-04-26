@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
   PointerSensor, useSensor, useSensors, closestCorners
@@ -23,6 +23,10 @@ export default function KanbanBoard({ initialTasks, onTaskClick, onAddTask }: Ka
   const supabase = createClient()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+
+  useEffect(() => {
+    if (!activeTask) setTasks(initialTasks)
+  }, [initialTasks, activeTask])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
