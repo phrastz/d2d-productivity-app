@@ -2,24 +2,33 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X, CheckSquare, BookOpen, Loader2 } from 'lucide-react'
+import { Plus, X, CheckSquare, BookOpen, Loader2, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
+import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
 
-type QuickMode = 'task' | 'log' | null
+type QuickMode = 'task' | 'log' | 'note' | null
 
 export default function QuickAddFAB() {
   const supabase = createClient()
   const { projects } = useRealtimeProjects()
+  const { tasks } = useRealtimeTasks()
+  
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<QuickMode>(null)
   const [saving, setSaving] = useState(false)
+  
   const [taskTitle, setTaskTitle] = useState('')
   const [projectId, setProjectId] = useState<string>('')
+  
   const [logText, setLogText] = useState('')
   const [mood, setMood] = useState('okay')
+  
+  const [noteText, setNoteText] = useState('')
+  const [noteProjectId, setNoteProjectId] = useState<string>('')
+  const [noteTaskId, setNoteTaskId] = useState<string>('')
 
   const moods = ['great', 'good', 'okay', 'bad', 'terrible']
   const moodEmoji: Record<string, string> = {
@@ -64,7 +73,36 @@ export default function QuickAddFAB() {
     setMode(null)
   }
 
-  const close = () => { setOpen(false); setMode(null); setTaskTitle(''); setLogText(''); setProjectId('') }
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) return
+    setSaving(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('notes').insert({
+        content: noteText.trim(),
+        owner_id: user.id,
+        project_id: noteProjectId || null,
+        task_id: noteTaskId || null
+      })
+    }
+    setSaving(false)
+    setNoteText('')
+    setNoteProjectId('')
+    setNoteTaskId('')
+    setOpen(false)
+    setMode(null)
+  }
+
+  const close = () => { 
+    setOpen(false)
+    setMode(null)
+    setTaskTitle('')
+    setLogText('')
+    setProjectId('')
+    setNoteText('')
+    setNoteProjectId('')
+    setNoteTaskId('')
+  }
 
   return (
     <>
@@ -90,6 +128,18 @@ export default function QuickAddFAB() {
                   <div>
                     <p className="text-sm font-medium text-foreground">New Task</p>
                     <p className="text-xs text-muted-foreground">Add to your board</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setMode('note')}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Add Note / Comment</p>
+                    <p className="text-xs text-muted-foreground">Attach to a task or project</p>
                   </div>
                 </button>
                 <button
@@ -139,6 +189,53 @@ export default function QuickAddFAB() {
               >
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Add Task
+              </button>
+            </>
+          ) : mode === 'note' ? (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold gradient-text">New Note / Comment</p>
+                <button onClick={() => setMode(null)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <textarea
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                placeholder="Write a note, boss's comment, or blocker..."
+                rows={3}
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none mb-2"
+                autoFocus
+              />
+              <select
+                value={noteProjectId}
+                onChange={e => setNoteProjectId(e.target.value)}
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-2"
+              >
+                <option value="">-- Attach to Project (Optional) --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <select
+                value={noteTaskId}
+                onChange={e => setNoteTaskId(e.target.value)}
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+              >
+                <option value="">-- Attach to Task (Optional) --</option>
+                {tasks.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.title} {t.project_id ? `(Proj: ${projects.find(p => p.id === t.project_id)?.name})` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleSaveNote}
+                disabled={saving || !noteText.trim()}
+                className="w-full py-2.5 rounded-xl bg-amber-500/20 text-amber-500 border border-amber-500/50 hover:bg-amber-500/30 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                Save Note
               </button>
             </>
           ) : (
