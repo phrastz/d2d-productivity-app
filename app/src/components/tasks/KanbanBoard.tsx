@@ -93,7 +93,7 @@ export default function KanbanBoard({ initialTasks, onTaskClick, onAddTask }: Ka
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex flex-col md:flex-row gap-4 overflow-x-hidden md:overflow-x-auto pb-4">
         {COLUMNS.map(status => (
           <KanbanColumn
             key={status}
