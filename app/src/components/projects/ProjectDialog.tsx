@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Project, ProjectStatus } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2 } from 'lucide-react'
+import NotesList from '@/components/shared/NotesList'
 
 interface ProjectDialogProps {
   project: Project | null
@@ -128,6 +129,13 @@ export default function ProjectDialog({ project, onClose, onSaved, onDeleted }: 
               ))}
             </div>
           </div>
+          
+          {/* Notes Section (only for existing projects) */}
+          {project && (
+            <div className="mt-4">
+              <NotesList projectId={project.id} />
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 mt-6">

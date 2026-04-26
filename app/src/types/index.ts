@@ -54,3 +54,12 @@ export interface WeeklyReport {
   dailyCompletions: { day: string; completed: number; total: number }[]
   moodTrend: { date: string; mood: string }[]
 }
+
+export interface Note {
+  id: string
+  owner_id: string
+  project_id: string | null
+  task_id: string | null
+  content: string
+  created_at: string
+}

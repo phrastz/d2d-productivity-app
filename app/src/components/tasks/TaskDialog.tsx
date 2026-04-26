@@ -5,6 +5,7 @@ import { Task, TaskStatus, TaskPriority } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2 } from 'lucide-react'
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
+import NotesList from '@/components/shared/NotesList'
 
 interface TaskDialogProps {
   task: Task | null
@@ -217,6 +218,13 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
               <label htmlFor="is_habit" className="text-sm text-foreground">Is a Habit</label>
             </div>
           </div>
+          
+          {/* Notes Section (only for existing tasks) */}
+          {task && (
+            <div className="mt-4">
+              <NotesList taskId={task.id} />
+            </div>
+          )}
         </div>
 
         {/* Actions */}
