@@ -34,7 +34,8 @@ export function useRealtimeTasks(projectId?: string) {
 
   // 2. Realtime Subscription
   useEffect(() => {
-    const channel = supabase.channel(`realtime_tasks_${projectId || 'all'}`)
+    const channelId = `realtime_tasks_${projectId || 'all'}_${Math.random().toString(36).substring(7)}`
+    const channel = supabase.channel(channelId)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tasks' },
