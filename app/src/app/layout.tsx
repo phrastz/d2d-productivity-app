@@ -20,8 +20,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'D2D Tracking',
+  },
+  icons: {
+    apple: '/icons/icon-192x192.png',
   },
   formatDetection: {
     telephone: false,
