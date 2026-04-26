@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Task, TaskStatus, TaskPriority } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import { X, Loader2 } from 'lucide-react'
+import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 
 interface TaskDialogProps {
   task: Task | null
@@ -18,11 +19,13 @@ const statuses: TaskStatus[]     = ['todo', 'in_progress', 'done']
 
 export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSaved, onDeleted }: TaskDialogProps) {
   const supabase = createClient()
+  const { projects } = useRealtimeProjects()
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState({
     title: '',
     description: '',
+    project_id: '',
     due_date: '',
     priority: 'medium' as TaskPriority,
     status: defaultStatus as TaskStatus,
@@ -36,6 +39,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
       setForm({
         title: task.title,
         description: task.description ?? '',
+        project_id: task.project_id ?? '',
         due_date: task.due_date ? task.due_date.slice(0, 16) : '',
         priority: task.priority,
         status: task.status,
@@ -58,6 +62,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
     const payload = {
       title: form.title,
       description: form.description || null,
+      project_id: form.project_id || null,
       due_date: form.due_date || null,
       priority: form.priority,
       status: form.status,
@@ -155,6 +160,19 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
 
           <div className="grid grid-cols-2 gap-3">
             <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">Project</label>
+              <select
+                value={form.project_id}
+                onChange={e => set('project_id', e.target.value)}
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
+              >
+                <option value="">-- No Project --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Due Date</label>
               <input
                 type="datetime-local"
@@ -163,6 +181,9 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Category</label>
               <input

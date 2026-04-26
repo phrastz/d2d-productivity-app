@@ -6,14 +6,18 @@ import { Plus, X, CheckSquare, BookOpen, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 
+import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
+
 type QuickMode = 'task' | 'log' | null
 
 export default function QuickAddFAB() {
   const supabase = createClient()
+  const { projects } = useRealtimeProjects()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<QuickMode>(null)
   const [saving, setSaving] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
+  const [projectId, setProjectId] = useState<string>('')
   const [logText, setLogText] = useState('')
   const [mood, setMood] = useState('okay')
 
@@ -28,11 +32,16 @@ export default function QuickAddFAB() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       await supabase.from('tasks').insert({
-        title: taskTitle, status: 'todo', priority: 'medium', owner_id: user.id
+        title: taskTitle, 
+        status: 'todo', 
+        priority: 'medium', 
+        owner_id: user.id,
+        project_id: projectId || null
       })
     }
     setSaving(false)
     setTaskTitle('')
+    setProjectId('')
     setOpen(false)
     setMode(null)
   }
@@ -55,7 +64,7 @@ export default function QuickAddFAB() {
     setMode(null)
   }
 
-  const close = () => { setOpen(false); setMode(null); setTaskTitle(''); setLogText('') }
+  const close = () => { setOpen(false); setMode(null); setTaskTitle(''); setLogText(''); setProjectId('') }
 
   return (
     <>
@@ -110,9 +119,19 @@ export default function QuickAddFAB() {
                 onChange={e => setTaskTitle(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveTask()}
                 placeholder="What needs to be done?"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors mb-2"
                 autoFocus
               />
+              <select
+                value={projectId}
+                onChange={e => setProjectId(e.target.value)}
+                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+              >
+                <option value="">No Project</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
               <button
                 onClick={handleSaveTask}
                 disabled={saving || !taskTitle.trim()}
