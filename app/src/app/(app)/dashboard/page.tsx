@@ -10,7 +10,8 @@ import TopNav from '@/components/layout/TopNav'
 import { useWeeklyData, useStats } from '@/hooks/useDashboard'
 import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
-import { CheckCircle2, Clock3, Flame, Timer } from 'lucide-react'
+import { CheckCircle2, Clock3, Flame, Timer, Calendar } from 'lucide-react'
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -49,6 +50,22 @@ export default function DashboardPage() {
     <>
       <TopNav title="Dashboard" subtitle="Your daily command center" />
       <div className="p-6 space-y-6 animate-fade-in">
+
+        {/* Calendar Banner */}
+        <div className="glass rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-violet-500/20 bg-gradient-to-r from-violet-500/10 to-transparent">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-6 h-6 text-violet-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Interactive Calendar</h3>
+              <p className="text-sm text-muted-foreground">Plan your week visually. Drag & drop tasks and projects.</p>
+            </div>
+          </div>
+          <Link href="/calendar" className="px-6 py-2.5 rounded-xl bg-violet-500 text-white font-semibold text-sm hover:bg-violet-600 transition-colors whitespace-nowrap">
+            Open Calendar
+          </Link>
+        </div>
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

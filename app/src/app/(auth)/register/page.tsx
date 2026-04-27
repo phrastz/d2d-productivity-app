@@ -48,7 +48,7 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -57,13 +57,29 @@ export default function RegisterPage() {
       },
     })
 
+    // Detailed logging for debugging
+    console.log('=== SIGNUP RESPONSE ===')
+    console.log('Data:', data)
+    console.log('Error:', error)
+    console.log('User:', data?.user)
+    console.log('Session:', data?.session)
+    console.log('=======================')
+
     setLoading(false)
 
     if (error) {
+      console.error('Signup error:', error)
       setError(error.message)
       return
     }
 
+    if (!data.user) {
+      console.error('No user returned from signup')
+      setError('Registration failed. Please try again.')
+      return
+    }
+
+    console.log('Signup successful! User ID:', data.user.id)
     setSuccess(true)
   }
 

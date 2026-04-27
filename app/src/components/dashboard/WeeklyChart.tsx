@@ -46,8 +46,8 @@ export default function WeeklyChart({ data }: WeeklyChartProps) {
         </div>
       </div>
 
-      <div style={{ width: '100%', height: '160px' }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div style={{ width: '100%', height: 160, minHeight: 160, display: 'block' }}>
+        <ResponsiveContainer width="100%" height={160}>
           <BarChart data={data} barSize={14} barGap={4}>
             <CartesianGrid
               strokeDasharray="3 3"

@@ -1,0 +1,234 @@
+/* Custom Dark Mode / Glassmorphism Styling for react-big-calendar */
+
+/* Override default calendar background */
+.rbc-calendar {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Month view cells */
+.rbc-month-view {
+  background: transparent !important;
+  border: none !important;
+}
+
+.rbc-month-row {
+  border: none !important;
+}
+
+.rbc-day-bg {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: background 0.2s ease;
+}
+
+.rbc-day-bg:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-off-range-bg {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.rbc-today {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Header */
+.rbc-header {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px 8px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Toolbar */
+.rbc-toolbar {
+  padding: 16px 0 !important;
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-toolbar button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 8px 16px !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.rbc-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+  background: rgba(139, 92, 246, 0.2) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+  color: rgb(167, 139, 250) !important;
+}
+
+.rbc-toolbar-label {
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Events */
+.rbc-event {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.rbc-event:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.rbc-event-label {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+.rbc-event-content {
+  font-size: 0.875rem !important;
+}
+
+/* Selected event */
+.rbc-selected {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Time slots */
+.rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-time-header {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: rgb(139, 92, 246) !important;
+  height: 2px !important;
+}
+
+/* Week view */
+.rbc-time-header-content {
+  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-time-column {
+  background: transparent !important;
+}
+
+.rbc-timeslot-group {
+  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Date cell number */
+.rbc-date-cell {
+  padding: 8px !important;
+  text-align: right !important;
+}
+
+.rbc-date-cell > a {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 500 !important;
+}
+
+.rbc-off-range .rbc-date-cell > a {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.4 !important;
+}
+
+/* Show more link */
+.rbc-show-more {
+  background: rgba(139, 92, 246, 0.2) !important;
+  color: rgb(167, 139, 250) !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  margin: 2px 4px !important;
+  transition: background 0.2s ease !important;
+}
+
+.rbc-show-more:hover {
+  background: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Overlay (popup) */
+.rbc-overlay {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  padding: 12px !important;
+}
+
+.rbc-overlay-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 8px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Drag and drop */
+.rbc-addons-dnd-drag-preview {
+  opacity: 0.7 !important;
+}
+
+.rbc-addons-dnd-dragging {
+  opacity: 0.5 !important;
+}
+
+.rbc-addons-dnd-over {
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .rbc-toolbar {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  .rbc-toolbar-label {
+    order: -1 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .rbc-event {
+    font-size: 0.75rem !important;
+    padding: 2px 4px !important;
+  }
+  
+  .rbc-header {
+    font-size: 0.65rem !important;
+    padding: 8px 4px !important;
+  }
+}

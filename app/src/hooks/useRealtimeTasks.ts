@@ -15,7 +15,8 @@ export function useRealtimeTasks(projectId?: string) {
     let isMounted = true
     const fetchTasks = async () => {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user || !isMounted) { setLoading(false); return }
 
       let query = supabase.from('tasks').select('*').eq('owner_id', user.id).order('created_at', { ascending: false })

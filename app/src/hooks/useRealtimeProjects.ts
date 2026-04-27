@@ -4,28 +4,45 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Project } from '@/types'
 
+/**
+ * Optimized Projects Hook (No Realtime)
+ * 
+ * Performance optimizations:
+ * - Removed realtime subscription (only on detail page)
+ * - Limited to 100 projects
+ * - Select only needed columns
+ * - Reduced latency for Tokyo → Indonesia connection
+ */
 export function useRealtimeProjects() {
   const supabase = createClient()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 1. Initial Fetch
+  // Fetch projects (optimized query)
   useEffect(() => {
     let isMounted = true
     const fetchProjects = async () => {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user || !isMounted) { setLoading(false); return }
 
-      const { data, error } = await supabase.from('projects')
-        .select('*')
+      // Optimized query: specific columns + limit
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, name, description, status, start_date, end_date, progress_percentage, created_at, owner_id')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
+        .limit(100) // Limit to 100 most recent projects
 
       if (isMounted) {
-        if (error) setError(error.message)
-        else setProjects(data || [])
+        if (error) {
+          console.error('Error fetching projects:', error)
+          setError(error.message)
+        } else {
+          setProjects(data || [])
+        }
         setLoading(false)
       }
     }
@@ -33,36 +50,8 @@ export function useRealtimeProjects() {
     return () => { isMounted = false }
   }, [supabase])
 
-  // 2. Realtime Subscription
-  useEffect(() => {
-    const channelId = `realtime_projects_${Math.random().toString(36).substring(7)}`
-    const channel = supabase.channel(channelId)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'projects' },
-        (payload) => {
-          setProjects((current) => {
-            if (payload.eventType === 'INSERT') {
-              const exists = current.find(p => p.id === payload.new.id)
-              if (exists) return current
-              return [payload.new as Project, ...current]
-            }
-            if (payload.eventType === 'UPDATE') {
-              return current.map(p => p.id === payload.new.id ? { ...p, ...payload.new } as Project : p)
-            }
-            if (payload.eventType === 'DELETE') {
-              return current.filter(p => p.id !== payload.old.id)
-            }
-            return current
-          })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [supabase])
+  // Note: Realtime subscription removed for performance
+  // Realtime is only enabled on project detail page
 
   return { projects, loading, error, setProjects }
 }

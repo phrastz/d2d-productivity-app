@@ -1,6 +1,8 @@
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type ProjectStatus = 'active' | 'completed' | 'on_hold' | 'archived'
+export type SubProjectStatus = 'not_started' | 'in_progress' | 'on_hold' | 'completed'
+export type SubProjectPriority = 'low' | 'medium' | 'high'
 export type Mood = 'great' | 'good' | 'okay' | 'bad' | 'terrible'
 
 export interface Profile {
@@ -21,12 +23,36 @@ export interface Project {
   status: ProjectStatus
   progress_percentage: number
   created_at: string
+  // Computed fields (not in database)
+  sub_projects?: SubProject[]
+  progress?: number
+  tasks_total?: number
+  tasks_done?: number
+}
+
+export interface SubProject {
+  id: string
+  project_id: string
+  name: string
+  description: string | null
+  status: SubProjectStatus
+  priority: SubProjectPriority
+  order_index: number
+  owner_id: string
+  created_at: string
+  updated_at: string
+  // Computed fields (not in database)
+  tasks?: Task[]
+  progress?: number
+  tasks_total?: number
+  tasks_done?: number
 }
 
 export interface Task {
   id: string
   owner_id: string
   project_id: string | null
+  sub_project_id: string | null
   title: string
   description: string | null
   due_date: string | null
@@ -34,7 +60,7 @@ export interface Task {
   status: TaskStatus
   time_spent_minutes: number
   is_habit: boolean
-  category: string | null
+  habit_category: string | null
   created_at: string
 }
 

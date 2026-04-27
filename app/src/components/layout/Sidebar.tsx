@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, CheckSquare, FolderKanban,
-  BarChart3, BookOpen, Zap, Settings, LogOut
+  BarChart3, BookOpen, Zap, Settings, LogOut, Calendar, Activity
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,8 @@ const navItems = [
   { label: 'Dashboard',  href: '/dashboard',  icon: LayoutDashboard },
   { label: 'Tasks',      href: '/tasks',       icon: CheckSquare },
   { label: 'Projects',   href: '/projects',    icon: FolderKanban },
+  { label: 'Calendar',   href: '/calendar',    icon: Calendar },
+  { label: 'Habits',     href: '/habits',      icon: Activity },
   { label: 'Reports',    href: '/reports',     icon: BarChart3 },
   { label: 'Daily Log',  href: '/daily-log',   icon: BookOpen },
 ]
@@ -30,7 +32,8 @@ export default function Sidebar() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user) return
 
       const fullName = user.user_metadata?.full_name as string | undefined
@@ -45,7 +48,7 @@ export default function Sidebar() {
       )
     }
     loadUser()
-  }, [])
+  }, [supabase])
 
   const handleSignOut = async () => {
     setSigningOut(true)

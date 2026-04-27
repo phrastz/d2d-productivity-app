@@ -131,8 +131,8 @@ export default function ReportsPage() {
           {/* Daily completions bar chart */}
           <div className="lg:col-span-2 glass rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Daily Task Completions</h3>
-            <div style={{ width: '100%', height: '192px' }}>
-                <ResponsiveContainer width="100%" height="100%">
+            <div style={{ width: '100%', height: 192, minHeight: 192, display: 'block' }}>
+                <ResponsiveContainer width="100%" height={192}>
                   <BarChart data={report.dailyCompletions} barSize={14} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'hsl(215 20% 55%)' }} axisLine={false} tickLine={false} />
@@ -157,8 +157,8 @@ export default function ReportsPage() {
                 No categories yet
               </div>
             ) : (
-              <div style={{ width: '100%', height: '192px' }}>
-                <ResponsiveContainer width="100%" height="100%">
+              <div style={{ width: '100%', height: 192, minHeight: 192, display: 'block' }}>
+                <ResponsiveContainer width="100%" height={192}>
                   <PieChart>
                     <Pie
                       data={report.topCategories}
