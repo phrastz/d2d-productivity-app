@@ -44,7 +44,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
         due_date: task.due_date ? task.due_date.slice(0, 16) : '',
         priority: task.priority,
         status: task.status,
-        category: task.category ?? '',
+        category: task.habit_category ?? '',
         is_habit: task.is_habit,
         time_spent_minutes: task.time_spent_minutes,
       })

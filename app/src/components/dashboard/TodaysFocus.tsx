@@ -100,8 +100,8 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
                   )}>
                     {task.title}
                   </span>
-                  {task.category && (
-                    <span className="text-[10px] text-muted-foreground/70">{task.category}</span>
+                  {task.habit_category && (
+                    <span className="text-[10px] text-muted-foreground/70">{task.habit_category}</span>
                   )}
                 </span>
                 <PriorityIcon className={cn('w-3.5 h-3.5 flex-shrink-0', color)} />

@@ -54,10 +54,10 @@ export default function ReportsPage() {
     const totalMinutes = weekTasks.reduce((s, t) => s + t.time_spent_minutes, 0)
     const tasksCompleted = weekTasks.filter(t => t.status === 'done').length
 
-    // Top categories
+    // Top categories (using habit_category from tasks)
     const catMap: Record<string, number> = {}
     weekTasks.forEach(t => {
-      if (t.category) catMap[t.category] = (catMap[t.category] || 0) + 1
+      if (t.habit_category) catMap[t.habit_category] = (catMap[t.habit_category] || 0) + 1
     })
     const topCategories = Object.entries(catMap)
       .sort((a, b) => b[1] - a[1])

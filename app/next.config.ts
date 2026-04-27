@@ -16,6 +16,10 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
+  // Add empty turbopack config to silence Next.js 16 warning
+  // PWA plugin uses webpack, but app works fine with Turbopack
+  turbopack: {},
+  
   async headers() {
     return [
       {

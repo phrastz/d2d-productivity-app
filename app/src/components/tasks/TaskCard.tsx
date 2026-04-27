@@ -61,9 +61,9 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             <span className={cn('text-[10px] font-medium uppercase tracking-wide', color)}>
               {task.priority}
             </span>
-            {task.category && (
+            {task.habit_category && (
               <span className="text-[10px] text-muted-foreground/60 ml-auto">
-                {task.category}
+                {task.habit_category}
               </span>
             )}
           </div>
