@@ -28,13 +28,13 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: 
     <div
       ref={setNodeRef}
       className={cn(
-        'flex-1 flex flex-col min-w-[280px] rounded-2xl border transition-colors',
+        'flex-1 flex flex-col min-w-[280px] rounded-2xl border transition-colors glass bg-slate-900/90 border-slate-800',
         ring,
-        isOver ? 'bg-primary/5 border-primary/30' : 'bg-secondary/30'
+        isOver && 'bg-violet-500/10 border-violet-500/30'
       )}
     >
       {/* Column header */}
-      <div className={cn('flex items-center justify-between px-4 py-3 rounded-t-2xl', bg)}>
+      <div className={cn('flex items-center justify-between px-4 py-3 rounded-t-2xl border-b border-slate-800/50', bg)}>
         <div className="flex items-center gap-2">
           <h3 className={cn('text-sm font-semibold', color)}>{label}</h3>
           <span className={cn(
@@ -46,7 +46,7 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: 
         </div>
         <button
           onClick={() => onAddTask(status)}
-          className="w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
+          className="w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-slate-400 hover:text-white"
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
@@ -61,8 +61,8 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onAddTask }: 
         </SortableContext>
 
         {tasks.length === 0 && (
-          <div className="flex items-center justify-center h-24 border-2 border-dashed border-white/10 rounded-xl">
-            <p className="text-xs text-muted-foreground/50">Drop tasks here</p>
+          <div className="flex items-center justify-center h-24 border-2 border-dashed border-slate-700/50 rounded-xl">
+            <p className="text-xs text-slate-500">Drop tasks here</p>
           </div>
         )}
       </div>

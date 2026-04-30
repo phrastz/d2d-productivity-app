@@ -19,10 +19,10 @@ interface WeeklyChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="glass rounded-xl p-3 border border-white/10 text-xs">
-      <p className="font-semibold text-foreground mb-1">{label}</p>
+    <div className="glass bg-slate-900/90 rounded-xl p-3 border border-slate-800 text-xs">
+      <p className="font-semibold text-white mb-1">{label}</p>
       <p className="text-emerald-400">{payload[0].value} completed</p>
-      <p className="text-muted-foreground">{payload[1]?.value ?? 0} remaining</p>
+      <p className="text-slate-400">{payload[1]?.value ?? 0} remaining</p>
     </div>
   )
 }
@@ -31,18 +31,18 @@ export default function WeeklyChart({ data }: WeeklyChartProps) {
   const totalCompleted = data.reduce((s, d) => s + d.completed, 0)
 
   return (
-    <div className="glass rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-violet-400" />
             Weekly Progress
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Tasks completed this week</p>
+          <p className="text-xs text-slate-300 mt-0.5">Tasks completed this week</p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold gradient-text">{totalCompleted}</p>
-          <p className="text-[10px] text-muted-foreground">this week</p>
+          <p className="text-xl font-bold text-white">{totalCompleted}</p>
+          <p className="text-[10px] text-slate-400">this week</p>
         </div>
       </div>
 

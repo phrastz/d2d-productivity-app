@@ -27,15 +27,15 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
   const active = projects.filter(p => p.status === 'active').slice(0, 4)
 
   return (
-    <div className="glass rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <FolderOpen className="w-4 h-4 text-primary" />
+        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <FolderOpen className="w-4 h-4 text-violet-400" />
           Project Progress
         </h2>
         <Link
           href="/projects"
-          className="text-xs text-primary/70 hover:text-primary flex items-center gap-1 transition-colors"
+          className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
         >
           View all <ArrowRight className="w-3 h-3" />
         </Link>
@@ -45,7 +45,7 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
         {active.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-3xl mb-2">📁</p>
-            <p className="text-sm text-muted-foreground">No active projects</p>
+            <p className="text-sm text-slate-300">No active projects</p>
           </div>
         ) : (
           active.map((project, i) => (
@@ -58,11 +58,11 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
                   )}>
                     {project.status.replace('_', ' ')}
                   </span>
-                  <span className="text-sm font-medium text-foreground truncate">
+                  <span className="text-sm font-medium text-white truncate">
                     {project.name}
                   </span>
                 </div>
-                <span className="text-sm font-bold text-foreground ml-2 flex-shrink-0">
+                <span className="text-sm font-bold text-white ml-2 flex-shrink-0">
                   {project.progress_percentage}%
                 </span>
               </div>
@@ -73,7 +73,7 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
                 />
               </div>
               {project.end_date && (
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[10px] text-slate-300 mt-1">
                   Due {new Date(project.end_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                 </p>
               )}

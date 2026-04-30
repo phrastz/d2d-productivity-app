@@ -37,21 +37,21 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
   }
 
   return (
-    <div className="glass rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" />
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Clock className="w-4 h-4 text-violet-400" />
             Today&apos;s Focus
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-slate-300 mt-0.5">
             {format(new Date(), 'EEEE, d MMMM')}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold gradient-text">{completed}/{todayTasks.length}</p>
-          <p className="text-[10px] text-muted-foreground">completed</p>
+          <p className="text-xl font-bold text-white">{completed}/{todayTasks.length}</p>
+          <p className="text-[10px] text-slate-400">completed</p>
         </div>
       </div>
 
@@ -67,8 +67,8 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
         {todayTasks.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-3xl mb-2">🎉</p>
-            <p className="text-sm text-muted-foreground">No tasks due today!</p>
-            <p className="text-xs text-muted-foreground/60">Add tasks via the + button</p>
+            <p className="text-sm text-slate-300">No tasks due today!</p>
+            <p className="text-xs text-slate-400">Add tasks via the + button</p>
           </div>
         ) : (
           todayTasks.map(task => {
@@ -96,12 +96,12 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
                 <span className="flex-1 min-w-0">
                   <span className={cn(
                     'text-sm font-medium block truncate',
-                    done ? 'line-through text-muted-foreground' : 'text-foreground'
+                    done ? 'line-through text-slate-500' : 'text-white'
                   )}>
                     {task.title}
                   </span>
                   {task.habit_category && (
-                    <span className="text-[10px] text-muted-foreground/70">{task.habit_category}</span>
+                    <span className="text-[10px] text-slate-400">{task.habit_category}</span>
                   )}
                 </span>
                 <PriorityIcon className={cn('w-3.5 h-3.5 flex-shrink-0', color)} />

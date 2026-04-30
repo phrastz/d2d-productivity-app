@@ -37,8 +37,8 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        'task-card group select-none',
-        isDragging && 'ring-2 ring-primary/50 scale-105',
+        'task-card glass bg-slate-900/90 border border-slate-800 p-4 rounded-2xl group select-none hover:border-slate-700 transition-colors',
+        isDragging && 'ring-2 ring-violet-500/50 scale-105',
         overdue && 'border-red-500/30'
       )}
       onClick={() => onClick(task)}
@@ -48,7 +48,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
         <button
           {...attributes}
           {...listeners}
-          className="mt-0.5 text-muted-foreground/30 hover:text-muted-foreground transition-colors cursor-grab active:cursor-grabbing"
+          className="mt-0.5 text-slate-600 hover:text-slate-400 transition-colors cursor-grab active:cursor-grabbing"
           onClick={e => e.stopPropagation()}
         >
           <Grip className="w-3.5 h-3.5" />
@@ -62,21 +62,21 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
               {task.priority}
             </span>
             {task.habit_category && (
-              <span className="text-[10px] text-muted-foreground/60 ml-auto">
+              <span className="text-[10px] text-slate-500 ml-auto">
                 {task.habit_category}
               </span>
             )}
           </div>
 
           <p className={cn(
-            'text-sm font-medium text-foreground leading-snug mb-2',
-            task.status === 'done' && 'line-through text-muted-foreground'
+            'text-sm font-medium text-white leading-snug mb-2',
+            task.status === 'done' && 'line-through text-slate-500'
           )}>
             {task.title}
           </p>
 
           {task.description && (
-            <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2">
+            <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">
               {task.description}
             </p>
           )}
@@ -85,14 +85,14 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             {task.due_date && (
               <span className={cn(
                 'flex items-center gap-1 text-[10px]',
-                overdue ? 'text-red-400' : 'text-muted-foreground'
+                overdue ? 'text-red-400' : 'text-slate-400'
               )}>
                 <Calendar className="w-3 h-3" />
                 {format(parseISO(task.due_date), 'MMM d')}
               </span>
             )}
             {task.time_spent_minutes > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1 text-[10px] text-slate-400">
                 <Clock className="w-3 h-3" />
                 {task.time_spent_minutes}m
               </span>
