@@ -144,17 +144,17 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="bg-slate-950 min-h-screen flex flex-col">
         <TopNav title="Settings" />
-        <div className="p-6 flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex-1 p-6 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="bg-slate-950 min-h-screen">
       <TopNav title="Settings" subtitle="Manage your account preferences" />
       
       <div className="p-6 max-w-2xl space-y-6 animate-fade-in">
@@ -171,28 +171,28 @@ export default function SettingsPage() {
         )}
 
         {/* Profile Section */}
-        <div className="glass rounded-2xl p-6">
+        <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-6">
           <h2 className="text-lg font-semibold gradient-text flex items-center gap-2 mb-6">
-            <User className="w-5 h-5 text-primary" />
+            <User className="w-5 h-5 text-violet-400" />
             Profile Settings
           </h2>
           
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'hsl(215 20% 55%)' }}>
+              <label className="block text-xs font-medium mb-1.5 text-slate-400">
                 Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 disabled
-                className="w-full bg-secondary/30 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed"
               />
-              <p className="text-[10px] mt-1 text-muted-foreground">Email cannot be changed directly.</p>
+              <p className="text-[10px] mt-1 text-slate-500">Email cannot be changed directly.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'hsl(215 20% 55%)' }}>
+              <label className="block text-xs font-medium mb-1.5 text-slate-400">
                 Full Name
               </label>
               <input
@@ -200,7 +200,7 @@ export default function SettingsPage() {
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 placeholder="Your name"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50 transition-colors"
               />
             </div>
 
@@ -208,7 +208,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-primary text-white hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-violet-600 text-white hover:bg-violet-700 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Changes
@@ -218,17 +218,17 @@ export default function SettingsPage() {
         </div>
 
         {/* Danger Zone / Utilities */}
-        <div className="glass rounded-2xl p-6 border-red-500/10">
+        <div className="glass bg-slate-900/90 border border-red-500/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-red-400 flex items-center gap-2 mb-6">
             <Database className="w-5 h-5" />
             Developer Tools
           </h2>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-secondary/30">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-slate-800 bg-slate-950/30">
               <div>
-                <p className="text-sm font-medium text-foreground">Load Demo Data</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-sm font-medium text-white">Load Demo Data</p>
+                <p className="text-xs text-slate-400 mt-0.5">
                   Populate your workspace with sample projects, tasks, and logs to test the UI.
                 </p>
               </div>
@@ -245,6 +245,6 @@ export default function SettingsPage() {
         </div>
 
       </div>
-    </>
+    </div>
   )
 }

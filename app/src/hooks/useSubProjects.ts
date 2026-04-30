@@ -10,7 +10,9 @@ export function useSubProjects() {
     projectId: string,
     name: string,
     description?: string,
-    priority: SubProjectPriority = 'medium'
+    priority: SubProjectPriority = 'medium',
+    startDate?: string | null,
+    endDate?: string | null,
   ): Promise<SubProject> => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -40,6 +42,8 @@ export function useSubProjects() {
         status: 'not_started' as SubProjectStatus,
         order_index: nextOrderIndex,
         owner_id: userId,
+        start_date: startDate || null,
+        end_date: endDate || null,
       }
 
       console.log('Attempting to insert sub-project:', insertData)

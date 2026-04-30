@@ -5,10 +5,10 @@ import { differenceInDays, parseISO, format, startOfDay, addDays } from 'date-fn
 import { cn } from '@/lib/utils'
 
 const statusColors = {
-  active:    { bar: 'bg-gradient-to-r from-violet-500 to-purple-600', badge: 'bg-violet-500/20 text-violet-300' },
-  completed: { bar: 'bg-gradient-to-r from-emerald-500 to-teal-500', badge: 'bg-emerald-500/20 text-emerald-300' },
-  on_hold:   { bar: 'bg-gradient-to-r from-amber-500 to-orange-500', badge: 'bg-amber-500/20 text-amber-300' },
-  archived:  { bar: 'bg-gray-500',                                    badge: 'bg-gray-500/20 text-gray-400' },
+  active:    { bar: 'bg-gradient-to-r from-violet-500 to-purple-600', badge: 'bg-violet-500/20 text-violet-300 dark:text-violet-100' },
+  completed: { bar: 'bg-gradient-to-r from-emerald-500 to-teal-500', badge: 'bg-emerald-500/20 text-emerald-300 dark:text-emerald-100' },
+  on_hold:   { bar: 'bg-gradient-to-r from-amber-500 to-orange-500', badge: 'bg-amber-500/20 text-amber-300 dark:text-amber-100' },
+  archived:  { bar: 'bg-gray-500',                                    badge: 'bg-gray-500/20 text-gray-400 dark:text-slate-200' },
 }
 
 interface ProjectTimelineProps {
@@ -21,8 +21,8 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
     return (
       <div className="glass rounded-2xl p-8 text-center">
         <p className="text-4xl mb-3">📅</p>
-        <p className="text-sm text-muted-foreground">No projects with date ranges yet.</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Set start and end dates on your projects to see the timeline.</p>
+        <p className="text-sm text-muted-foreground dark:text-slate-200">No projects with date ranges yet.</p>
+        <p className="text-xs text-muted-foreground/60 dark:text-slate-300 mt-1">Set start and end dates on your projects to see the timeline.</p>
       </div>
     )
   }
@@ -54,7 +54,7 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
           {months.map(({ label, left }, i) => (
             <span
               key={i}
-              className="absolute text-[10px] text-muted-foreground/60 -translate-x-1/2"
+              className="absolute text-[10px] text-muted-foreground/60 dark:text-slate-200 -translate-x-1/2"
               style={{ left: `${left}%` }}
             >
               {label}
@@ -75,7 +75,7 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
               <div key={project.id} className="flex items-center gap-3 group">
                 {/* Project label */}
                 <div className="w-36 flex-shrink-0 text-right">
-                  <p className="text-xs font-medium text-foreground truncate">{project.name}</p>
+                  <p className="text-xs font-medium text-white truncate">{project.name}</p>
                   <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full', colors.badge)}>
                     {project.status.replace('_', ' ')}
                   </span>
@@ -96,7 +96,7 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
                     className={cn('absolute top-1.5 bottom-1.5 rounded-full flex items-center px-2 transition-all', colors.bar)}
                     style={{ left: `${startOff}%`, width: `${widthPct}%` }}
                   >
-                    <span className="text-[9px] font-bold text-white/90 truncate">
+                    <span className="text-[9px] font-bold text-white truncate">
                       {project.progress_percentage}%
                     </span>
                   </div>
@@ -113,7 +113,7 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
 
                 {/* Dates */}
                 <div className="w-24 flex-shrink-0 text-right hidden md:block">
-                  <p className="text-[9px] text-muted-foreground">
+                  <p className="text-[9px] text-muted-foreground dark:text-slate-300">
                     {format(start, 'MMM d')} – {format(end, 'MMM d')}
                   </p>
                 </div>
@@ -124,11 +124,11 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
 
         {/* Legend */}
         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/5">
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dark:text-slate-300">
             <div className="w-0.5 h-3 bg-primary/60" />
             Today
           </div>
-          <p className="text-[10px] text-muted-foreground/50">
+          <p className="text-[10px] text-muted-foreground/50 dark:text-slate-300">
             Timeline from {format(minDate, 'MMM d')} to {format(maxDate, 'MMM d, yyyy')}
           </p>
         </div>

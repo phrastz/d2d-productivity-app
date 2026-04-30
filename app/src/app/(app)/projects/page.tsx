@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Project } from '@/types'
 import ProjectTimeline from '@/components/projects/ProjectTimeline'
 import ProjectDialog from '@/components/projects/ProjectDialog'
+import QuickAddSubProject from '@/components/projects/QuickAddSubProject'
 import TopNav from '@/components/layout/TopNav'
 import { Plus, LayoutList, GanttChart, FolderTree, CheckSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -13,10 +14,10 @@ import { cn } from '@/lib/utils'
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 
 const statusColors = {
-  active:    'bg-violet-500/20 text-violet-300 border-violet-500/30',
-  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  on_hold:   'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  archived:  'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  active:    'bg-violet-500/20 text-violet-300 border-violet-500/30 dark:text-violet-100',
+  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 dark:text-emerald-100',
+  on_hold:   'bg-amber-500/20 text-amber-300 border-amber-500/30 dark:text-amber-100',
+  archived:  'bg-gray-500/20 text-gray-400 border-gray-500/30 dark:text-slate-200',
 }
 
 type ViewMode = 'list' | 'timeline'
@@ -92,35 +93,36 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="bg-slate-950 min-h-screen">
         <TopNav title="Projects" subtitle="Gantt & list view" />
         <div className="p-6 flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="bg-slate-950 min-h-screen">
       <TopNav title="Projects" subtitle="Plan and track your projects" />
       <div className="p-6 space-y-5 animate-fade-in">
         {/* Toolbar */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => { setEditing(null); setDialogOpen(true) }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white dark:text-white text-sm font-semibold hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/20"
           >
             <Plus className="w-4 h-4" />
             New Project
           </button>
+          <QuickAddSubProject />
 
           {/* View toggle */}
-          <div className="flex items-center gap-1 glass border border-white/10 rounded-xl p-1">
+          <div className="flex items-center gap-1 glass bg-slate-900/90 border border-slate-800 rounded-xl p-1">
             <button
               onClick={() => setView('timeline')}
               className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                view === 'timeline' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'
+                view === 'timeline' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-400 hover:text-white'
               )}
             >
               <GanttChart className="w-3.5 h-3.5" />
@@ -129,7 +131,7 @@ export default function ProjectsPage() {
             <button
               onClick={() => setView('list')}
               className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                view === 'list' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'
+                view === 'list' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-400 hover:text-white'
               )}
             >
               <LayoutList className="w-3.5 h-3.5" />
@@ -137,7 +139,7 @@ export default function ProjectsPage() {
             </button>
           </div>
 
-          <div className="ml-auto text-xs text-muted-foreground">
+          <div className="ml-auto text-xs text-slate-400">
             {projects.length} project{projects.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -154,10 +156,10 @@ export default function ProjectsPage() {
                 <div
                   key={project.id}
                   onClick={() => router.push(`/projects/${project.id}`)}
-                  className="glass rounded-2xl p-5 cursor-pointer hover:glow transition-all duration-200 group"
+                  className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 cursor-pointer hover:glow transition-all duration-200 group"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                    <h3 className="text-sm font-semibold text-white group-hover:text-violet-400 transition-colors">
                       {project.name}
                     </h3>
                     <span className={cn(
@@ -168,11 +170,11 @@ export default function ProjectsPage() {
                     </span>
                   </div>
                   {project.description && (
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
+                    <p className="text-xs text-slate-300 mb-3 line-clamp-2">{project.description}</p>
                   )}
                   
                   {/* Stats */}
-                  <div className="flex items-center gap-3 mb-3 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-3 mb-3 text-[10px] text-slate-400">
                     {stats.subProjects > 0 && (
                       <div className="flex items-center gap-1">
                         <FolderTree className="w-3 h-3" />
@@ -192,9 +194,9 @@ export default function ProjectsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground">{project.progress_percentage}%</span>
+                    <span className="text-xs font-bold text-white">{project.progress_percentage}%</span>
                     {project.end_date && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[10px] text-slate-400">
                         Due {new Date(project.end_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                       </span>
                     )}
@@ -214,6 +216,6 @@ export default function ProjectsPage() {
           onDeleted={handleDeleted}
         />
       )}
-    </>
+    </div>
   )
 }

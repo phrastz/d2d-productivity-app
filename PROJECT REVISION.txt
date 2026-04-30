@@ -1,0 +1,745 @@
+PROJECT
+├─ id (PK)
+├─ name
+├─ progress_ratio (calculated)
+│
+├─ 1:N SUB_PROJECTS
+│  ├─ id (PK)
+│  ├─ project_id (FK)
+│  ├─ name
+│  ├─ progress_percent
+│  ├─ weight_contribution
+│  │
+│  └─ 1:N TASKS (nested)
+│     ├─ id (PK)
+│     ├─ sub_project_id (FK) ← untuk task di dalam sub-project
+│     ├─ project_id (FK) ← NULL untuk task nested
+│     └─ ...fields
+│
+└─ 1:N TASKS (standalone)
+   ├─ id (PK)
+   ├─ sub_project_id (FK) ← NULL untuk task langsung di project
+   ├─ project_id (FK) ← untuk task langsung di project
+   └─ ...fields
+
+COMMENTS (polymorphic)
+├─ id (PK)
+├─ commentable_id (FK)
+├─ commentable_type ('project' | 'sub_project' | 'task')
+└─ author_id (FK)
+
+
+erDiagram
+    PROJECT ||--o{ SUB_PROJECT : contains
+    PROJECT ||--o{ TASK : "direct tasks"
+    SUB_PROJECT ||--o{ TASK : "nested tasks"
+    PROJECT ||--o{ COMMENT : "project comments"
+    SUB_PROJECT ||--o{ COMMENT : "sub-project comments"
+    TASK ||--o{ COMMENT : "task comments"
+    
+    PROJECT {
+        uuid id PK
+        string name
+        date start_date
+        date end_date
+        decimal progress_ratio
+        enum status
+    }
+    
+    SUB_PROJECT {
+        uuid id PK
+        uuid project_id FK
+        string name
+        date start_date
+        date end_date
+        int progress_percent
+        decimal weight_contribution
+    }
+    
+    TASK {
+        uuid id PK
+        uuid project_id FK
+        uuid sub_project_id FK "nullable"
+        string name
+        date start_date
+        date end_date
+        int progress_percent
+        int priority
+    }
+    
+    COMMENT {
+        uuid id PK
+        uuid commentable_id FK
+        string commentable_type
+        text content
+        uuid author_id FK
+        timestamp created_at
+    }
+
+
+
+Kunci Logika
+1. Task bisa berdiri di 2 level:
+interface Task {
+  id: string;
+  projectId: string;        // Selalu ada
+  subProjectId: string | null; // NULL = task langsung di project
+  
+  // Jika subProjectId = null → Task langsung di Project
+  // Jika subProjectId = value → Task bagian dari Sub-Project
+}
+
+2. Kalkulasi Progress Project:
+function calculateProjectProgress(
+  subProjects: SubProject[],
+  directTasks: Task[]
+): number {
+  // Hitung dari Sub-Projects (dengan bobot)
+  const subProjectProgress = subProjects.reduce((sum, sp) => {
+    return sum + (sp.progress_percent * sp.weight_contribution);
+  }, 0);
+  
+  const totalSubWeight = subProjects.reduce((sum, sp) => 
+    sum + sp.weight_contribution, 0
+  );
+  
+  // Hitung dari Direct Tasks (tanpa sub-project)
+  const directTaskProgress = directTasks.reduce((sum, task) => {
+    return sum + task.progress_percent;
+  }, 0);
+  
+  const totalItems = subProjects.length + directTasks.length;
+  if (totalItems === 0) return 0;
+  
+  // Average progress dari semua items
+  const weightedSubProgress = totalSubWeight > 0 
+    ? subProjectProgress / totalSubWeight * (subProjects.length / totalItems)
+    : 0;
+    
+  const directProgress = directTasks.length > 0
+    ? directTaskProgress / directTasks.length * (directTasks.length / totalItems)
+    : 0;
+  
+  return parseFloat(((weightedSubProgress + directProgress) * 100).toFixed(2));
+}
+
+Database Schema (Prisma)
+model Project {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime
+  progressRatio Decimal        @default(0)
+  status        ProjectStatus  @default(PLANNED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  subProjects   SubProject[]
+  tasks         Task[]
+  comments      Comment[]
+}
+
+model SubProject {
+  id                 String   @id @default(uuid())
+  projectId          String
+  name               String
+  description        String?
+  startDate          DateTime
+  endDate            DateTime
+  progressPercent    Int      @default(0)
+  weightContribution Decimal  @default(1)
+  status             TaskStatus @default(PLANNED)
+  
+  project            Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks              Task[]
+  comments           Comment[]
+}
+
+model Task {
+  id            String      @id @default(uuid())
+  projectId     String
+  subProjectId  String?     // NULL = task langsung di project
+  name          String
+  description   String?
+  startDate     DateTime?
+  endDate       DateTime?
+  progressPercent Int       @default(0)
+  priority      Priority    @default(MEDIUM)
+  status        TaskStatus  @default(TODO)
+  
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subProject    SubProject? @relation(fields: [subProjectId], references: [id], onDelete: Cascade)
+  comments      Comment[]
+  
+  @@index([projectId])
+  @@index([subProjectId])
+}
+
+model Comment {
+  id              String   @id @default(uuid())
+  commentableId   String
+  commentableType CommentType
+  content         String
+  authorId        String?
+  createdAt       DateTime @default(now())
+  
+  // Polymorphic relation
+  @@index([commentableId, commentableType])
+}
+
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  BLOCKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CommentType {
+  PROJECT
+  SUB_PROJECT
+  TASK
+}
+
+
+Use Cases
+Case 1: Task Langsung di Project
+// Membuat task tanpa sub-project
+await db.task.create({
+  data: {
+    projectId: "project-123",
+    subProjectId: null, // ← NULL = standalone task
+    name: "Setup repository",
+    progressPercent: 100,
+  }
+});
+
+Case 2: Task dalam Sub-Project
+// Membuat task dalam sub-project
+await db.task.create({
+  data: {
+    projectId: "project-123",
+    subProjectId: "subproject-456", // ← Ada value = nested task
+    name: "Write unit tests",
+    progressPercent: 50,
+  }
+});
+
+Case 3: Query Tasks
+// Ambil semua task langsung di project (tanpa sub-project)
+const directTasks = await db.task.findMany({
+  where: {
+    projectId: "project-123",
+    subProjectId: null
+  }
+});
+
+// Ambil semua task dalam sub-project tertentu
+const nestedTasks = await db.task.findMany({
+  where: {
+    projectId: "project-123",
+    subProjectId: "subproject-456"
+  }
+});
+
+Delete Function (Revised)
+Delete Sub-Project (cascade ke nested tasks)
+// API: DELETE /api/projects/[projectId]/sub-projects/[subId]
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ projectId: string; subId: string }> }
+) {
+  const { projectId, subId } = await params;
+  
+  // ✅ Cascade delete: sub-project + nested tasks + comments
+  await db.subProject.delete({
+    where: {
+      id: subId,
+      projectId: projectId
+    }
+    // Prisma cascade akan hapus tasks & comments otomatis
+  });
+  
+  // Recalculate progress
+  await recalculateProjectProgress(projectId);
+  
+  return NextResponse.json({ success: true });
+}
+
+Delete Task (standalone atau nested)
+// API: DELETE /api/tasks/[taskId]
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ taskId: string }> }
+) {
+  const { taskId } = await params;
+  
+  const task = await db.task.findUnique({
+    where: { id: taskId },
+    select: { projectId: true, subProjectId: true }
+  });
+  
+  if (!task) {
+    return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+  }
+  
+  // Delete task + comments
+  await db.task.delete({
+    where: { id: taskId }
+  });
+  
+  // Recalculate progress parent
+  if (task.subProjectId) {
+    // Task nested → update sub-project progress
+    await recalculateSubProjectProgress(task.subProjectId);
+    await recalculateProjectProgress(task.projectId);
+  } else {
+    // Task standalone → update project progress langsung
+    await recalculateProjectProgress(task.projectId);
+  }
+  
+  return NextResponse.json({ success: true });
+}
+
+Checklist Implementasi
+// ✅ 1. Database migration
+npx prisma migrate dev --name add_task_polymorphic_relation
+
+// ✅ 2. API Routes
+- POST   /api/projects/[id]/tasks           (create standalone task)
+- POST   /api/projects/[id]/sub-projects/[subId]/tasks (create nested task)
+- PATCH  /api/tasks/[taskId]                (update task)
+- DELETE /api/tasks/[taskId]                (delete task)
+- DELETE /api/projects/[id]/sub-projects/[subId] (delete sub-project + nested tasks)
+
+// ✅ 3. Frontend Components
+- components/tasks/TaskList.tsx             (render both standalone & nested)
+- components/tasks/TaskActions.tsx          (edit/delete dropdown)
+- components/projects/ProgressCalculator.tsx (real-time calculation)
+
+// ✅ 4. Hooks
+- hooks/useTaskCreate.ts
+- hooks/useTaskUpdate.ts
+- hooks/useTaskDelete.ts
+- hooks/useProjectProgress.ts
+
+UI Structure Example
+PROJECT: "Website Redesign"
+├─  Progress: 65%
+│
+├─  Standalone Tasks (langsung di project)
+│  ├─ ✅ Setup repository (100%)
+│  ├─ 🔄 Design mockup (50%)
+│  └─ ⏳ Client meeting (0%)
+│
+└─ 📦 Sub-Projects
+   ├─ 🎨 Frontend Development (weight: 0.6)
+   │  ├─  Nested Tasks:
+   │  │  ├─ ✅ Create components (100%)
+   │  │  └─  Write CSS (30%)
+   │  └─ Progress: 65%
+   │
+   └─  Backend Development (weight: 0.4)
+      ├─ 📌 Nested Tasks:
+      │  ├─ ⏳ API design (0%)
+      │  └─ ⏳ Database setup (0%)
+      └─ Progress: 0%
+
+
+Timeline Fields di Setiap Level
+1. PROJECT
+{
+  id: "proj-123",
+  name: "Website Redesign",
+  startDate: "2025-01-01",  // 📅 Mulai project
+  endDate: "2025-03-31",    // 📅 Target selesai
+  progressRatio: 0.65,       // 65% progress
+  // ...fields lain
+}
+
+2. SUB-PROJECT
+{
+  id: "sub-456",
+  projectId: "proj-123",
+  name: "Frontend Development",
+  startDate: "2025-01-15",  // 📅 Mulai sub-project
+  endDate: "2025-02-28",    // 📅 Target selesai sub-project
+  progressPercent: 65,       // 65% complete
+  weightContribution: 0.6,   // Bobot 60% untuk project
+  // ...fields lain
+}
+
+3. TASK (Standalone atau Nested)
+{
+  id: "task-789",
+  projectId: "proj-123",
+  subProjectId: "sub-456",  // atau null untuk standalone
+  name: "Create Header Component",
+  startDate: "2025-01-15",  // 📅 Mulai task
+  endDate: "2025-01-20",    // 📅 Deadline task
+  progressPercent: 100,      // 100% complete
+  status: "DONE",
+  // ...fields lain
+}
+
+Perhitungan Progress Berbasis Timeline
+A. Time-Based Progress (Otomatis)
+Progress bisa dihitung otomatis berdasarkan waktu yang sudah berlalu:
+function calculateTimeBasedProgress(
+  startDate: Date,
+  endDate: Date,
+  currentDate: Date = new Date()
+): number {
+  const totalDuration = endDate.getTime() - startDate.getTime();
+  const elapsed = currentDate.getTime() - startDate.getTime();
+  
+  // Belum mulai
+  if (currentDate < startDate) return 0;
+  
+  // Sudah lewat deadline
+  if (currentDate > endDate) return 100;
+  
+  // Dalam progress
+  const progress = (elapsed / totalDuration) * 100;
+  return Math.min(100, Math.max(0, progress));
+}
+
+// Contoh usage:
+const progress = calculateTimeBasedProgress(
+  new Date("2025-01-01"),
+  new Date("2025-01-31"),
+  new Date("2025-01-15")  // Hari ini
+);
+// Hasil: ~50% (karena sudah setengah jalan)
+
+B. Manual Progress (User Input)
+User juga bisa input progress manual (misal: task 75% selesai):
+// User update progress manual
+await db.task.update({
+  where: { id: "task-789" },
+  data: {
+    progressPercent: 75,  // User input manual
+    status: "IN_PROGRESS"
+  }
+});
+
+C. Hybrid: Time-Based + Manual
+Sistem bisa compare antara:
+Expected progress (berdasarkan timeline)
+Actual progress (user input)
+function getProgressStatus(
+  startDate: Date,
+  endDate: Date,
+  actualProgress: number
+): {
+  expectedProgress: number;
+  status: "ON_TRACK" | "AHEAD" | "DELAYED";
+  variance: number;
+} {
+  const expectedProgress = calculateTimeBasedProgress(startDate, endDate);
+  const variance = actualProgress - expectedProgress;
+  
+  let status: "ON_TRACK" | "AHEAD" | "DELAYED";
+  
+  if (variance >= -10 && variance <= 10) {
+    status = "ON_TRACK";      // ±10% tolerance
+  } else if (variance > 10) {
+    status = "AHEAD";         // Lebih cepat
+  } else {
+    status = "DELAYED";       // Terlambat
+  }
+  
+  return {
+    expectedProgress,
+    status,
+    variance
+  };
+}
+
+// Contoh:
+const status = getProgressStatus(
+  new Date("2025-01-01"),
+  new Date("2025-01-31"),
+  30  // User input: baru 30% selesai
+);
+// Hasil: { expectedProgress: 50, status: "DELAYED", variance: -20 }
+// → Seharusnya 50%, tapi baru 30% → DELAYED 20%
+
+Aggregate Progress Calculation
+Hierarchical Progress Roll-up:
+async function recalculateProjectProgress(projectId: string) {
+  // 1. Ambil semua sub-projects
+  const subProjects = await db.subProject.findMany({
+    where: { projectId },
+    include: {
+      tasks: true  // Nested tasks
+    }
+  });
+  
+  // 2. Ambil standalone tasks (langsung di project)
+  const directTasks = await db.task.findMany({
+    where: {
+      projectId,
+      subProjectId: null
+    }
+  });
+  
+  // 3. Hitung progress setiap sub-project dari nested tasks
+  const subProjectsWithProgress = await Promise.all(
+    subProjects.map(async (sp) => {
+      const taskProgress = sp.tasks.reduce((sum, task) => 
+        sum + task.progressPercent, 0
+      );
+      
+      const avgProgress = sp.tasks.length > 0
+        ? taskProgress / sp.tasks.length
+        : 0;
+      
+      // Update sub-project progress
+      await db.subProject.update({
+        where: { id: sp.id },
+        data: { progressPercent: Math.round(avgProgress) }
+      });
+      
+      return {
+        ...sp,
+        calculatedProgress: avgProgress,
+        weight: Number(sp.weightContribution)
+      };
+    })
+  );
+  
+  // 4. Hitung progress direct tasks
+  const directTaskProgress = directTasks.reduce((sum, task) => 
+    sum + task.progressPercent, 0
+  );
+  
+  const avgDirectTaskProgress = directTasks.length > 0
+    ? directTaskProgress / directTasks.length
+    : 0;
+  
+  // 5. Aggregate semua progress
+  const totalWeight = subProjectsWithProgress.reduce((sum, sp) => 
+    sum + sp.weight, 0
+  );
+  
+  const weightedSubProgress = subProjectsWithProgress.reduce((sum, sp) => 
+    sum + (sp.calculatedProgress * sp.weight), 0
+  );
+  
+  // Hitung final project progress
+  const totalItems = subProjects.length + directTasks.length;
+  
+  let finalProgress: number;
+  
+  if (totalItems === 0) {
+    finalProgress = 0;
+  } else {
+    // Weighted average dari sub-projects + direct tasks
+    const subProjectContribution = totalWeight > 0
+      ? (weightedSubProgress / totalWeight) * (subProjects.length / totalItems)
+      : 0;
+      
+    const directTaskContribution = directTasks.length > 0
+      ? avgDirectTaskProgress * (directTasks.length / totalItems)
+      : 0;
+      
+    finalProgress = subProjectContribution + directTaskContribution;
+  }
+  
+  // 6. Update project
+  await db.project.update({
+    where: { id: projectId },
+    data: {
+      progressRatio: parseFloat((finalProgress / 100).toFixed(2)),
+      updatedAt: new Date()
+    }
+  });
+  
+  return finalProgress;
+}
+
+Timeline Visualization
+Gantt Chart Structure:
+interface TimelineItem {
+  id: string;
+  name: string;
+  type: "PROJECT" | "SUB_PROJECT" | "TASK";
+  startDate: Date;
+  endDate: Date;
+  progressPercent: number;
+  status: "ON_TRACK" | "DELAYED" | "AHEAD";
+  parentId?: string;  // Untuk hierarchy
+}
+
+// Fetch semua items untuk Gantt chart
+async function getProjectTimeline(projectId: string) {
+  const project = await db.project.findUnique({
+    where: { id: projectId },
+    include: {
+      subProjects: {
+        include: {
+          tasks: true
+        }
+      },
+      tasks: {
+        where: { subProjectId: null }  // Hanya standalone tasks
+      }
+    }
+  });
+  
+  const timeline: TimelineItem[] = [
+    // Project level
+    {
+      id: project.id,
+      name: project.name,
+      type: "PROJECT",
+      startDate: project.startDate,
+      endDate: project.endDate,
+      progressPercent: Number(project.progressRatio) * 100,
+      status: getProgressStatus(
+        project.startDate,
+        project.endDate,
+        Number(project.progressRatio) * 100
+      ).status
+    },
+    
+    // Sub-projects
+    ...project.subProjects.map(sp => ({
+      id: sp.id,
+      name: sp.name,
+      type: "SUB_PROJECT" as const,
+      startDate: sp.startDate,
+      endDate: sp.endDate,
+      progressPercent: sp.progressPercent,
+      status: getProgressStatus(
+        sp.startDate,
+        sp.endDate,
+        sp.progressPercent
+      ).status,
+      parentId: project.id
+    })),
+    
+    // Nested tasks (dalam sub-project)
+    ...project.subProjects.flatMap(sp =>
+      sp.tasks.map(task => ({
+        id: task.id,
+        name: task.name,
+        type: "TASK" as const,
+        startDate: task.startDate!,
+        endDate: task.endDate!,
+        progressPercent: task.progressPercent,
+        status: getProgressStatus(
+          task.startDate!,
+          task.endDate!,
+          task.progressPercent
+        ).status,
+        parentId: sp.id
+      }))
+    ),
+    
+    // Standalone tasks (langsung di project)
+    ...project.tasks.map(task => ({
+      id: task.id,
+      name: task.name,
+      type: "TASK" as const,
+      startDate: task.startDate!,
+      endDate: task.endDate!,
+      progressPercent: task.progressPercent,
+      status: getProgressStatus(
+        task.startDate!,
+        task.endDate!,
+        task.progressPercent
+      ).status,
+      parentId: project.id
+    }))
+  ];
+  
+  return timeline;
+}
+
+ Schema Final dengan Timeline
+model Project {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  startDate     DateTime       // 📅 Timeline start
+  endDate       DateTime       // 📅 Timeline end
+  progressRatio Decimal        @default(0) // 0.00 - 1.00
+  status        ProjectStatus  @default(PLANNED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  subProjects   SubProject[]
+  tasks         Task[]
+  comments      Comment[]
+  
+  // Computed fields (bisa di-cache atau dihitung on-the-fly)
+  @@index([startDate, endDate])
+}
+
+model SubProject {
+  id                 String       @id @default(uuid())
+  projectId          String
+  name               String
+  description        String?
+  startDate          DateTime     // 📅 Timeline start
+  endDate            DateTime     // 📅 Timeline end
+  progressPercent    Int          @default(0) // 0 - 100
+  weightContribution Decimal      @default(1) // 0.0 - 1.0
+  status             TaskStatus   @default(PLANNED)
+  
+  project            Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks              Task[]
+  comments           Comment[]
+  
+  @@index([projectId])
+  @@index([startDate, endDate])
+}
+
+model Task {
+  id            String       @id @default(uuid())
+  projectId     String
+  subProjectId  String?      // NULL = standalone task
+  name          String
+  description   String?
+  startDate     DateTime?    // 📅 Optional timeline
+  endDate       DateTime?    // 📅 Optional timeline
+  progressPercent Int        @default(0) // 0 - 100
+  priority      Priority     @default(MEDIUM)
+  status        TaskStatus   @default(TODO)
+  
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subProject    SubProject?  @relation(fields: [subProjectId], references: [id], onDelete: Cascade)
+  comments      Comment[]
+  
+  @@index([projectId])
+  @@index([subProjectId])
+  @@index([startDate, endDate])
+}
+
+Kesimpulan
+Setiap level punya timeline:
+✅ Project: startDate + endDate
+✅ Sub-Project: startDate + endDate
+✅ Task: startDate + endDate (nullable untuk task tanpa timeline spesifik)
+Progress calculation menggunakan:
+Time-based: Otomatis dari elapsed time
+Manual: User input progress
+Hybrid: Compare expected vs actual
+Aggregate: Roll-up dari Task → Sub-Project → Project

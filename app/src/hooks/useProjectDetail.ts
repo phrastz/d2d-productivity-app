@@ -9,6 +9,41 @@ interface ProjectDetail extends Project {
   directTasks: Task[]
 }
 
+// ── Progress helpers (spec: PROJECT REVISION.txt) ──────────────────────────
+
+function calculateSubProjectProgress(tasks: Task[]): number {
+  if (tasks.length === 0) return 0
+  const sum = tasks.reduce((acc, t) => acc + (t.progress_percent ?? 0), 0)
+  return Math.round(sum / tasks.length)
+}
+
+function calculateProjectProgress(
+  subProjects: (SubProject & { progress_percent: number; weight_contribution: number; tasks?: Task[] })[],
+  directTasks: Task[]
+): number {
+  const totalItems = subProjects.length + directTasks.length
+  if (totalItems === 0) return 0
+
+  const totalSubWeight = subProjects.reduce((s, sp) => s + (sp.weight_contribution ?? 1), 0)
+  const weightedSubProgress = subProjects.reduce(
+    (s, sp) => s + (sp.progress_percent ?? 0) * (sp.weight_contribution ?? 1),
+    0
+  )
+  const directProgress = directTasks.reduce((s, t) => s + (t.progress_percent ?? 0), 0)
+
+  const subContrib =
+    totalSubWeight > 0
+      ? (weightedSubProgress / totalSubWeight) * (subProjects.length / totalItems)
+      : 0
+  const directContrib =
+    directTasks.length > 0
+      ? (directProgress / directTasks.length) * (directTasks.length / totalItems)
+      : 0
+
+  return Math.round((subContrib + directContrib) * 100) / 100
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 export function useProjectDetail(projectId: string | null) {
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -110,26 +145,30 @@ export function useProjectDetail(projectId: string | null) {
           }
         })
 
-        // Step 5: Calculate progress for each sub-project
+        // Step 5: Calculate progress for each sub-project using avg progress_percent
         const enrichedSubProjects: SubProject[] = subProjectsData.map((sp: SubProject) => {
           const tasks = tasksBySubProject.get(sp.id) || []
           const tasks_total = tasks.length
           const tasks_done = tasks.filter(t => t.status === 'done').length
-          const progress = tasks_total > 0 ? Math.round((tasks_done / tasks_total) * 100) : 0
+          // ✅ Use weighted average of task progress_percent (spec compliant)
+          const progress_percent = calculateSubProjectProgress(tasks)
 
           return {
             ...sp,
             tasks,
             tasks_total,
             tasks_done,
-            progress,
+            progress: progress_percent,       // runtime display alias
+            progress_percent,                 // persisted field
           }
         })
 
-        // Step 6: Calculate overall project progress (weighted by task count)
+        // Step 6: Calculate overall project progress — weighted average (spec compliant)
+        const overallProgress = calculateProjectProgress(enrichedSubProjects, directTasks)
+
+        // For display: total task counts across all tasks
         const totalTasks = allTasks.length
         const doneTasks = allTasks.filter((t: Task) => t.status === 'done').length
-        const overallProgress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0
 
         if (!mounted) return
 

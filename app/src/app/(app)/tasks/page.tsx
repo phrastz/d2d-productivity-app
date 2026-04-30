@@ -45,33 +45,33 @@ export default function TasksPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="bg-slate-950 min-h-screen">
         <TopNav title="Tasks" subtitle="Kanban board view" />
         <div className="p-6 flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="bg-slate-950 min-h-screen">
       <TopNav title="Tasks" subtitle="Drag tasks between columns to update status" />
       <div className="p-6 space-y-5 animate-fade-in">
         {/* Toolbar */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => openCreate()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/20"
           >
             <Plus className="w-4 h-4" />
             New Task
           </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass border border-white/10 text-sm text-muted-foreground hover:text-foreground transition-all">
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass bg-slate-900/90 border border-slate-800 text-sm text-slate-300 hover:text-white transition-all">
             <Filter className="w-4 h-4" />
             Filter
           </button>
-          <div className="ml-auto text-xs text-muted-foreground">
+          <div className="ml-auto text-xs text-slate-400">
             {tasks.length} task{tasks.length !== 1 ? 's' : ''} total
           </div>
         </div>
@@ -94,6 +94,6 @@ export default function TasksPage() {
           onDeleted={handleDeleted}
         />
       )}
-    </>
+    </div>
   )
 }

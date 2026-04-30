@@ -90,12 +90,12 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="bg-slate-950 min-h-screen">
         <TopNav title="Reports" subtitle="Weekly analytics" />
         <div className="p-6 flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
         </div>
-      </>
+      </div>
     )
   }
 
@@ -107,20 +107,20 @@ export default function ReportsPage() {
   ]
 
   return (
-    <>
+    <div className="bg-slate-950 min-h-screen">
       <TopNav title="Reports" subtitle={`Week of ${format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'MMM d, yyyy')}`} />
       <div className="p-6 space-y-6 animate-fade-in">
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="glass rounded-2xl p-4 flex items-center gap-4">
+            <div key={label} className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-foreground">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-xl font-bold text-white">{value}</p>
+                <p className="text-xs text-slate-300">{label}</p>
               </div>
             </div>
           ))}
@@ -129,31 +129,31 @@ export default function ReportsPage() {
         {/* Charts grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Daily completions bar chart */}
-          <div className="lg:col-span-2 glass rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Daily Task Completions</h3>
+          <div className="lg:col-span-2 glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-white mb-4">Daily Task Completions</h3>
             <div style={{ width: '100%', height: 192, minHeight: 192, display: 'block' }}>
                 <ResponsiveContainer width="100%" height={192}>
                   <BarChart data={report.dailyCompletions} barSize={14} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'hsl(215 20% 55%)' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#e2e8f0' }} axisLine={false} tickLine={false} />
                   <YAxis hide />
                   <Tooltip
-                    contentStyle={{ background: 'hsl(222 47% 9%)', border: '1px solid hsl(222 47% 15%)', borderRadius: '8px', fontSize: '11px' }}
-                    labelStyle={{ color: 'hsl(213 31% 91%)' }}
+                    contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '11px', color: '#e2e8f0' }}
+                    labelStyle={{ color: '#ffffff' }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(215 20% 55%)' }} />
+                  <Legend wrapperStyle={{ fontSize: '11px', color: '#e2e8f0' }} />
                   <Bar dataKey="completed" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Completed" />
-                  <Bar dataKey="total"     fill="hsl(222 47% 15%)" radius={[4, 4, 0, 0]} name="Total" />
+                  <Bar dataKey="total"     fill="#1e293b" radius={[4, 4, 0, 0]} name="Total" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Category breakdown pie chart */}
-          <div className="glass rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">By Category</h3>
+          <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-white mb-4">By Category</h3>
             {report.topCategories.length === 0 ? (
-              <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+              <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
                 No categories yet
               </div>
             ) : (
@@ -175,10 +175,10 @@ export default function ReportsPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ background: 'hsl(222 47% 9%)', border: '1px solid hsl(222 47% 15%)', borderRadius: '8px', fontSize: '11px' }}
+                      contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '11px', color: '#e2e8f0' }}
                     />
                     <Legend
-                      formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)', fontSize: '10px' }}>{value}</span>}
+                      formatter={(value) => <span style={{ color: '#e2e8f0', fontSize: '10px' }}>{value}</span>}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -189,13 +189,13 @@ export default function ReportsPage() {
 
         {/* Mood trend */}
         {report.moodTrend.length > 0 && (
-          <div className="glass rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Mood This Week</h3>
+          <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-white mb-4">Mood This Week</h3>
             <div className="flex gap-4 items-center">
               {report.moodTrend.map(({ date, mood }) => (
                 <div key={date} className="flex flex-col items-center gap-1.5">
                   <MoodIcon mood={mood} />
-                  <span className="text-[10px] text-muted-foreground">{date}</span>
+                  <span className="text-[10px] text-slate-400">{date}</span>
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{ background: MOOD_COLORS[mood] ?? '#6b7280' }}
@@ -206,6 +206,6 @@ export default function ReportsPage() {
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }

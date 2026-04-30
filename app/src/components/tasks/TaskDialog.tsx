@@ -38,15 +38,15 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
   useEffect(() => {
     if (task) {
       setForm({
-        title: task.title,
+        title: task.title ?? '',
         description: task.description ?? '',
         project_id: task.project_id ?? '',
         due_date: task.due_date ? task.due_date.slice(0, 16) : '',
-        priority: task.priority,
-        status: task.status,
+        priority: task.priority ?? 'medium',
+        status: task.status ?? defaultStatus,
         category: task.habit_category ?? '',
-        is_habit: task.is_habit,
-        time_spent_minutes: task.time_spent_minutes,
+        is_habit: task.is_habit ?? false,
+        time_spent_minutes: task.time_spent_minutes ?? 0,
       })
     }
   }, [task])
@@ -94,8 +94,8 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg glass rounded-2xl border border-white/10 p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-slate-900 rounded-2xl border border-white/10 p-6 animate-fade-in shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-semibold gradient-text">
@@ -109,14 +109,14 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
         {/* Form */}
         <div className="space-y-4">
           <input
-            value={form.title}
+            value={form.title ?? ''}
             onChange={e => set('title', e.target.value)}
             placeholder="Task title *"
             className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
             autoFocus
           />
           <textarea
-            value={form.description}
+            value={form.description ?? ''}
             onChange={e => set('description', e.target.value)}
             placeholder="Description..."
             rows={2}
@@ -148,7 +148,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
             <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Status</label>
               <select
-                value={form.status}
+                value={form.status ?? 'todo'}
                 onChange={e => set('status', e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               >
@@ -163,7 +163,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
             <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Project</label>
               <select
-                value={form.project_id}
+                value={form.project_id ?? ''}
                 onChange={e => set('project_id', e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               >
@@ -177,7 +177,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
               <label className="text-xs text-muted-foreground mb-1.5 block">Due Date</label>
               <input
                 type="datetime-local"
-                value={form.due_date}
+                value={form.due_date ?? ''}
                 onChange={e => set('due_date', e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               />
@@ -188,7 +188,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
             <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Category</label>
               <input
-                value={form.category}
+                value={form.category ?? ''}
                 onChange={e => set('category', e.target.value)}
                 placeholder="e.g. Design, Dev"
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
@@ -202,7 +202,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
               <input
                 type="number"
                 min={0}
-                value={form.time_spent_minutes}
+                value={form.time_spent_minutes ?? 0}
                 onChange={e => set('time_spent_minutes', e.target.value)}
                 className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
               />
@@ -211,7 +211,7 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
               <input
                 id="is_habit"
                 type="checkbox"
-                checked={form.is_habit}
+                checked={form.is_habit ?? false}
                 onChange={e => set('is_habit', e.target.checked)}
                 className="w-4 h-4 accent-violet-500"
               />

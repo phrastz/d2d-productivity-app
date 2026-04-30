@@ -41,7 +41,12 @@ export interface SubProject {
   owner_id: string
   created_at: string
   updated_at: string
-  // Computed fields (not in database)
+  // Fields added in migration (Step 1)
+  progress_percent: number
+  weight_contribution: number
+  start_date: string | null
+  end_date: string | null
+  // Computed/enriched at runtime (not persisted)
   tasks?: Task[]
   progress?: number
   tasks_total?: number
@@ -62,6 +67,10 @@ export interface Task {
   is_habit: boolean
   habit_category: string | null
   created_at: string
+  // Fields added in migration (Step 1)
+  progress_percent: number
+  start_date: string | null
+  end_date: string | null
 }
 
 export interface DailyLog {
