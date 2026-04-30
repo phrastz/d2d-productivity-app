@@ -89,7 +89,7 @@ export default function QuickAddSubProject() {
           
           <div>
             <Label>Target Project</Label>
-            <Select value={projectId} onValueChange={setProjectId} required>
+            <Select value={projectId} onValueChange={(val) => setProjectId(val || '')} required>
               <SelectTrigger><SelectValue placeholder="Select parent project..." /></SelectTrigger>
               <SelectContent>
                 {projects.map((p) => (
