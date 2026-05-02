@@ -250,8 +250,8 @@ export default function ProjectDetailPage() {
         {/* Direct Tasks Section — always visible */}
         <div className="glass rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-white">Direct Tasks</h3>
-            <span className="text-xs text-slate-400">{directTasks.length} task{directTasks.length !== 1 ? 's' : ''}</span>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Direct Tasks</h3>
+            <span className="text-xs text-slate-500 dark:text-slate-400">{directTasks.length} task{directTasks.length !== 1 ? 's' : ''}</span>
           </div>
           <div className="space-y-2">
             {directTasks.length === 0 && !showAddDirectTask && (
@@ -274,7 +274,7 @@ export default function ProjectDetailPage() {
                     </svg>
                   )}
                 </div>
-                <span className={`flex-1 text-sm ${task.status === 'done' ? 'text-slate-500 line-through' : 'text-slate-100'}`}>
+                <span className={`flex-1 text-sm ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'}`}>
                   {task.title}
                 </span>
                 {task.progress_percent != null && task.progress_percent > 0 && task.progress_percent < 100 && (

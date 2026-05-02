@@ -62,21 +62,21 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
               {task.priority}
             </span>
             {task.habit_category && (
-              <span className="text-[10px] text-slate-500 ml-auto">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">
                 {task.habit_category}
               </span>
             )}
           </div>
 
           <p className={cn(
-            'text-sm font-medium text-white leading-snug mb-2',
-            task.status === 'done' && 'line-through text-slate-500'
+            'text-sm font-medium text-slate-900 dark:text-white leading-snug mb-2',
+            task.status === 'done' && 'line-through text-slate-400 dark:text-slate-500'
           )}>
             {task.title}
           </p>
 
           {task.description && (
-            <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">
               {task.description}
             </p>
           )}
@@ -85,14 +85,14 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             {task.due_date && (
               <span className={cn(
                 'flex items-center gap-1 text-[10px]',
-                overdue ? 'text-red-400' : 'text-slate-400'
+                overdue ? 'text-red-500 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'
               )}>
                 <Calendar className="w-3 h-3" />
                 {format(parseISO(task.due_date), 'MMM d')}
               </span>
             )}
             {task.time_spent_minutes > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                 <Clock className="w-3 h-3" />
                 {task.time_spent_minutes}m
               </span>

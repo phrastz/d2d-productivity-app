@@ -186,7 +186,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask }: Su
             autoFocus
           />
         ) : (
-          <h3 className="flex-1 font-semibold text-white">{subProject.name}</h3>
+          <h3 className="flex-1 font-semibold text-slate-900 dark:text-white">{subProject.name}</h3>
         )}
 
         {/* Status Badge */}
@@ -201,7 +201,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask }: Su
 
         {/* Progress */}
         <div className="flex items-center gap-2">
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
             {tasksDone}/{tasksTotal} tasks
           </div>
           <div className="text-sm font-bold gradient-text">{progress}%</div>
@@ -260,7 +260,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask }: Su
       {expanded && (
         <div className="p-4 space-y-2" key={refreshKey}>
           {tasks.length === 0 ? (
-            <div className="text-center py-6 text-slate-400 text-sm">
+            <div className="text-center py-6 text-slate-500 dark:text-slate-400 text-sm">
               No tasks yet
             </div>
           ) : (
@@ -273,7 +273,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask }: Su
                 <span
                   onClick={() => onEditTask(task)}
                   className={`flex-1 text-sm cursor-pointer ${
-                    task.status === 'done' ? 'text-slate-500 line-through' : 'text-slate-100'
+                    task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'
                   }`}
                 >
                   {task.title}
