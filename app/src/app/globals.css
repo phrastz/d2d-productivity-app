@@ -79,6 +79,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+:root body {
+  background-color: hsl(210 20% 98%);
+  color: hsl(222 47% 11%);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: hsl(222 47% 6%); }
@@ -94,6 +99,12 @@ body {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   border: 1px solid hsl(222 47% 15%);
+}
+
+:root .glass {
+  background: white;
+  border: 1px solid hsl(220 13% 91%);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 }
 
 /* Glow shadow */
@@ -139,6 +150,21 @@ body {
   border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
+:root .sidebar-item {
+  color: hsl(215 20% 45%);
+}
+
+:root .sidebar-item:hover {
+  background: hsl(220 13% 91%);
+  color: hsl(222 47% 11%);
+}
+
+:root .sidebar-item-active {
+  background: rgba(139, 92, 246, 0.1);
+  color: hsl(250 84% 55%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
 /* Task card */
 .task-card {
   background: rgba(255, 255, 255, 0.04);
@@ -157,6 +183,17 @@ body {
 
 .task-card:active {
   cursor: grabbing;
+}
+
+:root .task-card {
+  background: white;
+  border: 1px solid hsl(220 13% 91%);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+:root .task-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
 }
 
 /* Progress fill */

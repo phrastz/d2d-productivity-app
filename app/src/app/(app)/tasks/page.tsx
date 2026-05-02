@@ -45,7 +45,7 @@ export default function TasksPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <TopNav title="Tasks" subtitle="Kanban board view" />
         <div className="p-6 flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -55,7 +55,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Tasks" subtitle="Drag tasks between columns to update status" />
       <div className="p-6 space-y-5 animate-fade-in">
         {/* Toolbar */}
@@ -67,11 +67,11 @@ export default function TasksPage() {
             <Plus className="w-4 h-4" />
             New Task
           </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass bg-slate-900/90 border border-slate-800 text-sm text-slate-300 hover:text-white transition-all">
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all">
             <Filter className="w-4 h-4" />
             Filter
           </button>
-          <div className="ml-auto text-xs text-slate-400">
+          <div className="ml-auto text-xs text-slate-600 dark:text-slate-400">
             {tasks.length} task{tasks.length !== 1 ? 's' : ''} total
           </div>
         </div>

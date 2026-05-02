@@ -59,11 +59,11 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen hidden md:flex flex-col glass border-r border-white/5 z-40"
+      className="fixed left-0 top-0 h-screen hidden md:flex flex-col border-r border-slate-200 dark:border-white/5 z-40 bg-white dark:bg-transparent"
       style={{ width: 'var(--sidebar-width)' }}
     >
       {/* Logo */}
-      <div className="p-5 border-b border-white/5">
+      <div className="p-5 border-b border-slate-200 dark:border-white/5">
         <div className="flex items-center gap-2.5">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center animate-pulse-glow flex-shrink-0"
@@ -73,14 +73,14 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="text-sm font-bold gradient-text">D2D Tracking</p>
-            <p className="text-[10px]" style={{ color: 'hsl(215 20% 45%)' }}>Productivity Hub</p>
+            <p className="text-[10px] text-slate-500 dark:text-[hsl(215,20%,45%)]">Productivity Hub</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] uppercase tracking-widest px-3 pt-2 pb-2" style={{ color: 'hsl(215 20% 40%)' }}>
+        <p className="text-[10px] uppercase tracking-widest px-3 pt-2 pb-2 text-slate-500 dark:text-[hsl(215,20%,40%)]">
           Workspace
         </p>
         {navItems.map(({ label, href, icon: Icon }) => {
@@ -105,7 +105,7 @@ export default function Sidebar() {
       </nav>
 
       {/* User + Bottom */}
-      <div className="p-3 border-t border-white/5 space-y-1">
+      <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 space-y-1">
         <Link href="/settings" className="sidebar-item">
           <Settings className="w-4 h-4" />
           <span>Settings</span>
@@ -125,8 +125,7 @@ export default function Sidebar() {
 
         {/* User info */}
         <div
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl mt-1"
-          style={{ background: 'hsl(222 47% 11%)' }}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl mt-1 bg-slate-100 dark:bg-[hsl(222,47%,11%)]"
         >
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
@@ -135,10 +134,10 @@ export default function Sidebar() {
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: 'hsl(213 31% 91%)' }}>
+            <p className="text-xs font-medium truncate text-slate-900 dark:text-[hsl(213,31%,91%)]">
               {userName || 'Loading…'}
             </p>
-            <p className="text-[10px] truncate" style={{ color: 'hsl(215 20% 45%)' }}>
+            <p className="text-[10px] truncate text-slate-500 dark:text-[hsl(215,20%,45%)]">
               {userEmail}
             </p>
           </div>

@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <TopNav title="Dashboard" subtitle="Your daily command center" />
         <div className="p-6 flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -47,22 +47,22 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Dashboard" subtitle="Your daily command center" />
       <div className="p-6 space-y-6 animate-fade-in">
 
         {/* Calendar Banner */}
-        <div className="glass bg-slate-900/90 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800 bg-gradient-to-r from-violet-500/10 to-transparent">
+        <div className="glass bg-white dark:bg-slate-900/90 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-200 dark:border-slate-800 bg-gradient-to-r from-violet-500/10 to-transparent">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
               <Calendar className="w-6 h-6 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Interactive Calendar</h3>
-              <p className="text-sm text-slate-300">Plan your week visually. Drag & drop tasks and projects.</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Interactive Calendar</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">Plan your week visually. Drag & drop tasks and projects.</p>
             </div>
           </div>
-          <Link href="/calendar" className="px-6 py-2.5 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors whitespace-nowrap">
+          <Link href="/calendar" className="px-6 py-2.5 rounded-xl bg-violet-600 dark:bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors whitespace-nowrap">
             Open Calendar
           </Link>
         </div>
@@ -70,13 +70,13 @@ export default function DashboardPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="glass bg-slate-900/90 rounded-2xl p-4 flex items-center gap-4 border border-slate-800">
+            <div key={label} className="glass bg-white dark:bg-slate-900/90 rounded-2xl p-4 flex items-center gap-4 border border-slate-200 dark:border-slate-800">
               <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-white">{value}</p>
-                <p className="text-xs text-slate-300">{label}</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">{value}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">{label}</p>
               </div>
             </div>
           ))}

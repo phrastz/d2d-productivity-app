@@ -90,7 +90,7 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <TopNav title="Reports" subtitle="Weekly analytics" />
         <div className="p-6 flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -107,20 +107,20 @@ export default function ReportsPage() {
   ]
 
   return (
-    <div className="bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Reports" subtitle={`Week of ${format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'MMM d, yyyy')}`} />
       <div className="p-6 space-y-6 animate-fade-in">
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
+            <div key={label} className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-white">{value}</p>
-                <p className="text-xs text-slate-300">{label}</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">{value}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">{label}</p>
               </div>
             </div>
           ))}
@@ -129,8 +129,8 @@ export default function ReportsPage() {
         {/* Charts grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Daily completions bar chart */}
-          <div className="lg:col-span-2 glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-white mb-4">Daily Task Completions</h3>
+          <div className="lg:col-span-2 glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Daily Task Completions</h3>
             <div style={{ width: '100%', height: 192, minHeight: 192, display: 'block' }}>
                 <ResponsiveContainer width="100%" height={192}>
                   <BarChart data={report.dailyCompletions} barSize={14} barGap={4}>
@@ -150,10 +150,10 @@ export default function ReportsPage() {
           </div>
 
           {/* Category breakdown pie chart */}
-          <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-white mb-4">By Category</h3>
+          <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">By Category</h3>
             {report.topCategories.length === 0 ? (
-              <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
+              <div className="flex items-center justify-center h-48 text-slate-500 dark:text-slate-400 text-sm">
                 No categories yet
               </div>
             ) : (
@@ -189,13 +189,13 @@ export default function ReportsPage() {
 
         {/* Mood trend */}
         {report.moodTrend.length > 0 && (
-          <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-white mb-4">Mood This Week</h3>
+          <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Mood This Week</h3>
             <div className="flex gap-4 items-center">
               {report.moodTrend.map(({ date, mood }) => (
                 <div key={date} className="flex flex-col items-center gap-1.5">
                   <MoodIcon mood={mood} />
-                  <span className="text-[10px] text-slate-400">{date}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{date}</span>
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{ background: MOOD_COLORS[mood] ?? '#6b7280' }}

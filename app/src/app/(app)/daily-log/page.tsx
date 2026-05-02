@@ -74,7 +74,7 @@ export default function DailyLogPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <TopNav title="Daily Log" subtitle="Journal your day" />
         <div className="p-6 flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -84,7 +84,7 @@ export default function DailyLogPage() {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Daily Log" subtitle="Track your mood and daily reflections" />
       <div className="p-6 space-y-5 animate-fade-in">
         <div className="flex items-center gap-3">
@@ -99,7 +99,7 @@ export default function DailyLogPage() {
 
         {/* Form */}
         {showForm && (
-          <div className="glass bg-slate-900/90 border border-violet-500/20 rounded-2xl p-5 animate-fade-in">
+          <div className="glass bg-white dark:bg-slate-900/90 border border-violet-200 dark:border-violet-500/20 rounded-2xl p-5 animate-fade-in">
             <p className="text-sm font-semibold gradient-text mb-4">
               {editing ? `Edit: ${editing.date}` : `Today — ${format(new Date(), 'EEEE, d MMMM yyyy')}`}
             </p>
@@ -108,11 +108,11 @@ export default function DailyLogPage() {
               onChange={e => setSummary(e.target.value)}
               placeholder="What did you work on? How was your day?"
               rows={4}
-              className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-violet-500/50 resize-none mb-4"
+              className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-violet-500/50 resize-none mb-4"
               autoFocus
             />
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs text-slate-400">Mood:</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Mood:</span>
               {moods.map(m => (
                 <button
                   key={m}
@@ -130,7 +130,7 @@ export default function DailyLogPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm text-slate-300 border border-white/10 hover:bg-slate-800 transition-all"
+                className="flex-1 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
               >
                 Cancel
               </button>
@@ -149,22 +149,22 @@ export default function DailyLogPage() {
         {/* Log entries */}
         <div className="space-y-3">
           {logs.length === 0 ? (
-            <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-12 text-center">
-              <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-400">No logs yet</p>
-              <p className="text-xs text-slate-500">Start journaling your day!</p>
+            <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+              <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">No logs yet</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">Start journaling your day!</p>
             </div>
           ) : (
             logs.map(log => (
               <button
                 key={log.id}
                 onClick={() => openEdit(log)}
-                className="w-full glass bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-left hover:glow transition-all duration-200 group"
+                className="w-full glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-left hover:glow transition-all duration-200 group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-violet-400" />
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {format(parseISO(log.date), 'EEEE, d MMMM yyyy')}
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export default function DailyLogPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-300 line-clamp-2 group-hover:text-white transition-colors">
+                <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   {log.summary}
                 </p>
               </button>

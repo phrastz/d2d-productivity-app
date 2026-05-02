@@ -16,6 +16,9 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ["lucide-react", "recharts"],
+  },
   // Add empty turbopack config to silence Next.js 16 warning
   // PWA plugin uses webpack, but app works fine with Turbopack
   turbopack: {},

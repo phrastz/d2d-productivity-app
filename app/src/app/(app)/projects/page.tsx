@@ -93,7 +93,7 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <TopNav title="Projects" subtitle="Gantt & list view" />
         <div className="p-6 flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -103,7 +103,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Projects" subtitle="Plan and track your projects" />
       <div className="p-6 space-y-5 animate-fade-in">
         {/* Toolbar */}
@@ -118,11 +118,11 @@ export default function ProjectsPage() {
           <QuickAddSubProject />
 
           {/* View toggle */}
-          <div className="flex items-center gap-1 glass bg-slate-900/90 border border-slate-800 rounded-xl p-1">
+          <div className="flex items-center gap-1 glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
             <button
               onClick={() => setView('timeline')}
               className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                view === 'timeline' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-400 hover:text-white'
+                view === 'timeline' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               )}
             >
               <GanttChart className="w-3.5 h-3.5" />
@@ -131,7 +131,7 @@ export default function ProjectsPage() {
             <button
               onClick={() => setView('list')}
               className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                view === 'list' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-400 hover:text-white'
+                view === 'list' ? 'bg-violet-600/20 text-violet-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               )}
             >
               <LayoutList className="w-3.5 h-3.5" />
@@ -139,7 +139,7 @@ export default function ProjectsPage() {
             </button>
           </div>
 
-          <div className="ml-auto text-xs text-slate-400">
+          <div className="ml-auto text-xs text-slate-600 dark:text-slate-400">
             {projects.length} project{projects.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -156,10 +156,10 @@ export default function ProjectsPage() {
                 <div
                   key={project.id}
                   onClick={() => router.push(`/projects/${project.id}`)}
-                  className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 cursor-pointer hover:glow transition-all duration-200 group"
+                  className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 cursor-pointer hover:glow transition-all duration-200 group"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-white group-hover:text-violet-400 transition-colors">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-violet-400 transition-colors">
                       {project.name}
                     </h3>
                     <span className={cn(
@@ -170,11 +170,11 @@ export default function ProjectsPage() {
                     </span>
                   </div>
                   {project.description && (
-                    <p className="text-xs text-slate-300 mb-3 line-clamp-2">{project.description}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mb-3 line-clamp-2">{project.description}</p>
                   )}
                   
                   {/* Stats */}
-                  <div className="flex items-center gap-3 mb-3 text-[10px] text-slate-400">
+                  <div className="flex items-center gap-3 mb-3 text-[10px] text-slate-600 dark:text-slate-400">
                     {stats.subProjects > 0 && (
                       <div className="flex items-center gap-1">
                         <FolderTree className="w-3 h-3" />
@@ -194,9 +194,9 @@ export default function ProjectsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{project.progress_percentage}%</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">{project.progress_percentage}%</span>
                     {project.end_date && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400">
                         Due {new Date(project.end_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                       </span>
                     )}

@@ -145,7 +145,7 @@ export default function CalendarPage() {
       
       <div className="p-6 space-y-6 animate-fade-in">
         {/* Calendar Container */}
-        <div className="glass rounded-2xl p-6 border border-white/5" style={{ minHeight: '700px' }}>
+        <div className="glass rounded-2xl p-6 border border-slate-200 dark:border-white/5 bg-white dark:bg-transparent" style={{ minHeight: '700px' }}>
           {updating && (
             <div className="mb-4 flex items-center gap-2 text-sm text-primary">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -172,19 +172,19 @@ export default function CalendarPage() {
         </div>
 
         {/* Legend */}
-        <div className="glass rounded-2xl p-4 border border-white/5">
+        <div className="glass rounded-2xl p-4 border border-slate-200 dark:border-white/5 bg-white dark:bg-transparent">
           <div className="flex flex-wrap gap-4 items-center justify-center">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
-              <span className="text-sm text-muted-foreground">Tasks</span>
+              <span className="text-sm text-slate-600 dark:text-muted-foreground">Tasks</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }} />
-              <span className="text-sm text-muted-foreground">Projects</span>
+              <span className="text-sm text-slate-600 dark:text-muted-foreground">Projects</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
-              <span className="text-sm text-muted-foreground">Daily Logs</span>
+              <span className="text-sm text-slate-600 dark:text-muted-foreground">Daily Logs</span>
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function CalendarPage() {
       {/* Event Details Dialog */}
       {showDialog && selectedEvent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass rounded-2xl border border-white/10 w-full max-w-md p-6 animate-fade-in">
+          <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 w-full max-w-md p-6 animate-fade-in bg-white dark:bg-slate-900">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div 
@@ -203,22 +203,22 @@ export default function CalendarPage() {
                   <CalendarIcon className="w-5 h-5" style={{ color: selectedEvent.resource.color }} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground">{selectedEvent.title}</h3>
-                  <p className="text-xs text-muted-foreground capitalize">{selectedEvent.resource.type.replace('_', ' ')}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">{selectedEvent.title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground capitalize">{selectedEvent.resource.type.replace('_', ' ')}</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowDialog(false)}
-                className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-slate-600 dark:text-white" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Date</p>
-                <p className="text-sm text-foreground">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Date</p>
+                <p className="text-sm text-slate-900 dark:text-foreground">
                   {format(selectedEvent.start, 'PPP')}
                   {selectedEvent.start.getTime() !== selectedEvent.end.getTime() && 
                     ` - ${format(selectedEvent.end, 'PPP')}`
@@ -229,14 +229,14 @@ export default function CalendarPage() {
               {selectedEvent.resource.type === 'task' && (
                 <>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Status</p>
-                    <p className="text-sm text-foreground capitalize">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Status</p>
+                    <p className="text-sm text-slate-900 dark:text-foreground capitalize">
                       {(selectedEvent.resource.data as Task).status.replace('_', ' ')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Priority</p>
-                    <p className="text-sm text-foreground capitalize">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Priority</p>
+                    <p className="text-sm text-slate-900 dark:text-foreground capitalize">
                       {(selectedEvent.resource.data as Task).priority}
                     </p>
                   </div>
@@ -246,14 +246,14 @@ export default function CalendarPage() {
               {selectedEvent.resource.type === 'project' && (
                 <>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Status</p>
-                    <p className="text-sm text-foreground capitalize">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Status</p>
+                    <p className="text-sm text-slate-900 dark:text-foreground capitalize">
                       {(selectedEvent.resource.data as Project).status.replace('_', ' ')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Progress</p>
-                    <p className="text-sm text-foreground">
+                    <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Progress</p>
+                    <p className="text-sm text-slate-900 dark:text-foreground">
                       {(selectedEvent.resource.data as Project).progress_percentage}%
                     </p>
                   </div>
@@ -262,8 +262,8 @@ export default function CalendarPage() {
 
               {selectedEvent.resource.type === 'daily_log' && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Summary</p>
-                  <p className="text-sm text-foreground">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground mb-1">Summary</p>
+                  <p className="text-sm text-slate-900 dark:text-foreground">
                     {(selectedEvent.resource.data as DailyLog).summary || 'No summary'}
                   </p>
                 </div>
@@ -283,7 +283,7 @@ export default function CalendarPage() {
                 </button>
                 <button
                   onClick={() => setShowDialog(false)}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-foreground font-semibold text-sm hover:bg-white/10 transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-foreground font-semibold text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                 >
                   Close
                 </button>

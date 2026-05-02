@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 interface TopNavProps {
   title: string
@@ -28,24 +29,23 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
 
   return (
     <header
-      className="sticky top-0 z-30 glass px-6 py-4"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      className="sticky top-0 z-30 glass px-6 py-4 bg-white/80 dark:bg-transparent border-b border-slate-200 dark:border-white/5"
     >
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold" style={{ color: 'hsl(213 31% 91%)' }}>{title}</h1>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-[hsl(213,31%,91%)]">{title}</h1>
           {subtitle && (
-            <p className="text-xs mt-0.5" style={{ color: 'hsl(215 20% 55%)' }}>{subtitle}</p>
+            <p className="text-xs mt-0.5 text-slate-600 dark:text-[hsl(215,20%,55%)]">{subtitle}</p>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          <p className="text-xs hidden md:block" style={{ color: 'hsl(215 20% 55%)' }}>
+          <p className="text-xs hidden md:block text-slate-600 dark:text-[hsl(215,20%,55%)]">
             {format(new Date(), 'EEEE, d MMMM yyyy')}
           </p>
+          <ThemeToggle />
           <button
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors relative"
-            style={{ color: 'hsl(215 20% 55%)' }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors relative text-slate-600 dark:text-[hsl(215,20%,55%)]"
           >
             <Bell className="w-4 h-4" />
             <span

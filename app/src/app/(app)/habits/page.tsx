@@ -15,12 +15,12 @@ export default function HabitsPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-950 min-h-screen flex flex-col">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col">
         <TopNav title="Habits" />
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="glass bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
+          <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
             <Loader2 className="w-8 h-8 text-violet-400 animate-spin mx-auto mb-4" />
-            <p className="text-sm text-slate-300">Loading habit data...</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Loading habit data...</p>
           </div>
         </div>
       </div>
@@ -29,12 +29,12 @@ export default function HabitsPage() {
 
   if (error) {
     return (
-      <div className="bg-slate-950 min-h-screen flex flex-col">
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col">
         <TopNav title="Habits" />
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="glass bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
-            <p className="text-sm font-semibold text-red-400 mb-2">Error loading habits</p>
-            <p className="text-xs text-slate-400">{error}</p>
+          <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
+            <p className="text-sm font-semibold text-red-500 dark:text-red-400 mb-2">Error loading habits</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{error}</p>
           </div>
         </div>
       </div>
@@ -42,7 +42,7 @@ export default function HabitsPage() {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen flex flex-col">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col">
       <TopNav title="Habits" />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -52,8 +52,8 @@ export default function HabitsPage() {
             <Activity className="w-5 h-5 text-violet-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Habit Tracker</h1>
-            <p className="text-sm text-slate-300">Build consistency, one day at a time</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Habit Tracker</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Build consistency, one day at a time</p>
           </div>
         </div>
 
@@ -61,10 +61,10 @@ export default function HabitsPage() {
         <HabitStats stats={stats} />
 
         {/* Heatmap */}
-        <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-6">
+        <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <div className="mb-5">
-            <h2 className="text-lg font-bold text-white">365-Day Activity</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">365-Day Activity</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Your habit completion history for the past year
             </p>
           </div>
