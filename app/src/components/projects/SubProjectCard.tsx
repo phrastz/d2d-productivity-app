@@ -11,6 +11,7 @@ interface SubProjectCardProps {
   subProject: SubProject
   onAddTask: (subProjectId: string) => void
   onEditTask: (task: Task) => void
+  updateTaskProgress?: (taskId: string, newProgress: number) => Promise<void>
 }
 
 const STATUS_COLORS = {
@@ -37,9 +38,10 @@ const PROGRESS_PRESETS = [
 interface TaskProgressControlProps {
   task: Task
   onUpdated: () => void
+  updateTaskProgress?: (taskId: string, newProgress: number) => Promise<void>
 }
 
-function TaskProgressControl({ task, onUpdated }: TaskProgressControlProps) {
+function TaskProgressControl({ task, onUpdated, updateTaskProgress }: TaskProgressControlProps) {
   const supabase = createClient()
   const [editing, setEditing] = useState(false)
   const [manualValue, setManualValue] = useState<string>(String(task.progress_percent ?? 0))
@@ -50,14 +52,20 @@ function TaskProgressControl({ task, onUpdated }: TaskProgressControlProps) {
   const updateProgress = async (newValue: number) => {
     const clamped = Math.min(100, Math.max(0, newValue))
     setSaving(true)
-    // Derive status from progress_percent
-    const newStatus: Task['status'] =
-      clamped === 100 ? 'done' : clamped > 0 ? 'in_progress' : 'todo'
+    
+    if (updateTaskProgress) {
+      // Use the passed-in function from useProjectDetail hook
+      await updateTaskProgress(task.id, clamped)
+    } else {
+      // Fallback to direct DB update
+      const newStatus: Task['status'] =
+        clamped === 100 ? 'done' : clamped > 0 ? 'in_progress' : 'todo'
 
-    await supabase
-      .from('tasks')
-      .update({ progress_percent: clamped, status: newStatus })
-      .eq('id', task.id)
+      await supabase
+        .from('tasks')
+        .update({ progress_percent: clamped, status: newStatus })
+        .eq('id', task.id)
+    }
 
     setSaving(false)
     setEditing(false)
@@ -120,7 +128,7 @@ function TaskProgressControl({ task, onUpdated }: TaskProgressControlProps) {
   )
 }
 
-export default function SubProjectCard({ subProject, onAddTask, onEditTask }: SubProjectCardProps) {
+export default function SubProjectCard({ subProject, onAddTask, onEditTask, updateTaskProgress }: SubProjectCardProps) {
   const [expanded, setExpanded] = useState(true)
   const [showMenu, setShowMenu] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -289,6 +297,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask }: Su
                 <TaskProgressControl
                   task={task}
                   onUpdated={handleTaskProgressUpdated}
+                  updateTaskProgress={updateTaskProgress}
                 />
               </div>
             ))

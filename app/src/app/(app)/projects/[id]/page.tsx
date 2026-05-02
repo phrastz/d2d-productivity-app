@@ -17,7 +17,7 @@ export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
-  const { project, loading, error } = useProjectDetail(projectId)
+  const { project, loading, error, updateTaskProgress, updateTaskStatus } = useProjectDetail(projectId)
   const { createSubProject } = useSubProjects()
   
   const [showAddSubProject, setShowAddSubProject] = useState(false)
@@ -243,6 +243,7 @@ export default function ProjectDetailPage() {
               subProject={subProject}
               onAddTask={handleAddTask}
               onEditTask={handleEditTask}
+              updateTaskProgress={updateTaskProgress}
             />
           ))}
         </div>
@@ -260,28 +261,69 @@ export default function ProjectDetailPage() {
             {directTasks.map((task: Task) => (
               <div
                 key={task.id}
-                onClick={() => handleEditTask(task)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 cursor-pointer transition-colors"
+                className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-colors"
               >
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                  task.status === 'done'
-                    ? 'bg-green-500 border-green-500'
-                    : 'border-slate-600 bg-slate-800'
-                }`}>
-                  {task.status === 'done' && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <span className={`flex-1 text-sm ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'}`}>
-                  {task.title}
-                </span>
-                {task.progress_percent != null && task.progress_percent > 0 && task.progress_percent < 100 && (
-                  <span className="text-xs text-violet-300 font-semibold tabular-nums">
-                    {task.progress_percent}%
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    task.status === 'done'
+                      ? 'bg-green-500 border-green-500'
+                      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
+                  }`}>
+                    {task.status === 'done' && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span 
+                    onClick={() => handleEditTask(task)}
+                    className={`flex-1 text-sm cursor-pointer ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'}`}
+                  >
+                    {task.title}
                   </span>
-                )}
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+                    {task.progress_percent || 0}%
+                  </span>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
+                  <div 
+                    className="bg-violet-500 h-1 rounded-full transition-all"
+                    style={{ width: `${task.progress_percent || 0}%` }}
+                  />
+                </div>
+                
+                {/* Progress Preset Buttons */}
+                <div className="flex gap-1 mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateTaskProgress?.(task.id, 0)
+                    }}
+                    className="px-2 py-0.5 text-xs rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    0%
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateTaskProgress?.(task.id, 50)
+                    }}
+                    className="px-2 py-0.5 text-xs rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+                  >
+                    50%
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateTaskProgress?.(task.id, 100)
+                    }}
+                    className="px-2 py-0.5 text-xs rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
+                  >
+                    100%
+                  </button>
+                </div>
               </div>
             ))}
 
