@@ -42,7 +42,7 @@ export default function AIBriefingCard() {
           <span className="text-xs px-2 py-0.5 rounded-full 
             bg-violet-100 dark:bg-violet-900/50 
             text-violet-600 dark:text-violet-300">
-            Powered by Gemini
+            Powered by Groq
           </span>
         </div>
         <button 
@@ -56,7 +56,7 @@ export default function AIBriefingCard() {
       {!briefing && !loading && (
         <div className="text-center py-3">
           <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
-            Get your personalized daily briefing powered by Gemini AI
+            Get your personalized daily briefing powered by Groq AI
           </p>
           <button
             onClick={generateBriefing}
@@ -74,7 +74,7 @@ export default function AIBriefingCard() {
         <div className="flex items-center gap-3 py-4">
           <RefreshCw className="w-4 h-4 text-violet-500 animate-spin" />
           <span className="text-slate-500 dark:text-slate-400 text-sm">
-            Gemini is analyzing your tasks...
+            Groq is analyzing your tasks...
           </span>
         </div>
       )}

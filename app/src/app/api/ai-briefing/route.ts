@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
@@ -60,20 +60,26 @@ Write a friendly morning briefing (max 120 words):
 
 Be warm, conversational, and encouraging.`
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
     
-    const result = await model.generateContent(prompt)
-    const briefing = result.response.text()
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.1-8b-instant',
+      max_tokens: 300,
+      temperature: 0.7,
+    })
+
+    const briefing = completion.choices[0]?.message?.content || ''
 
     return NextResponse.json({ 
       briefing, 
       generatedAt: new Date().toISOString() 
     })
-  } catch (error) {
-    console.error('AI Briefing error:', error)
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error)
+    console.error('AI Briefing error:', errMsg)
     return NextResponse.json(
-      { error: 'Failed to generate briefing' }, 
+      { error: errMsg }, 
       { status: 500 }
     )
   }
