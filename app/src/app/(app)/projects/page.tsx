@@ -107,7 +107,7 @@ export default function ProjectsPage() {
       <TopNav title="Projects" subtitle="Plan and track your projects" />
       <div className="p-6 space-y-5 animate-fade-in">
         {/* Toolbar */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => { setEditing(null); setDialogOpen(true) }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white dark:text-white text-sm font-semibold hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/20"

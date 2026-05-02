@@ -77,7 +77,8 @@ export default function QuickAddSubProject() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent px-3 py-1.5 text-sm font-medium text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
         <PlusCircle className="h-4 w-4" />
-        Quick Add Sub Project
+        <span className="hidden sm:inline">Quick Add Sub Project</span>
+        <span className="sm:hidden">+ Sub Project</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Quick Add Sub Project</DialogTitle></DialogHeader>
