@@ -12,6 +12,7 @@ import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 import { CheckCircle2, Clock3, Flame, Timer, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import AIBriefingCard from '@/components/dashboard/AIBriefingCard'
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -50,6 +51,7 @@ export default function DashboardPage() {
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
       <TopNav title="Dashboard" subtitle="Your daily command center" />
       <div className="p-6 space-y-6 animate-fade-in">
+        <AIBriefingCard />
 
         {/* Calendar Banner */}
         <div className="glass bg-white dark:bg-slate-900/90 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-200 dark:border-slate-800 bg-gradient-to-r from-violet-500/10 to-transparent">
