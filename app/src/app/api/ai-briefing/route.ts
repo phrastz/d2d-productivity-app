@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
@@ -8,7 +8,6 @@ export async function POST() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Fetch today's data
     const today = new Date().toISOString().split('T')[0]
     
     const [tasksRes, projectsRes, habitsRes] = await Promise.all([
@@ -41,39 +40,41 @@ export async function POST() {
 
     const prompt = `You are a friendly productivity assistant for DailyFlow Pro app.
     
-Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+Today is ${new Date().toLocaleDateString('en-US', { 
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+})}.
 
 User's current data:
 - Active projects: ${projects.map(p => `${p.name} (${p.progress_percentage}%)`).join(', ') || 'None'}
 - Tasks due today: ${todayTasks.map(t => t.title).join(', ') || 'None'}
 - Overdue tasks: ${overdueTasks.map(t => t.title).join(', ') || 'None'}
 - In progress: ${inProgressTasks.map(t => t.title).join(', ') || 'None'}
-- Habits: ${habits.length} habits tracked
+- Habits tracked: ${habits.length}
 
-Write a friendly morning briefing (max 120 words) that includes:
+Write a friendly morning briefing (max 120 words):
 1. Warm greeting with today's date
-2. Top 3 priorities for today (be specific)
-3. Warning if there are overdue tasks
+2. Top 3 priorities for today
+3. Warning if overdue tasks exist
 4. Quick habit reminder
 5. One motivational closing line
 
-Be conversational, warm, and encouraging. Use simple formatting with line breaks.`
+Be warm, conversational, and encouraging.`
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
     
-    const message = await client.messages.create({
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }]
+    const result = await model.generateContent(prompt)
+    const briefing = result.response.text()
+
+    return NextResponse.json({ 
+      briefing, 
+      generatedAt: new Date().toISOString() 
     })
-
-    const briefing = message.content[0].type === 'text' 
-      ? message.content[0].text 
-      : ''
-
-    return NextResponse.json({ briefing, generatedAt: new Date().toISOString() })
   } catch (error) {
     console.error('AI Briefing error:', error)
-    return NextResponse.json({ error: 'Failed to generate briefing' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to generate briefing' }, 
+      { status: 500 }
+    )
   }
 }
