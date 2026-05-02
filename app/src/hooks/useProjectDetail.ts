@@ -3,46 +3,17 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Project, SubProject, Task } from '@/types'
+import { 
+  calculateSubProjectProgress, 
+  calculateProjectProgress,
+  syncTaskStatus,
+  syncProgressFromStatus 
+} from '@/lib/progressCalculator'
 
 interface ProjectDetail extends Project {
   sub_projects: SubProject[]
   directTasks: Task[]
 }
-
-// ── Progress helpers (spec: PROJECT REVISION.txt) ──────────────────────────
-
-function calculateSubProjectProgress(tasks: Task[]): number {
-  if (tasks.length === 0) return 0
-  const sum = tasks.reduce((acc, t) => acc + (t.progress_percent ?? 0), 0)
-  return Math.round(sum / tasks.length)
-}
-
-function calculateProjectProgress(
-  subProjects: (SubProject & { progress_percent: number; weight_contribution: number; tasks?: Task[] })[],
-  directTasks: Task[]
-): number {
-  const totalItems = subProjects.length + directTasks.length
-  if (totalItems === 0) return 0
-
-  const totalSubWeight = subProjects.reduce((s, sp) => s + (sp.weight_contribution ?? 1), 0)
-  const weightedSubProgress = subProjects.reduce(
-    (s, sp) => s + (sp.progress_percent ?? 0) * (sp.weight_contribution ?? 1),
-    0
-  )
-  const directProgress = directTasks.reduce((s, t) => s + (t.progress_percent ?? 0), 0)
-
-  const subContrib =
-    totalSubWeight > 0
-      ? (weightedSubProgress / totalSubWeight) * (subProjects.length / totalItems)
-      : 0
-  const directContrib =
-    directTasks.length > 0
-      ? (directProgress / directTasks.length) * (directTasks.length / totalItems)
-      : 0
-
-  return Math.round((subContrib + directContrib) * 100) / 100
-}
-// ───────────────────────────────────────────────────────────────────────────
 
 export function useProjectDetail(projectId: string | null) {
   const [project, setProject] = useState<ProjectDetail | null>(null)
@@ -259,5 +230,83 @@ export function useProjectDetail(projectId: string | null) {
     }
   }, [projectId])
 
-  return { project, loading, error }
+  const supabase = createClient()
+
+  const updateTaskProgress = async (taskId: string, newProgress: number) => {
+    const clampedProgress = Math.min(100, Math.max(0, newProgress))
+    const newStatus = syncTaskStatus(clampedProgress)
+
+    // 1. Update task in DB
+    await supabase
+      .from('tasks')
+      .update({ 
+        progress_percent: clampedProgress,
+        status: newStatus 
+      })
+      .eq('id', taskId)
+
+    // 2. Find this task in current state
+    const subProjectTasks = project?.sub_projects?.flatMap(sp => sp.tasks || []) || []
+    const allTasks = [...subProjectTasks, ...(project?.directTasks || [])]
+    const task = allTasks.find(t => t.id === taskId)
+    if (!task) return
+
+    // 3. If nested task: recalculate sub-project progress
+    if (task.sub_project_id) {
+      const siblingTasks = allTasks.filter(
+        t => t.sub_project_id === task.sub_project_id
+      ).map(t => t.id === taskId 
+        ? { ...t, progress_percent: clampedProgress } 
+        : t
+      )
+      const newSubProgress = calculateSubProjectProgress(siblingTasks)
+      
+      await supabase
+        .from('sub_projects')
+        .update({ progress_percent: newSubProgress })
+        .eq('id', task.sub_project_id)
+    }
+
+    // 4. Always recalculate project progress
+    const updatedTasks = allTasks.map(t => 
+      t.id === taskId ? { ...t, progress_percent: clampedProgress } : t
+    )
+    const subProjects = project?.sub_projects || []
+    const directTasks = updatedTasks.filter(t => !t.sub_project_id)
+    
+    // Update sub_projects with latest progress
+    const updatedSubProjects = subProjects.map(sp => {
+      const spTasks = updatedTasks.filter(t => t.sub_project_id === sp.id)
+      return { 
+        ...sp, 
+        progress_percent: calculateSubProjectProgress(spTasks) 
+      }
+    })
+
+    const newProjectProgress = calculateProjectProgress(
+      updatedSubProjects, 
+      directTasks
+    )
+
+    await supabase
+      .from('projects')
+      .update({ progress_percentage: newProjectProgress })
+      .eq('id', project?.id)
+  }
+
+  const updateTaskStatus = async (
+    taskId: string, 
+    status: 'todo' | 'in_progress' | 'done'
+  ) => {
+    const progress = syncProgressFromStatus(status)
+    await updateTaskProgress(taskId, progress)
+  }
+
+  return { 
+    project, 
+    loading, 
+    error,
+    updateTaskProgress,
+    updateTaskStatus
+  }
 }
