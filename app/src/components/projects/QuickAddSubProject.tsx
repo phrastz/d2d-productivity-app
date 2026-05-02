@@ -75,7 +75,7 @@ export default function QuickAddSubProject() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-transparent px-3 py-1.5 text-sm font-medium text-slate-100 hover:bg-slate-700 cursor-pointer">
+      <DialogTrigger className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent px-3 py-1.5 text-sm font-medium text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
         <PlusCircle className="h-4 w-4" />
         Quick Add Sub Project
       </DialogTrigger>
