@@ -154,7 +154,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
   // Local refresh key is just for optimistic re-render cue
   const handleTaskProgressUpdated = () => setRefreshKey(k => k + 1)
 
-  const progress = subProject.progress || 0
+  const progress = subProject.progress_percent || 0
   const tasks = subProject.tasks || []
   const tasksTotal = subProject.tasks_total || 0
   const tasksDone = subProject.tasks_done || 0

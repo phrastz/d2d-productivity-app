@@ -7,7 +7,7 @@ interface ProjectProgressProps {
 }
 
 export default function ProjectProgress({ project }: ProjectProgressProps) {
-  const overallProgress = project.progress || 0
+  const overallProgress = project.progress_percentage || 0
   const subProjects = project.sub_projects || []
   const directTasks = project.directTasks || []
   const directTasksTotal = directTasks.length
@@ -53,7 +53,7 @@ export default function ProjectProgress({ project }: ProjectProgressProps) {
             Sub Projects
           </h4>
           {subProjects.map((sp) => {
-            const progress = sp.progress || 0
+            const progress = sp.progress_percent || 0
             return (
               <div key={sp.id} className="flex items-center gap-3">
                 <div className="flex-1">
