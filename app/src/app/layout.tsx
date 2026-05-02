@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: 'D2D Tracking',
   },
   icons: {
-    apple: '/icons/icon-192x192.png',
+    apple: '/icons/apple-touch-icon.png',
   },
   formatDetection: {
     telephone: false,
@@ -43,6 +43,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)} suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+      </head>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
