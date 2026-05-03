@@ -145,10 +145,11 @@ export default function ProjectDetailPage() {
             </h3>
             <div className="h-12 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center px-6 text-white font-bold text-lg transition-all duration-500"
+                className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-between px-6 text-white font-bold text-lg transition-all duration-500"
                 style={{ width: `${data.stats?.progress || 0}%` }}
               >
-                {data.stats?.progress || 0}% Complete ({data.stats?.completedTasks || 0} of {data.stats?.totalTasks || 0} tasks)
+                <span>{data.stats?.progress || 0}% Complete</span>
+                <span className="text-sm">({data.stats?.completedTasks || 0} of {data.stats?.totalTasks || 0} tasks)</span>
               </div>
             </div>
           </div>
