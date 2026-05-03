@@ -130,6 +130,29 @@ export default function TimelineWeeklyPage() {
             </div>
           ) : (
             <div className="space-y-8">
+              <div className="mb-8 flex gap-6 flex-wrap items-center bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-3 rounded bg-gradient-to-r from-pink-500 to-pink-400"></div>
+                  <span className="text-sm text-gray-600">Design Work</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-3 rounded bg-gradient-to-r from-purple-600 to-purple-400"></div>
+                  <span className="text-sm text-gray-600">Development</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-3 rounded bg-gradient-to-r from-cyan-500 to-cyan-400"></div>
+                  <span className="text-sm text-gray-600">Testing & QA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-3 rounded bg-gradient-to-r from-orange-500 to-orange-400"></div>
+                  <span className="text-sm text-gray-600">Meetings</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-3 rounded bg-gradient-to-r from-green-500 to-green-400"></div>
+                  <span className="text-sm text-gray-600">Code Review</span>
+                </div>
+              </div>
+              
               {Object.entries(data).map(([day, tasks]) => (
                 <div key={day}>
                   <div className="bg-gradient-to-r from-purple-100 to-indigo-100 px-6 py-4 rounded-xl mb-4">
@@ -151,7 +174,7 @@ export default function TimelineWeeklyPage() {
                         key={task.id}
                         className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-purple-400 transition-colors"
                       >
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start gap-4">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-900 mb-1">
                               {task.title}
@@ -161,19 +184,28 @@ export default function TimelineWeeklyPage() {
                                 {task.notes}
                               </div>
                             )}
-                            <div className="text-xs text-gray-500">
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
                               {task.sub_projects?.projects?.name && (
-                                <span className="mr-3">
-                                  📁 {task.sub_projects.projects.name}
+                                <span className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded font-medium">
+                                  <span>📁</span>
+                                  <span>{task.sub_projects.projects.name}</span>
+                                </span>
+                              )}
+                              {task.sub_projects?.name && (
+                                <span className="text-gray-600">
+                                  → {task.sub_projects.name}
                                 </span>
                               )}
                               {task.estimated_hours && (
-                                <span>⏱️ {task.estimated_hours}h estimated</span>
+                                <span className="flex items-center gap-1">
+                                  <span>⏱️</span>
+                                  <span>{task.estimated_hours}h</span>
+                                </span>
                               )}
                             </div>
                           </div>
                           
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase whitespace-nowrap ${
                             task.status === 'done'
                               ? 'bg-green-100 text-green-700'
                               : task.status === 'in_progress'
