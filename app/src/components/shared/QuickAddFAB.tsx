@@ -113,7 +113,7 @@ export default function QuickAddFAB() {
 
       {/* Quick panel */}
       {open && (
-        <div className="fixed bottom-[130px] md:bottom-24 right-4 md:right-6 z-50 w-[calc(100vw-32px)] md:w-80 glass rounded-2xl border border-white/10 p-4 animate-fade-in shadow-2xl">
+        <div className="fixed bottom-[130px] md:bottom-24 right-4 md:right-6 z-50 w-[calc(100vw-32px)] md:w-80 glass rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 p-4 animate-fade-in shadow-2xl">
           {!mode ? (
             <>
               <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-widest">Quick Add</p>
@@ -169,17 +169,17 @@ export default function QuickAddFAB() {
                 onChange={e => setTaskTitle(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveTask()}
                 placeholder="What needs to be done?"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors mb-2"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-foreground placeholder:text-slate-500 dark:placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-2"
                 autoFocus
               />
               <select
                 value={projectId}
                 onChange={e => setProjectId(e.target.value)}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-3"
               >
-                <option value="" className="bg-[#0f1322] text-foreground">No Project</option>
+                <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">No Project</option>
                 {projects.map(p => (
-                  <option key={p.id} value={p.id} className="bg-[#0f1322] text-foreground">{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">{p.name}</option>
                 ))}
               </select>
               <button
@@ -204,27 +204,27 @@ export default function QuickAddFAB() {
                 onChange={e => setNoteText(e.target.value)}
                 placeholder="Write a note, boss's comment, or blocker..."
                 rows={3}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none mb-2"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-foreground placeholder:text-slate-500 dark:placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/50 resize-none mb-2"
                 autoFocus
               />
               <select
                 value={noteProjectId}
                 onChange={e => setNoteProjectId(e.target.value)}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-2"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-2"
               >
-                <option value="" className="bg-[#0f1322] text-foreground">-- Attach to Project (Optional) --</option>
+                <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">-- Attach to Project (Optional) --</option>
                 {projects.map(p => (
-                  <option key={p.id} value={p.id} className="bg-[#0f1322] text-foreground">{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">{p.name}</option>
                 ))}
               </select>
               <select
                 value={noteTaskId}
                 onChange={e => setNoteTaskId(e.target.value)}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors mb-3"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-3"
               >
-                <option value="" className="bg-[#0f1322] text-foreground">-- Attach to Task (Optional) --</option>
+                <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">-- Attach to Task (Optional) --</option>
                 {tasks.map(t => (
-                  <option key={t.id} value={t.id} className="bg-[#0f1322] text-foreground">
+                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">
                     {t.title} {t.project_id ? `(Proj: ${projects.find(p => p.id === t.project_id)?.name})` : ''}
                   </option>
                 ))}
@@ -251,7 +251,7 @@ export default function QuickAddFAB() {
                 onChange={e => setLogText(e.target.value)}
                 placeholder="What did you accomplish today?"
                 rows={3}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none mb-3"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-foreground placeholder:text-slate-500 dark:placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/50 resize-none mb-3"
                 autoFocus
               />
               <div className="flex gap-2 mb-3">
