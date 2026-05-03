@@ -5,6 +5,19 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getMonthlyTimelineData } from '@/lib/reportData';
 
+const getMonthPosition = (date: string, yearStart: Date) => {
+  const d = new Date(date);
+  const monthsDiff = (d.getFullYear() - yearStart.getFullYear()) * 12 + (d.getMonth() - yearStart.getMonth());
+  return (monthsDiff / 12) * 100;
+};
+
+const getMonthWidth = (startDate: string, endDate: string) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+  return (months / 12) * 100;
+};
+
 export default function TimelineMonthlyPage() {
   const router = useRouter();
   const [data, setData] = useState<any[]>([]);
@@ -97,24 +110,47 @@ export default function TimelineMonthlyPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-6">
-              {data.map((project: any) => (
-                <div
-                  key={project.id}
-                  className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-6 hover:shadow-lg transition-all"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-purple-900 mb-2">
-                        {project.name}
-                      </h3>
-                      {project.description && (
-                        <p className="text-gray-700 text-sm mb-3">
-                          {project.description}
-                        </p>
+            <div className="bg-white rounded-lg p-6 mb-6">
+              <div className="grid grid-cols-12 gap-0 border-b-2 border-gray-300 pb-2 mb-4">
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => (
+                  <div key={month} className="text-center text-sm font-semibold text-gray-600">
+                    {month}
+                  </div>
+                ))}
+              </div>
+              
+              {data.map((project: any, idx: number) => (
+                <div key={project.id} className="mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-64 flex-shrink-0">
+                      <div className="font-bold text-gray-900">{project.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {project.start_date && new Date(project.start_date).toLocaleDateString()} - {project.end_date && new Date(project.end_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 relative h-10 bg-gray-100 rounded">
+                      {project.start_date && project.end_date && (
+                        <div
+                          className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
+                          style={{
+                            left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
+                            width: `${getMonthWidth(project.start_date, project.end_date)}%`,
+                            background: idx % 4 === 0 
+                              ? 'linear-gradient(90deg, #ec4899, #f472b6)'
+                              : idx % 4 === 1
+                              ? 'linear-gradient(90deg, #8b5cf6, #a78bfa)'
+                              : idx % 4 === 2
+                              ? 'linear-gradient(90deg, #06b6d4, #22d3ee)'
+                              : 'linear-gradient(90deg, #10b981, #34d399)'
+                          }}
+                        >
+                          {project.progress_percentage || 0}%
+                        </div>
                       )}
                     </div>
-                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                    
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       project.status === 'done'
                         ? 'bg-green-100 text-green-700'
                         : project.status === 'in_progress'
@@ -124,50 +160,6 @@ export default function TimelineMonthlyPage() {
                       {project.status?.replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
-                  
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <div className="text-gray-500 mb-1">Start Date</div>
-                      <div className="font-semibold text-purple-700">
-                        {project.start_date 
-                          ? new Date(project.start_date).toLocaleDateString()
-                          : 'Not set'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-gray-500 mb-1">End Date</div>
-                      <div className="font-semibold text-purple-700">
-                        {project.end_date 
-                          ? new Date(project.end_date).toLocaleDateString()
-                          : 'Not set'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-gray-500 mb-1">Duration</div>
-                      <div className="font-semibold text-purple-700">
-                        {project.start_date && project.end_date
-                          ? `${getMonthSpan(project.start_date, project.end_date)} months` 
-                          : 'N/A'}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {project.progress_percentage !== null && (
-                    <div className="mt-4">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-bold text-purple-700">
-                          {project.progress_percentage}%
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-purple-600 to-indigo-600"
-                          style={{ width: `${project.progress_percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
