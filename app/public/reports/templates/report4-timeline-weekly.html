@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Timeline Detail - DailyFlow Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            padding: 40px 20px;
+            color: #1a202c;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .header h1 {
+            font-size: 38px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 24px;
+        }
+        
+        .week-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 16px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .week-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-right: 12px;
+        }
+        
+        .week-button {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .week-button.active {
+            background: white;
+            color: #7c3aed;
+        }
+        
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 32px;
+            height: 16px;
+            border-radius: 6px;
+        }
+        
+        .day-section {
+            margin-bottom: 40px;
+        }
+        
+        .day-header {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .day-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3730a3;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .day-stats {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            color: #4c1d95;
+        }
+        
+        .day-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .timeline-container {
+            position: relative;
+            padding-left: 120px;
+        }
+        
+        .timeline-hours {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            padding-top: 8px;
+        }
+        
+        .hour-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            text-align: right;
+            padding-right: 12px;
+        }
+        
+        .timeline-tasks {
+            position: relative;
+            min-height: 600px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #f8fafc 0px,
+                #f8fafc 59px,
+                #e2e8f0 59px,
+                #e2e8f0 60px
+            );
+            border-left: 2px solid #cbd5e1;
+            padding: 10px 0;
+        }
+        
+        .task-block {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .task-block:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .task-title {
+            font-size: 15px;
+            line-height: 1.3;
+        }
+        
+        .task-meta {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .task-design {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        }
+        
+        .task-development {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        }
+        
+        .task-testing {
+            background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        }
+        
+        .task-meeting {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        
+        .task-review {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .milestone-marker {
+            position: absolute;
+            left: -12px;
+            width: 24px;
+            height: 24px;
+            background: #f59e0b;
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        .milestone-marker::after {
+            content: '⭐';
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+        }
+        
+        .notes-section {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .notes-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .notes-text {
+            font-size: 14px;
+            color: #78350f;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 24px 40px;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            border-radius: 0 0 16px 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            @page {
+                size: portrait;
+                margin: 1.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Weekly Timeline - Detailed View</h1>
+            <div class="subtitle">Sprint 12 - Daily Task Breakdown & Progress Tracking</div>
+            
+            <div class="week-selector">
+                <span class="week-label">Select Week:</span>
+                <button class="week-button">Week of Apr 15</button>
+                <button class="week-button">Week of Apr 22</button>
+                <button class="week-button active">Week of Apr 29</button>
+                <button class="week-button">Week of May 6</button>
+            </div>
+        </div>
+        
+        <div class="summary-bar">
+            <div class="summary-item">
+                <div class="summary-label">Total Hours</div>
+                <div class="summary-value">186h</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Tasks Completed</div>
+                <div class="summary-value">12</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">In Progress</div>
+                <div class="summary-value">5</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Team Members</div>
+                <div class="summary-value">8</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Milestones Hit</div>
+                <div class="summary-value">2</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Velocity</div>
+                <div class="summary-value">127 pts</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color task-design"></div>
+                    <span>Design Work</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-development"></div>
+                    <span>Development</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-testing"></div>
+                    <span>Testing & QA</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-meeting"></div>
+                    <span>Meetings</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-review"></div>
+                    <span>Code Review</span>
+                </div>
+                <div class="legend-item">
+                    <div class="milestone-marker" style="position: relative; top: 0; left: 0;"></div>
+                    <span>Milestone</span>
+                </div>
+            </div>
+            
+            <!-- Monday -->
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-title">
+                        <span>📌</span>
+                        <span>Monday, April 29</span>
+                    </div>
+                    <div class="day-stats">
+                        <div class="day-stat">
+                            <div class="stat-label">Hours</div>
+                            <div class="stat-value">38h</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Tasks</div>
+                            <div class="stat-value">8</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Completed</div>
+                            <div class="stat-value">3</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-container">
+                    <div class="timeline-hours">
+                        <div class="hour-label">09:00</div>
+                        <div class="hour-label">10:00</div>
+                        <div class="hour-label">11:00</div>
+                        <div class="hour-label">12:00</div>
+                        <div class="hour-label">13:00</div>
+                        <div class="hour-label">14:00</div>
+                        <div class="hour-label">15:00</div>
+                        <div class="hour-label">16:00</div>
+                        <div class="hour-label">17:00</div>
+                    </div>
+                    
+                    <div class="timeline-tasks">
+                        <!-- 09:00 - 10:30 -->
+                        <div class="task-block task-meeting" style="top: 0px; height: 90px;">
+                            <div class="task-title">Daily Standup + Sprint Planning</div>
+                            <div class="task-meta">
+                                <span>⏰ 09:00 - 10:30</span>
+                                <span>👥 All Team</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 10:30 - 13:00 -->
+                        <div class="task-block task-development" style="top: 90px; height: 150px;">
+                            <div class="task-title">Implement Redux Toolkit state refactoring</div>
+                            <div class="task-meta">
+                                <span>⏰ 10:30 - 13:00</span>
+                                <span>👤 Lisa Chang</span>
+                                <span>📊 40% → 65%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 13:00 - 14:00 Lunch Break (empty) -->
+                        
+                        <!-- 14:00 - 17:00 -->
+                        <div class="task-block task-design" style="top: 300px; height: 180px;">
+                            <div class="task-title">Accessibility audit - WCAG 2.1 compliance check</div>
+                            <div class="task-meta">
+                                <span>⏰ 14:00 - 17:00</span>
+                                <span>👤 Maria Rodriguez</span>
+                                <span>📊 50% → 65%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 15:00 - 16:30 (overlapping work) -->
+                        <div class="task-block task-testing" style="top: 360px; left: 50%; right: 20px; height: 90px;">
+                            <div class="task-title">Unit testing - Auth module</div>
+                            <div class="task-meta">
+                                <span>⏰ 15:00 - 16:30</span>
+                                <span>👤 David Brown</span>
+                            </div>
+                        </div>
+                        
+                        <div class="milestone-marker" style="top: 480px;"></div>
+                    </div>
+                </div>
+                
+                <div class="notes-section">
+                    <div class="notes-title">📝 Daily Notes</div>
+                    <div class="notes-text">
+                        Sprint planning went well - team velocity looking strong at 127 points. Identified blocker with payment gateway credentials; escalated to vendor. Maria found 6 accessibility issues that need addressing before launch. Lisa making good progress on Redux refactor, estimated completion by Wednesday.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tuesday -->
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-title">
+                        <span>📌</span>
+                        <span>Tuesday, April 30</span>
+                    </div>
+                    <div class="day-stats">
+                        <div class="day-stat">
+                            <div class="stat-label">Hours</div>
+                            <div class="stat-value">42h</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Tasks</div>
+                            <div class="stat-value">9</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Completed</div>
+                            <div class="stat-value">4</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-container">
+                    <div class="timeline-hours">
+                        <div class="hour-label">09:00</div>
+                        <div class="hour-label">10:00</div>
+                        <div class="hour-label">11:00</div>
+                        <div class="hour-label">12:00</div>
+                        <div class="hour-label">13:00</div>
+                        <div class="hour-label">14:00</div>
+                        <div class="hour-label">15:00</div>
+                        <div class="hour-label">16:00</div>
+                        <div class="hour-label">17:00</div>
+                    </div>
+                    
+                    <div class="timeline-tasks">
+                        <!-- 09:00 - 09:15 -->
+                        <div class="task-block task-meeting" style="top: 0px; height: 15px;">
+                            <div class="task-title">Daily Standup</div>
+                            <div class="task-meta">
+                                <span>⏰ 09:00 - 09:15</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 09:15 - 12:00 -->
+                        <div class="task-block task-development" style="top: 15px; height: 165px;">
+                            <div class="task-title">Continue Redux Toolkit migration</div>
+                            <div class="task-meta">
+                                <span>⏰ 09:15 - 12:00</span>
+                                <span>👤 Lisa Chang</span>
+                                <span>📊 65% → 85%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 10:00 - 12:30 (parallel work) -->
+                        <div class="task-block task-development" style="top: 60px; left: 50%; right: 20px; height: 150px;">
+                            <div class="task-title">Fix database timeout issue</div>
+                            <div class="task-meta">
+                                <span>⏰ 10:00 - 12:30</span>
+                                <span>👤 James Wilson</span>
+                                <span>🚨 Critical</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 14:00 - 15:30 -->
+                        <div class="task-block task-review" style="top: 300px; height: 90px;">
+                            <div class="task-title">Code review - Authentication module PR</div>
+                            <div class="task-meta">
+                                <span>⏰ 14:00 - 15:30</span>
+                                <span>👤 Alex Kim</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 15:30 - 17:30 -->
+                        <div class="task-block task-design" style="top: 390px; height: 120px;">
+                            <div class="task-title">Update design system documentation</div>
+                            <div class="task-meta">
+                                <span>⏰ 15:30 - 17:30</span>
+                                <span>👤 Alex Kim</span>
+                                <span>📊 0% → 40%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="notes-section">
+                    <div class="notes-title">📝 Daily Notes</div>
+                    <div class="notes-text">
+                        James resolved database timeout issue by optimizing connection pool - deployed to staging for testing. Lisa nearly complete with Redux migration, minimal bugs found. Alex provided detailed code review feedback on auth module. Payment gateway blocker still unresolved, vendor ETA now Thursday.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wednesday -->
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-title">
+                        <span>📌</span>
+                        <span>Wednesday, May 1</span>
+                    </div>
+                    <div class="day-stats">
+                        <div class="day-stat">
+                            <div class="stat-label">Hours</div>
+                            <div class="stat-value">40h</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Tasks</div>
+                            <div class="stat-value">7</div>
+                        </div>
+                        <div class="day-stat">
+                            <div class="stat-label">Completed</div>
+                            <div class="stat-value">5</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-container">
+                    <div class="timeline-hours">
+                        <div class="hour-label">09:00</div>
+                        <div class="hour-label">10:00</div>
+                        <div class="hour-label">11:00</div>
+                        <div class="hour-label">12:00</div>
+                        <div class="hour-label">13:00</div>
+                        <div class="hour-label">14:00</div>
+                        <div class="hour-label">15:00</div>
+                        <div class="hour-label">16:00</div>
+                        <div class="hour-label">17:00</div>
+                    </div>
+                    
+                    <div class="timeline-tasks">
+                        <!-- 09:00 - 09:15 -->
+                        <div class="task-block task-meeting" style="top: 0px; height: 15px;">
+                            <div class="task-title">Daily Standup</div>
+                            <div class="task-meta">
+                                <span>⏰ 09:00 - 09:15</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 09:15 - 11:45 -->
+                        <div class="task-block task-development" style="top: 15px; height: 150px;">
+                            <div class="task-title">Finalize Redux migration & testing</div>
+                            <div class="task-meta">
+                                <span>⏰ 09:15 - 11:45</span>
+                                <span>👤 Lisa Chang</span>
+                                <span>✅ Completed</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 10:00 - 13:00 (parallel) -->
+                        <div class="task-block task-design" style="top: 60px; left: 50%; right: 20px; height: 180px;">
+                            <div class="task-title">Complete accessibility fixes</div>
+                            <div class="task-meta">
+                                <span>⏰ 10:00 - 13:00</span>
+                                <span>👤 Maria Rodriguez</span>
+                                <span>✅ Completed</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 14:00 - 16:00 -->
+                        <div class="task-block task-testing" style="top: 300px; height: 120px;">
+                            <div class="task-title">Performance testing - load simulation</div>
+                            <div class="task-meta">
+                                <span>⏰ 14:00 - 16:00</span>
+                                <span>👤 David Brown</span>
+                                <span>📊 Baseline established</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 16:00 - 17:00 -->
+                        <div class="task-block task-meeting" style="top: 420px; height: 60px;">
+                            <div class="task-title">Sprint Retrospective</div>
+                            <div class="task-meta">
+                                <span>⏰ 16:00 - 17:00</span>
+                                <span>👥 All Team</span>
+                            </div>
+                        </div>
+                        
+                        <div class="milestone-marker" style="top: 165px;"></div>
+                    </div>
+                </div>
+                
+                <div class="notes-section">
+                    <div class="notes-title">📝 Daily Notes & Achievements</div>
+                    <div class="notes-text">
+                        <strong>🎉 Major milestone:</strong> Redux migration completed successfully - all tests passing. Maria completed accessibility audit fixes - app now WCAG 2.1 AA compliant. Sprint retrospective highlighted improved team velocity (+15% vs last sprint). Database fix validated in staging, ready for production deployment. Blocked payment task still waiting on vendor.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <strong>Generated by DailyFlow Pro</strong><br>
+            Sprint Review Report | Week of April 29 - May 3, 2026<br>
+            Total Sprint Hours: 186h | Velocity: 127 story points | Team: Product Development
+        </div>
+    </div>
+</body>
+</html>

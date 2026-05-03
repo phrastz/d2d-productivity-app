@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Gantt Chart - DailyFlow Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            padding: 40px 20px;
+            color: #1a202c;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .timeline-info {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 12px;
+            border-radius: 4px;
+        }
+        
+        .gantt-container {
+            overflow-x: auto;
+            min-width: 100%;
+        }
+        
+        .gantt-header {
+            display: grid;
+            grid-template-columns: 300px repeat(12, 120px);
+            gap: 0;
+            background: #f8fafc;
+            padding: 16px 0;
+            border-bottom: 2px solid #cbd5e1;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .gantt-month {
+            text-align: center;
+            font-size: 14px;
+            color: #475569;
+            padding: 8px;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .gantt-task-name {
+            padding: 8px 20px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 300px repeat(12, 120px);
+            gap: 0;
+            border-bottom: 1px solid #e2e8f0;
+            min-height: 60px;
+            align-items: center;
+        }
+        
+        .gantt-row:hover {
+            background: #f8fafc;
+        }
+        
+        .task-label {
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .task-owner {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+        
+        .gantt-timeline {
+            position: relative;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(12, 120px);
+            gap: 0;
+        }
+        
+        .timeline-cell {
+            border-right: 1px solid #f1f5f9;
+            position: relative;
+        }
+        
+        .timeline-bar {
+            position: absolute;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .timeline-bar:hover {
+            transform: translateY(-50%) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .bar-design {
+            background: linear-gradient(90deg, #ec4899 0%, #f472b6 100%);
+        }
+        
+        .bar-development {
+            background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%);
+        }
+        
+        .bar-testing {
+            background: linear-gradient(90deg, #06b6d4 0%, #22d3ee 100%);
+        }
+        
+        .bar-deployment {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .milestone {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #f59e0b;
+            border: 3px solid white;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 5;
+        }
+        
+        .milestone::after {
+            content: '⭐';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+        }
+        
+        .dependency-line {
+            position: absolute;
+            height: 2px;
+            background: #94a3b8;
+            z-index: 1;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 24px 40px;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            border-radius: 0 0 16px 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Project Timeline - Gantt Chart</h1>
+            <div class="subtitle">Q1 - Q4 2026 Product Roadmap</div>
+            
+            <div class="timeline-info">
+                <div class="info-item">
+                    <div class="info-label">Start Date</div>
+                    <div class="info-value">Jan 1, 2026</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">End Date</div>
+                    <div class="info-value">Dec 31, 2026</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Duration</div>
+                    <div class="info-value">12 Months</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Critical Path</div>
+                    <div class="info-value">8 Milestones</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color bar-design"></div>
+                    <span>Design Phase</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bar-development"></div>
+                    <span>Development</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bar-testing"></div>
+                    <span>Testing & QA</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bar-deployment"></div>
+                    <span>Deployment</span>
+                </div>
+                <div class="legend-item">
+                    <div class="milestone" style="position: relative; top: 0; transform: none;"></div>
+                    <span>Milestone</span>
+                </div>
+            </div>
+            
+            <!-- Gantt Chart -->
+            <div class="gantt-container">
+                <div class="gantt-header">
+                    <div class="gantt-task-name">Task / Phase</div>
+                    <div class="gantt-month">Jan</div>
+                    <div class="gantt-month">Feb</div>
+                    <div class="gantt-month">Mar</div>
+                    <div class="gantt-month">Apr</div>
+                    <div class="gantt-month">May</div>
+                    <div class="gantt-month">Jun</div>
+                    <div class="gantt-month">Jul</div>
+                    <div class="gantt-month">Aug</div>
+                    <div class="gantt-month">Sep</div>
+                    <div class="gantt-month">Oct</div>
+                    <div class="gantt-month">Nov</div>
+                    <div class="gantt-month">Dec</div>
+                </div>
+                
+                <!-- Task Row 1 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        UI/UX Research & Planning
+                        <div class="task-owner">Owner: Sarah Chen</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-design" style="left: 0%; width: 200px;">
+                            Jan - Feb
+                        </div>
+                        <div class="milestone" style="left: 240px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 2 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Wireframe & Prototype Creation
+                        <div class="task-owner">Owner: Alex Kim</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-design" style="left: 240px; width: 180px;">
+                            Mar - Apr
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 3 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Backend API Development
+                        <div class="task-owner">Owner: James Wilson</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-development" style="left: 360px; width: 300px;">
+                            Apr - Jul
+                        </div>
+                        <div class="milestone" style="left: 720px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 4 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Frontend Implementation
+                        <div class="task-owner">Owner: Lisa Chang</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-development" style="left: 480px; width: 360px;">
+                            May - Aug
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 5 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Integration Testing
+                        <div class="task-owner">Owner: David Brown</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-testing" style="left: 720px; width: 240px;">
+                            Aug - Oct
+                        </div>
+                        <div class="milestone" style="left: 1080px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 6 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        User Acceptance Testing
+                        <div class="task-owner">Owner: Emma Johnson</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-testing" style="left: 960px; width: 180px;">
+                            Oct - Nov
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 7 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Production Deployment
+                        <div class="task-owner">Owner: DevOps Team</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-deployment" style="left: 1200px; width: 160px;">
+                            Nov - Dec
+                        </div>
+                        <div class="milestone" style="left: 1440px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Task Row 8 -->
+                <div class="gantt-row">
+                    <div class="task-label">
+                        Documentation & Training
+                        <div class="task-owner">Owner: Maria Rodriguez</div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-bar bar-deployment" style="left: 1080px; width: 360px;">
+                            Sep - Dec
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Generated by DailyFlow Pro | Confidential | Report Date: May 3, 2026
+        </div>
+    </div>
+</body>
+</html>

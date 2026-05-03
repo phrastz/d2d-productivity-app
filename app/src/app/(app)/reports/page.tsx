@@ -11,6 +11,7 @@ import {
 import { startOfWeek, addDays, format, parseISO, isWithinInterval } from 'date-fns'
 import { TrendingUp, CheckCircle2, Clock, Smile, Frown, Meh, FolderOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ReportTemplateCard } from '@/components/reports/ReportTemplateCard'
 
 const MOOD_COLORS: Record<string, string> = {
   great: '#10b981', good: '#6366f1', okay: '#f59e0b', bad: '#f97316', terrible: '#ef4444'
@@ -205,6 +206,56 @@ export default function ReportsPage() {
             </div>
           </div>
         )}
+
+        {/* Professional Report Templates Section */}
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-8 mt-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              📊 Professional Report Templates
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400">
+              Export comprehensive reports for presentations and stakeholder meetings
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <ReportTemplateCard
+              icon="📊"
+              title="Executive Summary"
+              description="High-level KPIs and strategic insights"
+              forUseCase="Board meetings, investor updates"
+              templatePath="/reports/templates/report1-executive-summary.html"
+              dynamicPath="/reports/executive-summary"
+            />
+            
+            <ReportTemplateCard
+              icon="🎯"
+              title="Project Deep Dive"
+              description="Detailed task breakdown with issues & blockers"
+              forUseCase="Team standups, sprint reviews"
+              templatePath="/reports/templates/report2-project-deep-dive.html"
+              dynamicPath="/reports/project-detail"
+            />
+            
+            <ReportTemplateCard
+              icon="📅"
+              title="Timeline (Monthly)"
+              description="12-month Gantt chart roadmap"
+              forUseCase="Quarterly planning, stakeholder alignment"
+              templatePath="/reports/templates/report3-timeline-monthly.html"
+              dynamicPath="/reports/timeline-monthly"
+            />
+            
+            <ReportTemplateCard
+              icon="📌"
+              title="Timeline (Weekly)"
+              description="Daily hourly breakdown with progress"
+              forUseCase="Daily reports, sprint tracking"
+              templatePath="/reports/templates/report4-timeline-weekly.html"
+              dynamicPath="/reports/timeline-weekly"
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

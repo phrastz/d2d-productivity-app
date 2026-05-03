@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary Report - DailyFlow Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            padding: 40px 20px;
+            color: #1a202c;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 50px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+        
+        .header .subtitle {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+        
+        .header-meta {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .overall-health {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .health-item {
+            text-align: center;
+        }
+        
+        .health-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .health-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .health-status {
+            font-size: 14px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .content {
+            padding: 50px 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 12px;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            padding: 28px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+        
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .kpi-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        }
+        
+        .kpi-trend {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend-up {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .trend-down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .trend-neutral {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .kpi-title {
+            font-size: 15px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+        
+        .gauge-container {
+            height: 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        
+        .gauge-label {
+            font-size: 12px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .insights-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        
+        .insight-card {
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .insight-card.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .insight-card.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .insight-card.danger {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        .insight-card.info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .insight-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .insight-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a202c;
+        }
+        
+        .insight-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #475569;
+        }
+        
+        .chart-placeholder {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        
+        .recommendations {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid #c4b5fd;
+        }
+        
+        .recommendations h3 {
+            color: #5b21b6;
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .recommendation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .recommendation-item {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .recommendation-number {
+            background: #8b5cf6;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .recommendation-text {
+            flex: 1;
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 30px 40px;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .kpi-card:hover {
+                transform: none;
+            }
+            
+            @page {
+                margin: 1.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>📊 Executive Summary</h1>
+                <div class="subtitle">Performance Overview & Strategic Insights</div>
+                
+                <div class="header-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>Report Period: April 1-30, 2026</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🏢</span>
+                        <span>Department: Product Development</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>👤</span>
+                        <span>Prepared by: DailyFlow Pro System</span>
+                    </div>
+                </div>
+                
+                <div class="overall-health">
+                    <div class="health-item">
+                        <div class="health-label">Overall Health</div>
+                        <div class="health-value">92%</div>
+                        <div class="health-status">Excellent</div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-label">Goals Met</div>
+                        <div class="health-value">15/18</div>
+                        <div class="health-status">On Track</div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-label">Budget Status</div>
+                        <div class="health-value">87%</div>
+                        <div class="health-status">Under Budget</div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-label">Team Morale</div>
+                        <div class="health-value">8.6/10</div>
+                        <div class="health-status">High</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Key Performance Indicators -->
+            <div class="section">
+                <h2 class="section-title">📈 Key Performance Indicators</h2>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">🎯</div>
+                            <div class="kpi-trend trend-up">↑ 12%</div>
+                        </div>
+                        <div class="kpi-title">Projects Completed</div>
+                        <div class="kpi-value">24</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 96%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Target: 25</span>
+                            <span>96% Complete</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">✅</div>
+                            <div class="kpi-trend trend-up">↑ 8%</div>
+                        </div>
+                        <div class="kpi-title">Task Completion Rate</div>
+                        <div class="kpi-value">87%</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 87%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Target: 85%</span>
+                            <span>Above Target</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">⚡</div>
+                            <div class="kpi-trend trend-up">↑ 15%</div>
+                        </div>
+                        <div class="kpi-title">Team Productivity</div>
+                        <div class="kpi-value">94%</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 94%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Baseline: 82%</span>
+                            <span>+12 pts</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">⏱️</div>
+                            <div class="kpi-trend trend-down">↓ 22%</div>
+                        </div>
+                        <div class="kpi-title">Avg Resolution Time</div>
+                        <div class="kpi-value">18h</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Target: 24h</span>
+                            <span>25% Faster</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">😊</div>
+                            <div class="kpi-trend trend-up">↑ 5%</div>
+                        </div>
+                        <div class="kpi-title">Client Satisfaction</div>
+                        <div class="kpi-value">4.7</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 94%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Out of 5.0</span>
+                            <span>94% Satisfaction</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon">💰</div>
+                            <div class="kpi-trend trend-neutral">→ 0%</div>
+                        </div>
+                        <div class="kpi-title">Budget Utilization</div>
+                        <div class="kpi-value">87%</div>
+                        <div class="gauge-container">
+                            <div class="gauge-fill" style="width: 87%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Allocated: $250K</span>
+                            <span>$32.5K Remaining</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Trend Chart -->
+            <div class="section">
+                <h2 class="section-title">📊 Performance Trend Analysis</h2>
+                <div class="chart-placeholder">
+                    [Insert Chart: Multi-line graph showing Task Completion, Team Velocity, and Budget Burn Rate over 12 weeks]
+                </div>
+            </div>
+            
+            <!-- Key Insights & Alerts -->
+            <div class="section">
+                <h2 class="section-title">💡 Key Insights & Alerts</h2>
+                
+                <div class="insights-section">
+                    <div class="insight-card success">
+                        <div class="insight-icon">🏆</div>
+                        <div class="insight-title">Top Achievement</div>
+                        <div class="insight-description">
+                            Mobile App Redesign project completed 2 weeks ahead of schedule with 95% client satisfaction. Team velocity increased by 15% compared to Q1 average.
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card warning">
+                        <div class="insight-icon">⚠️</div>
+                        <div class="insight-title">Action Required</div>
+                        <div class="insight-description">
+                            Infrastructure Upgrade project has 3 blocked tasks requiring management intervention. Payment gateway integration delayed due to vendor API changes.
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card danger">
+                        <div class="insight-icon">🚨</div>
+                        <div class="insight-title">Critical Issue</div>
+                        <div class="insight-description">
+                            Production database experiencing timeout errors during peak hours. DevOps team working on immediate fix. Estimated resolution: 24-48 hours.
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card info">
+                        <div class="insight-icon">📈</div>
+                        <div class="insight-title">Trend Alert</div>
+                        <div class="insight-description">
+                            Team productivity has consistently increased over the past 6 weeks. Primary driver: improved sprint planning and daily standups. Recommend maintaining current cadence.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Strategic Recommendations -->
+            <div class="section">
+                <div class="recommendations">
+                    <h3>💼 Strategic Recommendations</h3>
+                    
+                    <div class="recommendation-list">
+                        <div class="recommendation-item">
+                            <div class="recommendation-number">1</div>
+                            <div class="recommendation-text">
+                                <strong>Scale DevOps Team:</strong> Current infrastructure issues indicate need for 2 additional DevOps engineers to handle growing system complexity and prevent future incidents.
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <div class="recommendation-number">2</div>
+                            <div class="recommendation-text">
+                                <strong>Invest in Automation:</strong> Team spending 18% of time on manual deployment tasks. Implementing CI/CD automation could free up 12 hours/week per developer.
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <div class="recommendation-number">3</div>
+                            <div class="recommendation-text">
+                                <strong>Reallocate Budget Surplus:</strong> With $32.5K remaining budget and strong performance metrics, recommend investing in training programs and performance bonuses to maintain team morale.
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <div class="recommendation-number">4</div>
+                            <div class="recommendation-text">
+                                <strong>Prioritize Technical Debt:</strong> Code quality metrics showing 15% increase in complexity. Allocate 20% of next sprint to refactoring critical modules before it impacts velocity.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <strong>Generated by DailyFlow Pro</strong><br>
+            Confidential - Executive Use Only | Report Date: May 3, 2026<br>
+            Next Review: June 1, 2026
+        </div>
+    </div>
+</body>
+</html>
