@@ -130,29 +130,6 @@ export default function TimelineWeeklyPage() {
             </div>
           ) : (
             <div className="space-y-8">
-              <div className="mb-8 flex gap-6 flex-wrap items-center bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-3 rounded bg-gradient-to-r from-pink-500 to-pink-400"></div>
-                  <span className="text-sm text-gray-600">Design Work</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-3 rounded bg-gradient-to-r from-purple-600 to-purple-400"></div>
-                  <span className="text-sm text-gray-600">Development</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-3 rounded bg-gradient-to-r from-cyan-500 to-cyan-400"></div>
-                  <span className="text-sm text-gray-600">Testing & QA</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-3 rounded bg-gradient-to-r from-orange-500 to-orange-400"></div>
-                  <span className="text-sm text-gray-600">Meetings</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-3 rounded bg-gradient-to-r from-green-500 to-green-400"></div>
-                  <span className="text-sm text-gray-600">Code Review</span>
-                </div>
-              </div>
-              
               {Object.entries(data).map(([day, tasks]) => (
                 <div key={day}>
                   <div className="bg-gradient-to-r from-purple-100 to-indigo-100 px-6 py-4 rounded-xl mb-4">

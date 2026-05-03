@@ -184,13 +184,27 @@ export default function ProjectDetailPage() {
             <h3 className="text-xl font-bold mb-4 border-b-3 border-purple-600 pb-2">
               📊 Overall Progress
             </h3>
-            <div className="h-12 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-12 bg-gray-200 rounded-full overflow-hidden relative">
               <div
-                className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-between px-6 text-white font-bold text-lg transition-all duration-500"
+                className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500"
                 style={{ width: `${data.stats?.progress || 0}%` }}
-              >
-                <span>{data.stats?.progress || 0}% Complete</span>
-                <span className="text-sm">({data.stats?.completedTasks || 0} of {data.stats?.totalTasks || 0} tasks)</span>
+              ></div>
+              
+              <div className="absolute inset-0 flex items-center justify-between px-6">
+                <span className={`font-bold text-lg ${
+                  (data.stats?.progress || 0) >= 30
+                    ? 'text-white'
+                    : 'text-purple-600'
+                }`}>
+                  {data.stats?.progress || 0}% Complete
+                </span>
+                <span className={`text-sm font-semibold ${
+                  (data.stats?.progress || 0) >= 30
+                    ? 'text-white'
+                    : 'text-gray-600'
+                }`}>
+                  ({data.stats?.completedTasks || 0} of {data.stats?.totalTasks || 0} tasks)
+                </span>
               </div>
             </div>
           </div>
