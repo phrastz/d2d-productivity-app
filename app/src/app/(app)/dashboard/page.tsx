@@ -13,6 +13,7 @@ import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 import { CheckCircle2, Clock3, Flame, Timer, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import AIBriefingCard from '@/components/dashboard/AIBriefingCard'
+import { ProjectMetricsCard } from '@/components/dashboard/ProjectMetricsCard'
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -83,6 +84,9 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Project Health Metrics */}
+        <ProjectMetricsCard tasks={tasks} />
 
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -11,6 +11,13 @@ interface CreateTaskPayload {
   end_date?: string | null
   priority?: 'low' | 'medium' | 'high' | 'urgent'
   status?: 'todo' | 'in_progress' | 'done'
+  effort_estimate?: number
+  actual_effort?: number
+  effort_unit?: 'hours' | 'days' | 'story_points'
+  // Backdate & audit fields
+  planned_completed_date?: string | null
+  is_blocked?: boolean
+  blocker_reason?: string | null
 }
 
 export function useTasks() {
@@ -33,6 +40,12 @@ export function useTasks() {
         progress_percent: payload.progress_percent ?? 0,
         start_date: payload.start_date ?? null,
         end_date: payload.end_date ?? null,
+        effort_estimate: payload.effort_estimate ?? 0,
+        actual_effort: payload.actual_effort ?? 0,
+        effort_unit: payload.effort_unit ?? 'hours',
+        planned_completed_date: payload.planned_completed_date ?? null,
+        is_blocked: payload.is_blocked ?? false,
+        blocker_reason: payload.blocker_reason ?? null,
       })
       .select()
       .single()

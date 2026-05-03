@@ -3,6 +3,7 @@ import { Inter, Geist } from 'next/font/google'
 import './globals.css'
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from 'sonner'
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
     </html>

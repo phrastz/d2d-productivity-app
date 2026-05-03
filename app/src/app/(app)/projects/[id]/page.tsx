@@ -12,6 +12,8 @@ import { Loader2, Plus, ArrowLeft, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { Task } from '@/types'
 import AddTaskForm from '@/components/projects/AddTaskForm'
+import { toast } from 'sonner'
+import { DatePicker } from '@/components/ui/DatePicker'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -22,10 +24,11 @@ export default function ProjectDetailPage() {
   
   const [showAddSubProject, setShowAddSubProject] = useState(false)
   const [newSubProjectName, setNewSubProjectName] = useState('')
-  const [newSubProjectStartDate, setNewSubProjectStartDate] = useState('')
-  const [newSubProjectEndDate, setNewSubProjectEndDate] = useState('')
+  const [newSubProjectStartDate, setNewSubProjectStartDate] = useState<Date | undefined>(undefined)
+  const [newSubProjectEndDate, setNewSubProjectEndDate] = useState<Date | undefined>(undefined)
   const [creating, setCreating] = useState(false)
   const [showAddDirectTask, setShowAddDirectTask] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleCreateSubProject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,32 +36,37 @@ export default function ProjectDetailPage() {
 
     // Validate: end date must not be before start date
     if (newSubProjectStartDate && newSubProjectEndDate && newSubProjectEndDate < newSubProjectStartDate) {
-      alert('End Date tidak boleh lebih kecil dari Start Date.')
+      toast.error('End date cannot be before start date')
       return
     }
 
     setCreating(true)
     try {
+      const startDateStr = newSubProjectStartDate ? newSubProjectStartDate.toISOString().split('T')[0] : null
+      const endDateStr = newSubProjectEndDate ? newSubProjectEndDate.toISOString().split('T')[0] : null
+      
       const result = await createSubProject(
         projectId,
         newSubProjectName.trim(),
         undefined,
         'medium',
-        newSubProjectStartDate || null,
-        newSubProjectEndDate || null,
+        startDateStr,
+        endDateStr,
       )
       
       if (result) {
         setNewSubProjectName('')
-        setNewSubProjectStartDate('')
-        setNewSubProjectEndDate('')
+        setNewSubProjectStartDate(undefined)
+        setNewSubProjectEndDate(undefined)
         setShowAddSubProject(false)
-        console.log('✅ Sub-project created successfully!')
+        toast.success('Sub-project created successfully!')
+        // Trigger re-fetch by incrementing refresh key
+        setRefreshKey(k => k + 1)
+        router.refresh()
       }
     } catch (err: any) {
       console.error('❌ Failed to create sub-project:', err)
-      const errorMessage = err?.message || err?.hint || err?.details || JSON.stringify(err)
-      alert(`Error creating sub-project:\n\n${errorMessage}\n\nCheck console for full details.`)
+      toast.error('Failed to create sub-project')
     } finally {
       setCreating(false)
     }
@@ -66,6 +74,13 @@ export default function ProjectDetailPage() {
 
   // Nested task: handled inside SubProjectCard directly
   const handleAddTask = (_subProjectId: string) => {}
+
+  // Handle task creation completion with refresh
+  const handleTaskCreated = () => {
+    setShowAddDirectTask(false)
+    setRefreshKey(k => k + 1)
+    router.refresh()
+  }
 
   const handleEditTask = (task: Task) => {
     // TODO: Implement edit task dialog
@@ -83,7 +98,7 @@ export default function ProjectDetailPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-8 h-8 text-violet-400 animate-spin mx-auto mb-3" />
-            <p className="text-sm text-slate-400">Loading project...</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Loading project...</p>
           </div>
         </div>
       </div>
@@ -96,11 +111,11 @@ export default function ProjectDetailPage() {
         <TopNav title="Project" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-sm text-red-400 mb-2">Error loading project</p>
-            <p className="text-xs text-slate-400">{error || 'Project not found'}</p>
+            <p className="text-sm text-red-500 dark:text-red-400 mb-2">Error loading project</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400">{error || 'Project not found'}</p>
             <button
               onClick={() => router.push('/projects')}
-              className="mt-4 px-4 py-2 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 text-sm font-medium transition-colors"
+              className="mt-4 px-4 py-2 rounded-xl bg-violet-100 dark:bg-violet-500/20 hover:bg-violet-200 dark:hover:bg-violet-500/30 text-violet-600 dark:text-violet-400 text-sm font-medium transition-colors"
             >
               Back to Projects
             </button>
@@ -121,7 +136,7 @@ export default function ProjectDetailPage() {
         {/* Back Button */}
         <button
           onClick={() => router.push('/projects')}
-          className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-100 transition-colors"
+          className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Projects
@@ -133,7 +148,7 @@ export default function ProjectDetailPage() {
             <div className="flex-1">
               <h1 className="text-2xl font-bold gradient-text mb-2">{project.name}</h1>
               {project.description && (
-                <p className="text-sm text-slate-400">{project.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
               )}
             </div>
             <ProjectActions 
@@ -145,14 +160,14 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Project Meta */}
-          <div className="flex items-center gap-4 text-xs text-slate-400 mb-4">
+          <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-4">
             {project.end_date && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Due: {format(new Date(project.end_date), 'MMM d, yyyy')}</span>
               </div>
             )}
-            <div className="px-2.5 py-1 rounded-lg bg-slate-800/50 text-slate-200 text-[10px] font-semibold">
+            <div className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-[10px] font-semibold">
               {project.status.toUpperCase()}
             </div>
           </div>
@@ -165,7 +180,7 @@ export default function ProjectDetailPage() {
         {!showAddSubProject ? (
           <button
             onClick={() => setShowAddSubProject(true)}
-            className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-400 hover:text-violet-400 transition-all"
+            className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Add Sub Project</span>
@@ -178,34 +193,31 @@ export default function ProjectDetailPage() {
               value={newSubProjectName}
               onChange={(e) => setNewSubProjectName(e.target.value)}
               placeholder="Sub project name..."
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-white/10 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+              className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
               autoFocus
             />
 
             {/* Timeline Dates */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1 font-medium">Start Date</label>
-                <input
-                  type="date"
-                  value={newSubProjectStartDate}
-                  onChange={(e) => setNewSubProjectStartDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800/50 border border-white/10 text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/50 [color-scheme:dark]"
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">Start Date</label>
+                <DatePicker
+                  date={newSubProjectStartDate}
+                  onSelect={setNewSubProjectStartDate}
+                  placeholder="Pick start date"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1 font-medium">
+                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">
                   End Date
                   {newSubProjectStartDate && (
-                    <span className="text-slate-500 ml-1">(min: {newSubProjectStartDate})</span>
+                    <span className="text-slate-400 dark:text-slate-500 ml-1">(min: {format(newSubProjectStartDate, 'MMM d, yyyy')})</span>
                   )}
                 </label>
-                <input
-                  type="date"
-                  value={newSubProjectEndDate}
-                  min={newSubProjectStartDate || undefined}
-                  onChange={(e) => setNewSubProjectEndDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-800/50 border border-white/10 text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/50 [color-scheme:dark]"
+                <DatePicker
+                  date={newSubProjectEndDate}
+                  onSelect={setNewSubProjectEndDate}
+                  placeholder="Pick end date"
                 />
               </div>
             </div>
@@ -217,10 +229,10 @@ export default function ProjectDetailPage() {
                 onClick={() => {
                   setShowAddSubProject(false)
                   setNewSubProjectName('')
-                  setNewSubProjectStartDate('')
-                  setNewSubProjectEndDate('')
+                  setNewSubProjectStartDate(undefined)
+                  setNewSubProjectEndDate(undefined)
                 }}
-                className="flex-1 px-4 py-2 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 text-slate-100 font-medium transition-colors"
+                className="flex-1 px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800/50 hover:bg-slate-300 dark:hover:bg-slate-800/70 text-slate-900 dark:text-slate-100 font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -338,7 +350,7 @@ export default function ProjectDetailPage() {
             ) : (
               <button
                 onClick={handleAddDirectTask}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-400 hover:text-violet-400 transition-all"
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span className="text-sm font-medium">Add Direct Task</span>

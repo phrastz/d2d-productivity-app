@@ -96,21 +96,32 @@ export default function ProjectActions({ projectId, currentName, currentDescript
 
       {/* Dialog Edit */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Edit Project</DialogTitle></DialogHeader>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">Edit Project</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Project Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Label className="text-slate-700 dark:text-slate-300">Project Name</Label>
+              <Input 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10"
+              />
             </div>
             <div>
-              <Label>Description</Label>
-              <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} />
+              <Label className="text-slate-700 dark:text-slate-300">Description</Label>
+              <Textarea 
+                value={desc} 
+                onChange={(e) => setDesc(e.target.value)} 
+                rows={3} 
+                className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenEdit(false)}>Cancel</Button>
-            <Button onClick={handleUpdate} disabled={loading}>
+            <Button variant="outline" onClick={() => setOpenEdit(false)} className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300">Cancel</Button>
+            <Button onClick={handleUpdate} disabled={loading} className="bg-violet-600 hover:bg-violet-700 text-white">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes
             </Button>
           </DialogFooter>
@@ -119,16 +130,16 @@ export default function ProjectActions({ projectId, currentName, currentDescript
 
       {/* Dialog Delete Confirmation */}
       <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-slate-900 dark:text-white">Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
               This will permanently delete "{currentName}" and all its sub-projects & tasks. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogCancel className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -18,6 +18,7 @@ export function useRealtimeProjects() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Fetch projects (optimized query)
   useEffect(() => {
@@ -31,7 +32,7 @@ export function useRealtimeProjects() {
       // Optimized query: specific columns + limit
       const { data, error } = await supabase
         .from('projects')
-        .select('id, name, description, status, start_date, end_date, progress_percentage, created_at, owner_id')
+        .select('id, name, description, status, start_date, end_date, progress_percentage, created_at, updated_at, owner_id')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100) // Limit to 100 most recent projects
@@ -48,10 +49,13 @@ export function useRealtimeProjects() {
     }
     fetchProjects()
     return () => { isMounted = false }
-  }, [supabase])
+  }, [supabase, refreshKey])
+
+  // Manual refresh function
+  const refetch = () => setRefreshKey(k => k + 1)
 
   // Note: Realtime subscription removed for performance
   // Realtime is only enabled on project detail page
 
-  return { projects, loading, error, setProjects }
+  return { projects, loading, error, setProjects, refetch }
 }

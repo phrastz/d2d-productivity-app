@@ -24,7 +24,7 @@ type ViewMode = 'list' | 'timeline'
 
 export default function ProjectsPage() {
   const router = useRouter()
-  const { projects, loading, setProjects } = useRealtimeProjects()
+  const { projects, loading, setProjects, refetch } = useRealtimeProjects()
   const [view, setView] = useState<ViewMode>('timeline')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
             <Plus className="w-4 h-4" />
             New Project
           </button>
-          <QuickAddSubProject />
+          <QuickAddSubProject onSuccess={refetch} />
 
           {/* View toggle */}
           <div className="flex items-center gap-1 glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-1">

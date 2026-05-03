@@ -33,6 +33,36 @@ export default function NotesList({ projectId, taskId }: NotesListProps) {
 
     if (projectId || taskId) {
       fetchNotes()
+      
+      // Subscribe to real-time changes
+      const channelName = taskId ? `notes-task-${taskId}` : `notes-project-${projectId}`
+      const filter = taskId ? `task_id=eq.${taskId}` : `project_id=eq.${projectId}`
+      
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notes',
+            filter: filter
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setNotes(prev => [...prev, payload.new as Note])
+            } else if (payload.eventType === 'DELETE') {
+              setNotes(prev => prev.filter(n => n.id !== payload.old.id))
+            } else if (payload.eventType === 'UPDATE') {
+              setNotes(prev => prev.map(n => n.id === payload.new.id ? payload.new as Note : n))
+            }
+          }
+        )
+        .subscribe()
+      
+      return () => {
+        supabase.removeChannel(channel)
+      }
     } else {
       setLoading(false)
     }
@@ -62,9 +92,9 @@ export default function NotesList({ projectId, taskId }: NotesListProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-secondary/20 rounded-2xl border border-white/5 overflow-hidden">
-      <div className="p-4 border-b border-white/5 bg-secondary/30">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Notes & Comments</h3>
+    <div className="flex flex-col h-full bg-slate-100 dark:bg-secondary/20 rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden">
+      <div className="p-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-secondary/30">
+        <h3 className="text-xs font-bold text-slate-600 dark:text-muted-foreground uppercase tracking-wider">Notes & Comments</h3>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[300px]">
@@ -74,13 +104,13 @@ export default function NotesList({ projectId, taskId }: NotesListProps) {
           </div>
         ) : notes.length === 0 ? (
           <div className="flex items-center justify-center h-20 text-center">
-            <p className="text-xs text-muted-foreground">No notes yet. Add a comment below to track progress or blockers.</p>
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">No notes yet. Add a comment below to track progress or blockers.</p>
           </div>
         ) : (
           notes.map(note => (
-            <div key={note.id} className="glass rounded-xl p-3 animate-fade-in text-sm border-white/5">
-              <p className="text-foreground whitespace-pre-wrap leading-relaxed">{note.content}</p>
-              <div className="mt-2 text-[10px] text-muted-foreground text-right">
+            <div key={note.id} className="bg-white dark:glass rounded-xl p-3 animate-fade-in text-sm border border-slate-200 dark:border-white/5">
+              <p className="text-slate-900 dark:text-foreground whitespace-pre-wrap leading-relaxed">{note.content}</p>
+              <div className="mt-2 text-[10px] text-slate-500 dark:text-muted-foreground text-right">
                 {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
               </div>
             </div>
@@ -88,12 +118,12 @@ export default function NotesList({ projectId, taskId }: NotesListProps) {
         )}
       </div>
 
-      <form onSubmit={handleAddNote} className="p-3 border-t border-white/5 bg-secondary/30 flex gap-2">
+      <form onSubmit={handleAddNote} className="p-3 border-t border-slate-200 dark:border-white/5 bg-white dark:bg-secondary/30 flex gap-2">
         <input
           value={newNote}
           onChange={e => setNewNote(e.target.value)}
           placeholder="Add a note or boss's comment..."
-          className="flex-1 bg-black/20 border border-white/5 rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+          className="flex-1 bg-white dark:bg-black/20 border border-slate-300 dark:border-white/5 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-foreground placeholder:text-slate-500 dark:placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/50 transition-colors"
         />
         <button
           type="submit"

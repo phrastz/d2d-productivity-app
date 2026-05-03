@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { DatePicker } from '@/components/ui/DatePicker';
 import {
   Dialog,
   DialogContent,
@@ -22,42 +24,85 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function QuickAddSubProject() {
+interface QuickAddSubProjectProps {
+  onSuccess?: () => void;
+}
+
+export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProps) {
   const router = useRouter();
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fetchingProjects, setFetchingProjects] = useState(false);
   
   // Form state
   const [name, setName] = useState('');
   const [projectId, setProjectId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
 
-  // Fetch active projects for dropdown
+  // Fetch active projects for dropdown when dialog opens
   useEffect(() => {
+    if (!open) return;
+    
     const fetchProjects = async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id, name')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-      if (!error && data) setProjects(data);
+      setFetchingProjects(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error('Please log in to create sub-projects');
+          setFetchingProjects(false);
+          return;
+        }
+        
+        const { data, error } = await supabase
+          .from('projects')
+          .select('id, name')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error('Error fetching projects:', error);
+          toast.error('Failed to load projects: ' + error.message);
+        } else if (data) {
+          setProjects(data);
+          if (data.length === 0) {
+            toast.info('No active projects found. Create a project first.');
+          }
+        }
+      } catch (err) {
+        console.error('Exception fetching projects:', err);
+        toast.error('Failed to load projects');
+      } finally {
+        setFetchingProjects(false);
+      }
     };
+    
     fetchProjects();
-  }, []);
+  }, [open, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !projectId) return alert('Nama Sub Project dan Target Project wajib diisi!');
+    if (!name || !projectId) {
+      toast.error('Sub Project name and Target Project are required!');
+      return;
+    }
+    
+    if (startDate && endDate && endDate < startDate) {
+      toast.error('End date cannot be before start date');
+      return;
+    }
     
     setLoading(true);
+    const startDateStr = startDate ? startDate.toISOString().split('T')[0] : null;
+    const endDateStr = endDate ? endDate.toISOString().split('T')[0] : null;
+    
     const { error } = await supabase.from('sub_projects').insert({
       name,
       project_id: projectId,
-      start_date: startDate || null,
-      end_date: endDate || null,
+      start_date: startDateStr,
+      end_date: endDateStr,
       status: 'not_started',
       priority: 'medium',
       order_index: 0,
@@ -66,10 +111,20 @@ export default function QuickAddSubProject() {
 
     if (!error) {
       setOpen(false);
-      setName(''); setStartDate(''); setEndDate('');
+      setName('');
+      setProjectId('');
+      setStartDate(undefined);
+      setEndDate(undefined);
+      toast.success('Sub-project created successfully!');
+      
+      // Call parent refresh callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+      
       router.refresh();
     } else {
-      alert('Gagal create sub project: ' + error.message);
+      toast.error('Failed to create sub-project: ' + error.message);
     }
   };
 
@@ -80,38 +135,61 @@ export default function QuickAddSubProject() {
         <span className="hidden sm:inline">Quick Add Sub Project</span>
         <span className="sm:hidden">+ Sub Project</span>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Quick Add Sub Project</DialogTitle></DialogHeader>
+      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200 dark:border-slate-800">
+        <DialogHeader>
+          <DialogTitle className="text-slate-900 dark:text-white">Quick Add Sub Project</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div>
-            <Label>Sub Project Name</Label>
-            <Input placeholder="e.g., API Integration" value={name} onChange={(e) => setName(e.target.value)} required />
+            <Label className="text-slate-700 dark:text-slate-300">Sub Project Name</Label>
+            <Input 
+              placeholder="e.g., API Integration" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              required 
+              className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            />
           </div>
           
           <div>
-            <Label>Target Project</Label>
-            <Select value={projectId} onValueChange={(val) => setProjectId(val || '')} required>
-              <SelectTrigger><SelectValue placeholder="Select parent project..." /></SelectTrigger>
-              <SelectContent>
+            <Label className="text-slate-700 dark:text-slate-300">Target Project</Label>
+            <Select value={projectId} onValueChange={(val) => setProjectId(val || '')} required disabled={fetchingProjects || projects.length === 0}>
+              <SelectTrigger className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10">
+                <SelectValue placeholder={fetchingProjects ? "Loading projects..." : projects.length === 0 ? "No projects available" : "Select parent project..."} />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-h-60">
                 {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  <SelectItem key={p.id} value={p.id} className="text-slate-900 dark:text-white cursor-pointer">{p.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {projects.length === 0 && !fetchingProjects && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                No active projects found. Create a project first.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Start Date</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Label className="text-slate-700 dark:text-slate-300">Start Date</Label>
+              <DatePicker
+                date={startDate}
+                onSelect={setStartDate}
+                placeholder="Pick start date"
+              />
             </div>
             <div>
-              <Label>End Date</Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <Label className="text-slate-700 dark:text-slate-300">End Date</Label>
+              <DatePicker
+                date={endDate}
+                onSelect={setEndDate}
+                placeholder="Pick end date"
+              />
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 text-white" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Sub Project
           </Button>
         </form>

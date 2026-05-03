@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Plus, MoreVertical, Edit2, Trash2, GripVerti
 import { useSubProjects } from '@/hooks/useSubProjects'
 import { createClient } from '@/lib/supabase/client'
 import AddTaskForm from '@/components/projects/AddTaskForm'
+import { toast } from 'sonner'
 
 interface SubProjectCardProps {
   subProject: SubProject
@@ -15,23 +16,23 @@ interface SubProjectCardProps {
 }
 
 const STATUS_COLORS = {
-  not_started: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  in_progress: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  on_hold: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  completed: 'bg-green-500/20 text-green-400 border-green-500/30',
+  not_started: 'bg-slate-200 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-500/30',
+  in_progress: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-500/30',
+  on_hold: 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-500/30',
+  completed: 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 border-green-300 dark:border-green-500/30',
 }
 
 const PRIORITY_COLORS = {
-  low: 'bg-gray-500/20 text-gray-400',
-  medium: 'bg-blue-500/20 text-blue-400',
-  high: 'bg-orange-500/20 text-orange-400',
+  low: 'bg-gray-200 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400',
+  medium: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
+  high: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400',
 }
 
 // ── Task progress preset config ────────────────────────────────────────────
 const PROGRESS_PRESETS = [
-  { label: 'Todo',        value: 0,   color: 'bg-slate-600 hover:bg-slate-500 text-slate-200' },
-  { label: 'In Progress', value: 50,  color: 'bg-blue-600  hover:bg-blue-500  text-white' },
-  { label: 'Done',        value: 100, color: 'bg-green-600 hover:bg-green-500 text-white' },
+  { label: 'Todo',        value: 0,   color: 'bg-slate-500 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500 text-white' },
+  { label: 'In Progress', value: 50,  color: 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-400 dark:hover:bg-blue-500 text-white' },
+  { label: 'Done',        value: 100, color: 'bg-green-500 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500 text-white' },
 ]
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -139,14 +140,24 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
 
   const handleSaveEdit = async () => {
     if (editName.trim() && editName !== subProject.name) {
-      await updateSubProject(subProject.id, { name: editName.trim() })
+      try {
+        await updateSubProject(subProject.id, { name: editName.trim() })
+        toast.success('Sub-project updated successfully!')
+      } catch (err) {
+        toast.error('Failed to update sub-project')
+      }
     }
     setEditing(false)
   }
 
   const handleDelete = async () => {
     if (confirm(`Delete sub-project "${subProject.name}"? All tasks will be moved to the main project.`)) {
-      await deleteSubProject(subProject.id)
+      try {
+        await deleteSubProject(subProject.id)
+        toast.success('Sub-project deleted successfully!')
+      } catch (err) {
+        toast.error('Failed to delete sub-project')
+      }
     }
   }
 
@@ -160,18 +171,18 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
   const tasksDone = subProject.tasks_done || 0
 
   return (
-    <div className="glass rounded-2xl overflow-hidden border border-white/5">
+    <div className="glass rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5">
       {/* Header */}
-      <div className="p-4 flex items-center gap-3 bg-slate-800/30">
+      <div className="p-4 flex items-center gap-3 bg-slate-100 dark:bg-slate-800/30">
         {/* Drag Handle */}
-        <button className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-100 transition-colors">
+        <button className="cursor-grab active:cursor-grabbing text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors">
           <GripVertical className="w-4 h-4" />
         </button>
 
         {/* Expand/Collapse */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-slate-400 hover:text-slate-100 transition-colors"
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors"
         >
           {expanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
         </button>
@@ -190,7 +201,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
                 setEditing(false)
               }
             }}
-            className="flex-1 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-white/10 text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+            className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500-50"
             autoFocus
           />
         ) : (
@@ -207,19 +218,45 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
           {subProject.priority.toUpperCase()}
         </div>
 
-        {/* Progress */}
+        {/* Progress & Effort */}
         <div className="flex items-center gap-2">
           <div className="text-xs text-slate-500 dark:text-slate-400">
             {tasksDone}/{tasksTotal} tasks
           </div>
           <div className="text-sm font-bold gradient-text">{progress}%</div>
+          {/* Effort Summary */}
+          {(() => {
+            const totalEst = tasks.reduce((s, t) => s + (t.effort_estimate || 0), 0)
+            const totalAct = tasks.reduce((s, t) => s + (t.actual_effort || 0), 0)
+            if (totalEst === 0) return null
+            const ratio = totalAct > 0 ? Math.round((totalAct / totalEst) * 100) : 0
+            const unit = tasks.find(t => t.effort_estimate > 0)?.effort_unit === 'story_points' ? 'pts' : 
+                        tasks.find(t => t.effort_estimate > 0)?.effort_unit === 'days' ? 'd' : 'h'
+            return (
+              <div className="text-xs flex items-center gap-1">
+                <span className="text-slate-400 dark:text-slate-500">|</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {totalAct}/{totalEst}{unit}
+                </span>
+                {totalAct > 0 && (
+                  <span className={`font-medium ${
+                    ratio <= 90 ? 'text-green-600 dark:text-green-400' :
+                    ratio <= 110 ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
+                  }`}>
+                    ({ratio}%)
+                  </span>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Menu */}
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -227,13 +264,13 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-20 glass rounded-xl border border-white/10 shadow-xl py-1 min-w-[140px]">
+              <div className="absolute right-0 top-full mt-1 z-20 glass rounded-xl border border-slate-200 dark:border-white/10 shadow-xl py-1 min-w-[140px] bg-white dark:bg-transparent">
                 <button
                   onClick={() => {
                     setEditing(true)
                     setShowMenu(false)
                   }}
-                  className="w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-white/5 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   Edit
@@ -243,7 +280,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
                     handleDelete()
                     setShowMenu(false)
                   }}
-                  className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Delete
@@ -255,7 +292,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 bg-slate-800/50">
+      <div className="h-1.5 bg-slate-200 dark:bg-slate-800/50">
         <div
           className={`h-full transition-all duration-300 ${
             progress >= 71 ? 'bg-green-500' : progress >= 31 ? 'bg-yellow-500' : 'bg-red-500'
@@ -275,7 +312,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
             tasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-colors group"
               >
                 {/* Task Title — click to edit */}
                 <span
@@ -288,7 +325,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
                 </span>
 
                 {task.priority === 'urgent' && (
-                  <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold">
+                  <span className="text-xs px-2 py-0.5 rounded bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold">
                     URGENT
                   </span>
                 )}
@@ -317,7 +354,7 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
           ) : (
             <button
               onClick={() => setShowAddTask(true)}
-              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-400 hover:text-violet-400 transition-all"
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span className="text-sm font-medium">Add Task</span>

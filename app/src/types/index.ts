@@ -23,11 +23,17 @@ export interface Project {
   status: ProjectStatus
   progress_percentage: number
   created_at: string
+  updated_at: string
+  status_changed_at?: string
   // Computed fields (not in database)
   sub_projects?: SubProject[]
   progress?: number
   tasks_total?: number
   tasks_done?: number
+  // Effort tracking (computed)
+  total_effort_estimate?: number
+  total_actual_effort?: number
+  efficiency_ratio?: number
 }
 
 export interface SubProject {
@@ -41,6 +47,7 @@ export interface SubProject {
   owner_id: string
   created_at: string
   updated_at: string
+  status_changed_at?: string
   // Fields added in migration (Step 1)
   progress_percent: number
   weight_contribution: number
@@ -67,10 +74,30 @@ export interface Task {
   is_habit: boolean
   habit_category: string | null
   created_at: string
+  updated_at: string
   // Fields added in migration (Step 1)
   progress_percent: number
   start_date: string | null
   end_date: string | null
+  // Fields added in migration 005
+  effort_estimate: number
+  actual_effort: number
+  effort_unit: 'hours' | 'days' | 'story_points'
+  // Computed efficiency (calculated at runtime)
+  efficiency_ratio?: number
+  effort_variance?: number
+  // Fields added in migration 006 - Backdate & Audit
+  planned_completed_date?: string
+  actual_completed_date?: string
+  status_changed_at: string
+  is_backdated_entry: boolean
+  backdate_reason?: string
+  // Blocker tracking
+  blocker_reason?: string
+  blocked_by?: string
+  is_blocked: boolean
+  // Computed (not in DB)
+  time_variance_days?: number // calculated: actual - planned
 }
 
 export interface DailyLog {
@@ -97,4 +124,26 @@ export interface Note {
   task_id: string | null
   content: string
   created_at: string
+  updated_at: string
+}
+
+// ============================================================================
+// Effort Tracking Types
+// ============================================================================
+
+export interface EfficiencyMetrics {
+  estimatedEffort: number
+  actualEffort: number
+  efficiencyRatio: number // (actual / estimate) * 100
+  variance: number // actual - estimate
+  status: 'under' | 'on_track' | 'over' // based on ratio
+}
+
+export interface ProjectEfficiency {
+  totalEstimate: number
+  totalActual: number
+  overallRatio: number
+  subProjectEfficiency: { id: string; name: string; ratio: number }[]
+  onTrackTasks: number
+  overEffortTasks: number
 }
