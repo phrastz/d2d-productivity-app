@@ -143,20 +143,30 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
       blocker_reason: form.blocker_reason || null,
     }
     let data: Task | null = null
-    if (task) {
-      const res = await supabase.from('tasks').update(payload).eq('id', task.id).select().single()
-      data = res.data
-    } else {
-      const res = await supabase.from('tasks').insert({ ...payload, owner_id: user.id }).select().single()
-      data = res.data
-    }
-    setSaving(false)
-    if (data) {
-      toast.success(task ? 'Task updated successfully!' : 'Task created successfully!', {
-        description: `"${data.title}" has been saved`
+    try {
+      if (task) {
+        const res = await supabase.from('tasks').update(payload).eq('id', task.id).select().single()
+        if (res.error) throw res.error
+        data = res.data
+      } else {
+        const res = await supabase.from('tasks').insert({ ...payload, owner_id: user.id }).select().single()
+        if (res.error) throw res.error
+        data = res.data
+      }
+      setSaving(false)
+      if (data) {
+        toast.success(task ? 'Task updated successfully!' : 'Task created successfully!', {
+          description: `"${data.title}" has been saved`
+        })
+        onSaved(data)
+        onClose()
+      }
+    } catch (err: any) {
+      setSaving(false)
+      console.error('Save error:', err)
+      toast.error('Failed to save task', {
+        description: err.message || 'Please try again'
       })
-      onSaved(data)
-      onClose()
     }
   }
 

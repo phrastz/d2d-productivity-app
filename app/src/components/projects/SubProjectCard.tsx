@@ -43,6 +43,15 @@ const PROGRESS_PRESETS = [
 ]
 // ──────────────────────────────────────────────────────────────────────────
 
+// ── Task status options including cancelled ────────────────────────────────
+const STATUS_OPTIONS = [
+  { value: 'todo' as const, label: 'Todo', color: 'bg-slate-500 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500 text-white' },
+  { value: 'in_progress' as const, label: 'In Progress', color: 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-400 dark:hover:bg-blue-500 text-white' },
+  { value: 'done' as const, label: 'Done', color: 'bg-green-500 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500 text-white' },
+  { value: 'cancelled' as const, label: 'Cancelled', color: 'bg-rose-500 dark:bg-rose-600 hover:bg-rose-400 dark:hover:bg-rose-500 text-white' },
+]
+// ──────────────────────────────────────────────────────────────────────────
+
 interface TaskProgressControlProps {
   task: Task
   onUpdated: () => void
@@ -56,11 +65,40 @@ function TaskProgressControl({ task, onUpdated, updateTaskProgress }: TaskProgre
   const [saving, setSaving] = useState(false)
 
   const currentProgress = task.progress_percent ?? 0
+  const currentStatus = task.status
+
+  const updateStatus = async (newStatus: Task['status']) => {
+    setSaving(true)
+
+    // Map status to progress
+    const progressMap: Record<Task['status'], number> = {
+      todo: 0,
+      in_progress: 50,
+      done: 100,
+      cancelled: task.progress_percent ?? 0 // Keep current progress for cancelled
+    }
+    const newProgress = progressMap[newStatus]
+
+    if (updateTaskProgress) {
+      // Use the passed-in function from useProjectDetail hook
+      await updateTaskProgress(task.id, newProgress)
+    } else {
+      // Fallback to direct DB update
+      await supabase
+        .from('tasks')
+        .update({ progress_percent: newProgress, status: newStatus })
+        .eq('id', task.id)
+    }
+
+    setSaving(false)
+    setEditing(false)
+    onUpdated()
+  }
 
   const updateProgress = async (newValue: number) => {
     const clamped = Math.min(100, Math.max(0, newValue))
     setSaving(true)
-    
+
     if (updateTaskProgress) {
       // Use the passed-in function from useProjectDetail hook
       await updateTaskProgress(task.id, clamped)
@@ -88,19 +126,19 @@ function TaskProgressControl({ task, onUpdated, updateTaskProgress }: TaskProgre
 
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      {/* 3 Preset Buttons */}
-      {PROGRESS_PRESETS.map((preset) => (
+      {/* 4 Status Buttons including Cancelled */}
+      {STATUS_OPTIONS.map((option) => (
         <button
-          key={preset.value}
-          onClick={() => updateProgress(preset.value)}
+          key={option.value}
+          onClick={() => updateStatus(option.value)}
           disabled={saving}
           className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all disabled:opacity-50 ${
-            currentProgress === preset.value
-              ? preset.color + ' ring-1 ring-white/30'
+            currentStatus === option.value
+              ? option.color + ' ring-1 ring-white/30'
               : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
           }`}
         >
-          {preset.label}
+          {option.label}
         </button>
       ))}
 
