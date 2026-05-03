@@ -3,6 +3,7 @@
 import { Project } from '@/types'
 import { differenceInDays, parseISO, format, startOfDay, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 const statusColors = {
   active:    { bar: 'bg-gradient-to-r from-violet-500 to-purple-600', badge: 'bg-violet-500/20 text-violet-700 dark:text-violet-300' },
@@ -75,7 +76,13 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
               <div key={project.id} className="flex items-center gap-3 group">
                 {/* Project label */}
                 <div className="w-36 flex-shrink-0 text-right">
-                  <p className="text-xs font-medium text-slate-900 dark:text-white truncate">{project.name}</p>
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="text-xs font-medium text-slate-900 dark:text-white truncate hover:text-violet-600 dark:hover:text-violet-400 hover:underline cursor-pointer transition-colors block"
+                    title="Click to view project details"
+                  >
+                    {project.name}
+                  </Link>
                   <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full', colors.badge)}>
                     {project.status.replace('_', ' ')}
                   </span>
