@@ -44,8 +44,48 @@ export default function ProjectDetailPage() {
       if (!selectedProjectId) return;
       
       setLoading(true);
-      const projectData = await getProjectDetailData(selectedProjectId);
-      setData(projectData);
+      
+      if (selectedProjectId === 'ALL') {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const { data: allProjects } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            sub_projects(
+              *,
+              tasks(*)
+            )
+          `)
+          .eq('owner_id', user?.id)
+          .order('created_at', { ascending: false });
+        
+        const allTasks = allProjects?.flatMap(p => 
+          p.sub_projects?.flatMap((sp: any) => sp.tasks || []) || []
+        ) || [];
+        
+        const stats = {
+          totalTasks: allTasks.length,
+          completedTasks: allTasks.filter((t: any) => t.status === 'done').length,
+          inProgressTasks: allTasks.filter((t: any) => t.status === 'in_progress').length,
+          blockedTasks: allTasks.filter((t: any) => t.status === 'blocked').length,
+          progress: allTasks.length > 0 
+            ? Math.round((allTasks.filter((t: any) => t.status === 'done').length / allTasks.length) * 100)
+            : 0
+        };
+        
+        setData({
+          name: 'All Projects Combined',
+          description: `Showing ${allProjects?.length || 0} projects`,
+          sub_projects: allProjects?.flatMap(p => p.sub_projects || []) || [],
+          stats
+        });
+      } else {
+        const projectData = await getProjectDetailData(selectedProjectId);
+        setData(projectData);
+      }
+      
       setLoading(false);
     }
     
@@ -86,7 +126,7 @@ export default function ProjectDetailPage() {
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-12">
           <h1 className="text-4xl font-bold mb-3">🎯 Project Deep Dive Report</h1>
           
-          {projects.length > 1 && (
+          {projects.length > 0 && (
             <div className="mt-6">
               <label className="text-sm opacity-90 mb-2 block">Select Project:</label>
               <select
@@ -94,6 +134,7 @@ export default function ProjectDetailPage() {
                 onChange={(e) => setSelectedProjectId(e.target.value)}
                 className="px-4 py-2 rounded-lg bg-white/20 backdrop-blur-lg text-white border-2 border-white/30 focus:border-white/50 outline-none"
               >
+                <option value="ALL" className="text-gray-900">All Projects</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id} className="text-gray-900">
                     {p.name}
