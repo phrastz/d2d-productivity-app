@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { NotificationPermission } from '@/components/notifications/NotificationPermission'
 
 interface TopNavProps {
   title: string
@@ -44,15 +44,7 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
             {format(new Date(), 'EEEE, d MMMM yyyy')}
           </p>
           <ThemeToggle />
-          <button
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors relative text-slate-600 dark:text-[hsl(215,20%,55%)]"
-          >
-            <Bell className="w-4 h-4" />
-            <span
-              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-              style={{ background: 'hsl(250 84% 65%)' }}
-            />
-          </button>
+          <NotificationPermission />
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
             style={{ background: 'linear-gradient(135deg, hsl(250 84% 65%), hsl(280 84% 55%))' }}
