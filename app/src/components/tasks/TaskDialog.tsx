@@ -26,7 +26,7 @@ interface TaskDialogProps {
 }
 
 const priorities: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
-const statuses: TaskStatus[]     = ['todo', 'in_progress', 'done']
+const statuses: TaskStatus[]     = ['todo', 'in_progress', 'done', 'cancelled']
 
 export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSaved, onDeleted }: TaskDialogProps) {
   const supabase = createClient()
@@ -151,7 +151,13 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
       data = res.data
     }
     setSaving(false)
-    if (data) { onSaved(data); onClose() }
+    if (data) {
+      toast.success(task ? 'Task updated successfully!' : 'Task created successfully!', {
+        description: `"${data.title}" has been saved`
+      })
+      onSaved(data)
+      onClose()
+    }
   }
 
   const handleDelete = async () => {
@@ -173,9 +179,9 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 animate-fade-in shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-5">
+      <div className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 animate-fade-in shadow-2xl flex flex-col overflow-hidden">
+        {/* Sticky Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 z-10">
           <h2 className="text-base font-semibold gradient-text">
             {task ? 'Edit Task' : 'New Task'}
           </h2>
@@ -184,8 +190,8 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
           </button>
         </div>
 
-        {/* Form */}
-        <div className="space-y-4">
+        {/* Scrollable Form Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <input
             value={form.title ?? ''}
             onChange={e => set('title', e.target.value)}
@@ -469,8 +475,8 @@ export default function TaskDialog({ task, defaultStatus = 'todo', onClose, onSa
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-6">
+        {/* Sticky Footer Actions */}
+        <div className="flex gap-2 px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 z-10">
           {task && (
             <button
               onClick={() => setShowDeleteConfirm(true)}

@@ -6,7 +6,14 @@ import { ChevronDown, ChevronRight, Plus, MoreVertical, Edit2, Trash2, GripVerti
 import { useSubProjects } from '@/hooks/useSubProjects'
 import { createClient } from '@/lib/supabase/client'
 import AddTaskForm from '@/components/projects/AddTaskForm'
+import { allTasksHaveEffort, getEffortSummary } from '@/lib/progressCalculator'
 import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface SubProjectCardProps {
   subProject: SubProject
@@ -234,31 +241,53 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
 
         {/* Progress & Effort */}
         <div className="flex items-center gap-2">
+          {/* Task count */}
           <div className="text-xs text-slate-500 dark:text-slate-400">
             {tasksDone}/{tasksTotal} tasks
           </div>
-          <div className="text-sm font-bold gradient-text">{progress}%</div>
-          {/* Effort Summary */}
+
+          {/* Progress with calculation method indicator */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold gradient-text">{progress}%</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                allTasksHaveEffort(tasks)
+                  ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+              }`}
+              title={allTasksHaveEffort(tasks)
+                ? 'Based on actual vs estimated effort'
+                : 'Based on completed task count'
+              }
+            >
+              {allTasksHaveEffort(tasks) ? 'Effort' : 'Count'}
+            </span>
+          </div>
+
+          {/* Effort Summary - only if effort data exists */}
           {(() => {
-            const totalEst = tasks.reduce((s, t) => s + (t.effort_estimate || 0), 0)
-            const totalAct = tasks.reduce((s, t) => s + (t.actual_effort || 0), 0)
-            if (totalEst === 0) return null
-            const ratio = totalAct > 0 ? Math.round((totalAct / totalEst) * 100) : 0
-            const unit = tasks.find(t => t.effort_estimate > 0)?.effort_unit === 'story_points' ? 'pts' : 
-                        tasks.find(t => t.effort_estimate > 0)?.effort_unit === 'days' ? 'd' : 'h'
+            const { totalEstimated, totalActual, unit, efficiency } = getEffortSummary(tasks)
+            if (totalEstimated === 0) return null
+
+            const unitLabel = unit === 'story_points' ? 'pts' :
+                             unit === 'days' ? 'd' : 'h'
+
             return (
-              <div className="text-xs flex items-center gap-1">
+              <div className="text-xs flex items-center gap-1 ml-1">
                 <span className="text-slate-400 dark:text-slate-500">|</span>
-                <span className="text-slate-500 dark:text-slate-400">
-                  {totalAct}/{totalEst}{unit}
+                <span className="text-slate-500 dark:text-slate-400" title="Actual / Estimated effort">
+                  {totalActual}/{totalEstimated}{unitLabel}
                 </span>
-                {totalAct > 0 && (
-                  <span className={`font-medium ${
-                    ratio <= 90 ? 'text-green-600 dark:text-green-400' :
-                    ratio <= 110 ? 'text-yellow-600 dark:text-yellow-400' :
-                    'text-red-600 dark:text-red-400'
-                  }`}>
-                    ({ratio}%)
+                {totalActual > 0 && (
+                  <span
+                    className={`font-medium ${
+                      efficiency <= 90 ? 'text-green-600 dark:text-green-400' :
+                      efficiency <= 110 ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-red-600 dark:text-red-400'
+                    }`}
+                    title="Efficiency: Actual vs Estimated effort ratio"
+                  >
+                    ({efficiency}%)
                   </span>
                 )}
               </div>
@@ -332,10 +361,18 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
                 <span
                   onClick={() => onEditTask(task)}
                   className={`flex-1 text-sm cursor-pointer ${
-                    task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'
+                    task.status === 'done' || task.status === 'cancelled'
+                      ? 'text-slate-400 dark:text-slate-500 line-through'
+                      : 'text-slate-900 dark:text-slate-100'
                   }`}
+                  title={task.status === 'cancelled' ? 'Cancelled task' : undefined}
                 >
                   {task.title}
+                  {task.status === 'cancelled' && (
+                    <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                      Cancelled
+                    </span>
+                  )}
                 </span>
 
                 {task.priority === 'urgent' && (
@@ -354,26 +391,32 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
             ))
           )}
 
-          {/* Add Task Button / Form */}
-          {showAddTask ? (
-            <AddTaskForm
-              projectId={subProject.project_id}
-              subProjectId={subProject.id}
-              onCreated={() => {
-                setShowAddTask(false)
-                handleTaskProgressUpdated()
-              }}
-              onCancel={() => setShowAddTask(false)}
-            />
-          ) : (
-            <button
-              onClick={() => setShowAddTask(true)}
-              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium">Add Task</span>
-            </button>
-          )}
+          {/* Add Task Button */}
+          <button
+            onClick={() => setShowAddTask(true)}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-sm font-medium">Add Task</span>
+          </button>
+
+          {/* Add Task Dialog */}
+          <Dialog open={showAddTask} onOpenChange={setShowAddTask}>
+            <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+              <DialogHeader>
+                <DialogTitle className="text-slate-900 dark:text-white">Add New Task</DialogTitle>
+              </DialogHeader>
+              <AddTaskForm
+                projectId={subProject.project_id}
+                subProjectId={subProject.id}
+                onCreated={() => {
+                  setShowAddTask(false)
+                  handleTaskProgressUpdated()
+                }}
+                onCancel={() => setShowAddTask(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </div>

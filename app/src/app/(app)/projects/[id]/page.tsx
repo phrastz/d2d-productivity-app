@@ -12,8 +12,15 @@ import { Loader2, Plus, ArrowLeft, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { Task } from '@/types'
 import AddTaskForm from '@/components/projects/AddTaskForm'
+import TaskDialog from '@/components/tasks/TaskDialog'
 import { toast } from 'sonner'
 import { DatePicker } from '@/components/ui/DatePicker'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -29,6 +36,7 @@ export default function ProjectDetailPage() {
   const [creating, setCreating] = useState(false)
   const [showAddDirectTask, setShowAddDirectTask] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const handleCreateSubProject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,8 +91,19 @@ export default function ProjectDetailPage() {
   }
 
   const handleEditTask = (task: Task) => {
-    // TODO: Implement edit task dialog
-    console.log('Edit task:', task)
+    setEditingTask(task)
+  }
+
+  const handleTaskSave = () => {
+    setEditingTask(null)
+    setRefreshKey(k => k + 1)
+    router.refresh()
+  }
+
+  const handleTaskDelete = () => {
+    setEditingTask(null)
+    setRefreshKey(k => k + 1)
+    router.refresh()
   }
 
   const handleAddDirectTask = () => {
@@ -279,6 +298,8 @@ export default function ProjectDetailPage() {
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                     task.status === 'done'
                       ? 'bg-green-500 border-green-500'
+                      : task.status === 'cancelled'
+                      ? 'bg-slate-300 dark:bg-slate-600 border-slate-300 dark:border-slate-600'
                       : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                   }`}>
                     {task.status === 'done' && (
@@ -286,12 +307,25 @@ export default function ProjectDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
+                    {task.status === 'cancelled' && (
+                      <span className="text-[8px] text-slate-500 dark:text-slate-400">✕</span>
+                    )}
                   </div>
-                  <span 
+                  <span
                     onClick={() => handleEditTask(task)}
-                    className={`flex-1 text-sm cursor-pointer ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-slate-100'}`}
+                    className={`flex-1 text-sm cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded px-2 py-1 -mx-1 transition-colors ${
+                      task.status === 'done' || task.status === 'cancelled'
+                        ? 'text-slate-400 dark:text-slate-500 line-through'
+                        : 'text-slate-900 dark:text-slate-100'
+                    }`}
+                    title={task.status === 'cancelled' ? 'Cancelled task' : 'Click to edit task'}
                   >
                     {task.title}
+                    {task.status === 'cancelled' && (
+                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                        Cancelled
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
                     {task.progress_percent || 0}%
@@ -339,26 +373,42 @@ export default function ProjectDetailPage() {
               </div>
             ))}
 
-            {/* Add Direct Task form or button */}
-            {showAddDirectTask ? (
-              <AddTaskForm
-                projectId={projectId}
-                subProjectId={null}
-                onCreated={() => setShowAddDirectTask(false)}
-                onCancel={() => setShowAddDirectTask(false)}
-              />
-            ) : (
-              <button
-                onClick={handleAddDirectTask}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm font-medium">Add Direct Task</span>
-              </button>
-            )}
+            {/* Add Direct Task button */}
+            <button
+              onClick={handleAddDirectTask}
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-violet-500/50 hover:bg-violet-500/5 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm font-medium">Add Direct Task</span>
+            </button>
+
+            {/* Add Direct Task Dialog */}
+            <Dialog open={showAddDirectTask} onOpenChange={setShowAddDirectTask}>
+              <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                <DialogHeader>
+                  <DialogTitle className="text-slate-900 dark:text-white">Add Direct Task</DialogTitle>
+                </DialogHeader>
+                <AddTaskForm
+                  projectId={projectId}
+                  subProjectId={null}
+                  onCreated={handleTaskCreated}
+                  onCancel={() => setShowAddDirectTask(false)}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
+
+      {/* Task Edit Dialog */}
+      {editingTask && (
+        <TaskDialog
+          task={editingTask}
+          onClose={handleTaskSave}
+          onSaved={handleTaskSave}
+          onDeleted={handleTaskDelete}
+        />
+      )}
     </div>
   )
 }
