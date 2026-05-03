@@ -15,7 +15,7 @@ interface ProjectDetail extends Project {
   directTasks: Task[]
 }
 
-export function useProjectDetail(projectId: string | null) {
+export function useProjectDetail(projectId: string | null, refreshKey?: number) {
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -228,7 +228,7 @@ export function useProjectDetail(projectId: string | null) {
         }
       }
     }
-  }, [projectId])
+  }, [projectId, refreshKey])
 
   const supabase = createClient()
 

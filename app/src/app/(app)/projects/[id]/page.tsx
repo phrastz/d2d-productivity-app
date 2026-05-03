@@ -26,17 +26,20 @@ export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
-  const { project, loading, error, updateTaskProgress, updateTaskStatus } = useProjectDetail(projectId)
-  const { createSubProject } = useSubProjects()
   
+  // State declarations first
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showAddSubProject, setShowAddSubProject] = useState(false)
   const [newSubProjectName, setNewSubProjectName] = useState('')
   const [newSubProjectStartDate, setNewSubProjectStartDate] = useState<Date | undefined>(undefined)
   const [newSubProjectEndDate, setNewSubProjectEndDate] = useState<Date | undefined>(undefined)
   const [creating, setCreating] = useState(false)
   const [showAddDirectTask, setShowAddDirectTask] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  
+  // Hooks that depend on state
+  const { project, loading, error, updateTaskProgress, updateTaskStatus } = useProjectDetail(projectId, refreshKey)
+  const { createSubProject } = useSubProjects()
 
   const handleCreateSubProject = async (e: React.FormEvent) => {
     e.preventDefault()
