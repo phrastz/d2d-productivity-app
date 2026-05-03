@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/dialog'
 
 interface SubProjectCardProps {
-  subProject: SubProject
+  subProject: SubProject & { tasks?: Task[] }
   onAddTask: (subProjectId: string) => void
   onEditTask: (task: Task) => void
   updateTaskProgress?: (taskId: string, newProgress: number) => Promise<void>
+  onTaskCreated?: () => void
 }
 
 const STATUS_COLORS = {
@@ -174,7 +175,7 @@ function TaskProgressControl({ task, onUpdated, updateTaskProgress }: TaskProgre
   )
 }
 
-export default function SubProjectCard({ subProject, onAddTask, onEditTask, updateTaskProgress }: SubProjectCardProps) {
+export default function SubProjectCard({ subProject, onAddTask, onEditTask, updateTaskProgress, onTaskCreated }: SubProjectCardProps) {
   const [expanded, setExpanded] = useState(true)
   const [showMenu, setShowMenu] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -450,6 +451,8 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
                 onCreated={() => {
                   setShowAddTask(false)
                   handleTaskProgressUpdated()
+                  // Notify parent to refresh project data
+                  onTaskCreated?.()
                 }}
                 onCancel={() => setShowAddTask(false)}
               />

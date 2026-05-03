@@ -278,6 +278,7 @@ export default function ProjectDetailPage() {
               onAddTask={handleAddTask}
               onEditTask={handleEditTask}
               updateTaskProgress={updateTaskProgress}
+              onTaskCreated={handleTaskCreated}
             />
           ))}
         </div>
