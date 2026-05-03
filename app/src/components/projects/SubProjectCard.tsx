@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { SubProject, Task } from '@/types'
-import { ChevronDown, ChevronRight, Plus, MoreVertical, Edit2, Trash2, GripVertical } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, MoreVertical, Edit2, Trash2, GripVertical, Link2, AlertTriangle } from 'lucide-react'
 import { useSubProjects } from '@/hooks/useSubProjects'
 import { createClient } from '@/lib/supabase/client'
 import AddTaskForm from '@/components/projects/AddTaskForm'
@@ -206,6 +206,20 @@ export default function SubProjectCard({ subProject, onAddTask, onEditTask, upda
           />
         ) : (
           <h3 className="flex-1 font-semibold text-slate-900 dark:text-white">{subProject.name}</h3>
+        )}
+
+        {/* Dependency Indicator */}
+        {subProject.depends_on_subproject_id && (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400">
+            <Link2 className="w-3 h-3" />
+            <span className="truncate max-w-[120px]">Depends on: {subProject.depends_on_name || 'Another'}</span>
+            {subProject.can_start === false && (
+              <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 ml-1">
+                <AlertTriangle className="w-3 h-3" />
+                Blocked
+              </span>
+            )}
+          </div>
         )}
 
         {/* Status Badge */}

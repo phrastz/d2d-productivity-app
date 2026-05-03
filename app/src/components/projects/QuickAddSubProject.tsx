@@ -40,7 +40,10 @@ export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProp
   const [projectId, setProjectId] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [dependsOn, setDependsOn] = useState<string>('');
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [subProjects, setSubProjects] = useState<{ id: string; name: string; status: string }[]>([]);
+  const [fetchingSubProjects, setFetchingSubProjects] = useState(false);
 
   // Fetch active projects for dropdown when dialog opens
   useEffect(() => {
@@ -82,6 +85,38 @@ export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProp
     fetchProjects();
   }, [open, supabase]);
 
+  // Fetch sub-projects for dependency selection when project changes
+  useEffect(() => {
+    if (!projectId) {
+      setSubProjects([]);
+      setDependsOn('');
+      return;
+    }
+    
+    const fetchSubProjects = async () => {
+      setFetchingSubProjects(true);
+      try {
+        const { data, error } = await supabase
+          .from('sub_projects')
+          .select('id, name, status')
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error('Error fetching sub-projects:', error);
+        } else {
+          setSubProjects(data || []);
+        }
+      } catch (err) {
+        console.error('Exception fetching sub-projects:', err);
+      } finally {
+        setFetchingSubProjects(false);
+      }
+    };
+    
+    fetchSubProjects();
+  }, [projectId, supabase]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !projectId) {
@@ -106,6 +141,7 @@ export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProp
       status: 'not_started',
       priority: 'medium',
       order_index: 0,
+      depends_on_subproject_id: dependsOn || null,
     });
     setLoading(false);
 
@@ -115,6 +151,7 @@ export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProp
       setProjectId('');
       setStartDate(undefined);
       setEndDate(undefined);
+      setDependsOn('');
       toast.success('Sub-project created successfully!');
       
       // Call parent refresh callback if provided
@@ -188,6 +225,31 @@ export default function QuickAddSubProject({ onSuccess }: QuickAddSubProjectProp
               />
             </div>
           </div>
+
+          {/* Dependency Selector */}
+          {projectId && (
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300">Depends On (Optional)</Label>
+              <Select value={dependsOn} onValueChange={(val) => setDependsOn(val || '')} disabled={fetchingSubProjects}>
+                <SelectTrigger className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10">
+                  <SelectValue placeholder={fetchingSubProjects ? "Loading..." : "No dependency"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-h-60">
+                  <SelectItem value="" className="text-slate-900 dark:text-white cursor-pointer">-- None --</SelectItem>
+                  {subProjects.map((sp) => (
+                    <SelectItem key={sp.id} value={sp.id} className="text-slate-900 dark:text-white cursor-pointer">
+                      {sp.name} ({sp.status.replace('_', ' ')})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {dependsOn && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  This sub-project cannot start until the dependency is completed
+                </p>
+              )}
+            </div>
+          )}
 
           <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 text-white" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Sub Project

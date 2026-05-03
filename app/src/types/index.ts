@@ -53,6 +53,14 @@ export interface SubProject {
   weight_contribution: number
   start_date: string | null
   end_date: string | null
+  // NEW: Dependency tracking
+  depends_on_subproject_id?: string
+  
+  // Computed from view (optional)
+  depends_on_name?: string
+  depends_on_status?: string
+  can_start?: boolean
+  
   // Computed/enriched at runtime (not persisted)
   tasks?: Task[]
   progress?: number

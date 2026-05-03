@@ -40,6 +40,12 @@ export default function ProjectsPage() {
 
   const handleDeleted = (id: string) => setProjects(prev => prev.filter(p => p.id !== id))
 
+  // Handle sub-project created - refresh data
+  const handleSubProjectCreated = () => {
+    refetch()
+    router.refresh()
+  }
+
   // Fetch project stats (sub-projects and tasks count) - Optimized
   useEffect(() => {
     const fetchStats = async () => {
@@ -115,7 +121,7 @@ export default function ProjectsPage() {
             <Plus className="w-4 h-4" />
             New Project
           </button>
-          <QuickAddSubProject onSuccess={refetch} />
+          <QuickAddSubProject onSuccess={handleSubProjectCreated} />
 
           {/* View toggle */}
           <div className="flex items-center gap-1 glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
