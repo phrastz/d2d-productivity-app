@@ -156,9 +156,9 @@ export default function TimelineWeeklyPage() {
                             <div className="font-semibold text-gray-900 mb-1">
                               {task.title}
                             </div>
-                            {task.notes && (
+                            {task.description && (
                               <div className="text-sm text-gray-600 mb-2">
-                                {task.notes}
+                                {task.description.length > 100 ? task.description.slice(0, 100) + '…' : task.description}
                               </div>
                             )}
                             <div className="flex items-center gap-3 text-xs text-gray-500">
