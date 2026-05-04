@@ -219,7 +219,8 @@ export default function ImportPage() {
     setImportProgress(0)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user) { toast.error('Please log in'); return }
 
       // 1. Upsert project
@@ -649,7 +650,7 @@ export default function ImportPage() {
             Project <strong>"{summary.projectName}"</strong> · {summary.subProjectsCreated} sub-project{summary.subProjectsCreated !== 1 ? 's' : ''} created · {summary.tasksImported} task{summary.tasksImported !== 1 ? 's' : ''} imported · {summary.rowsSkipped} row{summary.rowsSkipped !== 1 ? 's' : ''} skipped
           </p>
           <button
-            onClick={() => router.push(`/projects`)}
+            onClick={() => { window.location.href = '/projects' }}
             className="mt-3 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
           >
             View Projects →
@@ -667,11 +668,11 @@ export default function ImportPage() {
 
       <div className="p-6 max-w-5xl mx-auto animate-fade-in">
         <div className="glass rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-transparent p-8">
-          <StepIndicator />
+          {StepIndicator()}
 
-          {step === 1 && <Step1 />}
-          {step === 2 && <Step2 />}
-          {step === 3 && <Step3 />}
+          {step === 1 && Step1()}
+          {step === 2 && Step2()}
+          {step === 3 && Step3()}
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
