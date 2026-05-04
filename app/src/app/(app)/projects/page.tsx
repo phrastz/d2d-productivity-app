@@ -8,7 +8,7 @@ import ProjectTimeline from '@/components/projects/ProjectTimeline'
 import ProjectDialog from '@/components/projects/ProjectDialog'
 import QuickAddSubProject from '@/components/projects/QuickAddSubProject'
 import TopNav from '@/components/layout/TopNav'
-import { Plus, LayoutList, GanttChart, FolderTree, CheckSquare } from 'lucide-react'
+import { Plus, LayoutList, GanttChart, FolderTree, CheckSquare, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
@@ -120,6 +120,13 @@ export default function ProjectsPage() {
           >
             <Plus className="w-4 h-4" />
             New Project
+          </button>
+          <button
+            onClick={() => router.push('/import')}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
+          >
+            <Upload className="w-4 h-4" />
+            Import
           </button>
           <QuickAddSubProject onSuccess={handleSubProjectCreated} />
 

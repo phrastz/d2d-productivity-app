@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, CheckSquare, FolderKanban,
-  BarChart3, BookOpen, Zap, Settings, LogOut, Calendar, Activity
+  BarChart3, BookOpen, Zap, Settings, LogOut, Calendar, Activity, Upload
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -18,6 +18,7 @@ const navItems = [
   { label: 'Habits',     href: '/habits',      icon: Activity },
   { label: 'Reports',    href: '/reports',     icon: BarChart3 },
   { label: 'Daily Log',  href: '/daily-log',   icon: BookOpen },
+  { label: 'Import',     href: '/import',       icon: Upload },
 ]
 
 export default function Sidebar() {
