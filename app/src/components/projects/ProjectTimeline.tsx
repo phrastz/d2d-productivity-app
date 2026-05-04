@@ -17,8 +17,7 @@ interface ProjectTimelineProps {
 }
 
 export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
-  const validProjects = projects.filter(p => p.start_date && p.end_date)
-  if (validProjects.length === 0) {
+  if (projects.length === 0) {
     return (
       <div className="glass rounded-2xl p-8 text-center">
         <p className="text-4xl mb-3">📅</p>
@@ -28,10 +27,20 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
     )
   }
 
-  // Compute timeline boundaries
-  const allDates = validProjects.flatMap(p => [parseISO(p.start_date!), parseISO(p.end_date!)])
-  const minDate  = startOfDay(new Date(Math.min(...allDates.map(d => d.getTime()))))
-  const maxDate  = startOfDay(new Date(Math.max(...allDates.map(d => d.getTime()))))
+  // Separate dated vs undated — undated projects fall back to the overall span
+  const datedProjects = projects.filter(p => p.start_date && p.end_date)
+
+  // Compute timeline boundaries from dated projects; fall back to a 90-day window
+  let minDate: Date, maxDate: Date
+  if (datedProjects.length > 0) {
+    const allDates = datedProjects.flatMap(p => [parseISO(p.start_date!), parseISO(p.end_date!)])
+    minDate = startOfDay(new Date(Math.min(...allDates.map(d => d.getTime()))))
+    maxDate = startOfDay(new Date(Math.max(...allDates.map(d => d.getTime()))))
+  } else {
+    minDate = startOfDay(addDays(new Date(), -30))
+    maxDate = startOfDay(addDays(new Date(), 60))
+  }
+
   const totalDays = differenceInDays(maxDate, minDate) + 1
   const today = startOfDay(new Date())
   const todayOffset = differenceInDays(today, minDate)
@@ -63,14 +72,15 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
           ))}
         </div>
 
-        {/* Rows */}
+        {/* Rows — all projects, undated ones span the full timeline */}
         <div className="space-y-3">
-          {validProjects.map(project => {
-            const start   = parseISO(project.start_date!)
-            const end     = parseISO(project.end_date!)
+          {projects.map(project => {
+            const hasDates = !!project.start_date && !!project.end_date
+            const start    = hasDates ? parseISO(project.start_date!) : minDate
+            const end      = hasDates ? parseISO(project.end_date!)   : maxDate
             const startOff = (differenceInDays(start, minDate) / totalDays) * 100
             const widthPct = ((differenceInDays(end, start) + 1) / totalDays) * 100
-            const colors   = statusColors[project.status]
+            const colors   = statusColors[project.status] ?? statusColors.active
 
             return (
               <div key={project.id} className="flex items-center gap-3 group">
@@ -83,8 +93,8 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
                   >
                     {project.name}
                   </Link>
-                  <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full', colors.badge)}>
-                    {project.status.replace('_', ' ')}
+                  <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full', hasDates ? colors.badge : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400')}>
+                    {hasDates ? project.status.replace('_', ' ') : 'no dates'}
                   </span>
                 </div>
 
@@ -100,28 +110,34 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
 
                   {/* Project bar */}
                   <div
-                    className={cn('absolute top-1.5 bottom-1.5 rounded-full flex items-center px-2 transition-all', colors.bar)}
+                    className={cn(
+                      'absolute top-1.5 bottom-1.5 rounded-full flex items-center px-2 transition-all',
+                      hasDates ? colors.bar : 'bg-slate-300 dark:bg-slate-600 opacity-60',
+                    )}
                     style={{ left: `${startOff}%`, width: `${widthPct}%` }}
+                    title={hasDates ? undefined : 'No date range set — add start/end dates to position correctly'}
                   >
                     <span className="text-[9px] font-bold text-white truncate">
-                      {project.progress_percentage}%
+                      {hasDates ? `${project.progress_percentage ?? 0}%` : '–'}
                     </span>
                   </div>
 
-                  {/* Progress fill */}
-                  <div
-                    className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10"
-                    style={{
-                      left: `${startOff}%`,
-                      width: `${(widthPct * project.progress_percentage) / 100}%`,
-                    }}
-                  />
+                  {/* Progress fill — only for dated projects */}
+                  {hasDates && (
+                    <div
+                      className="absolute top-1.5 bottom-1.5 rounded-full bg-white/10"
+                      style={{
+                        left: `${startOff}%`,
+                        width: `${(widthPct * (project.progress_percentage ?? 0)) / 100}%`,
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* Dates */}
                 <div className="w-24 flex-shrink-0 text-right hidden md:block">
                   <p className="text-[9px] text-slate-500 dark:text-slate-300">
-                    {format(start, 'MMM d')} – {format(end, 'MMM d')}
+                    {hasDates ? `${format(start, 'MMM d')} – ${format(end, 'MMM d')}` : 'No dates set'}
                   </p>
                 </div>
               </div>
@@ -138,6 +154,11 @@ export default function ProjectTimeline({ projects }: ProjectTimelineProps) {
           <p className="text-[10px] text-slate-500 dark:text-slate-300">
             Timeline from {format(minDate, 'MMM d')} to {format(maxDate, 'MMM d, yyyy')}
           </p>
+          {projects.some(p => !p.start_date || !p.end_date) && (
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+              · Muted bars = no date range set
+            </p>
+          )}
         </div>
       </div>
     </div>

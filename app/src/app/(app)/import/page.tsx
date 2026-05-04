@@ -223,17 +223,35 @@ export default function ImportPage() {
       const user = session?.user
       if (!user) { toast.error('Please log in'); return }
 
+      // Derive project date range from all imported task dates
+      const allImportDates = validRows
+        .flatMap(r => [r.dateFrom, r.dateTo])
+        .filter(Boolean) as string[]
+      const projectStartDate = allImportDates.length > 0
+        ? [...allImportDates].sort()[0]
+        : null
+      const projectEndDate = allImportDates.length > 0
+        ? [...allImportDates].sort().at(-1) ?? null
+        : null
+
       // 1. Upsert project
       let projectId: string
       const { data: existingProject } = await supabase
         .from('projects')
-        .select('id')
+        .select('id, start_date, end_date')
         .eq('owner_id', user.id)
         .ilike('name', projectName.trim())
         .maybeSingle()
 
       if (existingProject) {
         projectId = existingProject.id
+        // Backfill dates on existing project if they are not set
+        if ((!existingProject.start_date || !existingProject.end_date) && (projectStartDate || projectEndDate)) {
+          await supabase.from('projects').update({
+            ...(projectStartDate && !existingProject.start_date ? { start_date: projectStartDate } : {}),
+            ...(projectEndDate   && !existingProject.end_date   ? { end_date:   projectEndDate   } : {}),
+          }).eq('id', projectId)
+        }
       } else {
         const { data: newProject, error: projError } = await supabase
           .from('projects')
@@ -242,6 +260,8 @@ export default function ImportPage() {
             name: projectName.trim(),
             status: 'active',
             progress_percentage: 0,
+            start_date: projectStartDate,
+            end_date: projectEndDate,
           })
           .select('id')
           .single()

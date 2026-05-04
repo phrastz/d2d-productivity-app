@@ -30,7 +30,7 @@ export function ReportTemplateCard({
   };
   
   return (
-    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-200 dark:border-slate-800 rounded-xl p-6 hover:border-violet-400 dark:hover:border-violet-500 hover:shadow-lg transition-all duration-200">
+    <div className="bg-white dark:bg-slate-900/90 border-2 border-slate-200 dark:border-slate-800 rounded-xl p-6 hover:border-violet-400 dark:hover:border-violet-500 hover:shadow-lg transition-all duration-200 flex flex-col h-full">
       <div className="text-4xl mb-4">{icon}</div>
       
       <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
@@ -50,7 +50,7 @@ export function ReportTemplateCard({
         </div>
       </div>
       
-      <div className="flex gap-3">
+      <div className="flex gap-3 mt-auto pt-4">
         <button
           onClick={handlePreview}
           className="flex-1 px-4 py-2 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg font-medium hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
