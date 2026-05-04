@@ -8,6 +8,8 @@ import TopNav from '@/components/layout/TopNav'
 import { toast } from 'sonner'
 import { Upload, Download, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, X, ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { calculateSubProjectProgress, calculateProjectProgress } from '@/lib/progressCalculator'
+import type { Task, SubProject } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -261,6 +263,7 @@ export default function ImportPage() {
       let subProjectsCreated = 0
       let tasksImported = 0
       const progressPerSP = 85 / subProjectNames.length
+      const insertedSubProjects: SubProject[] = []
 
       for (let spIdx = 0; spIdx < subProjectNames.length; spIdx++) {
         const spName = subProjectNames[spIdx]
@@ -298,18 +301,22 @@ export default function ImportPage() {
           subProjectsCreated++
         }
 
-        // Batch insert tasks
+        // Batch insert tasks — Col C → category, Col H → description
+        const taskProgress = (status: string) =>
+          status === 'done' ? 100 : status === 'in_progress' ? 50 : 0
+
         const taskInserts = spRows.map(row => ({
           owner_id: user.id,
           project_id: projectId,
           sub_project_id: subProjectId,
           title: row.taskTitle,
-          description: [row.module && `Module: ${row.module}`, row.notes].filter(Boolean).join('\n') || null,
+          category: row.module || null,
+          description: row.notes || null,
           status: row.statusMapped,
           start_date: row.dateFrom,
           due_date: row.dateTo,
           priority: 'medium' as const,
-          progress_percent: row.statusMapped === 'done' ? 100 : row.statusMapped === 'in_progress' ? 50 : 0,
+          progress_percent: taskProgress(row.statusMapped),
           is_habit: false,
           time_spent_minutes: 0,
           effort_estimate: 0,
@@ -323,22 +330,35 @@ export default function ImportPage() {
         if (tasksError) throw new Error(`Failed to insert tasks for "${spName}": ${tasksError.message}`)
 
         tasksImported += taskInserts.length
+
+        // Update sub-project progress using the same formula as the app
+        const partialTasks = taskInserts.map(t => ({
+          status: t.status,
+          progress_percent: t.progress_percent,
+          effort_estimate: t.effort_estimate,
+          actual_effort: t.actual_effort,
+        })) as Task[]
+        const spProgress = calculateSubProjectProgress(partialTasks)
+        await supabase
+          .from('sub_projects')
+          .update({ progress_percent: spProgress })
+          .eq('id', subProjectId)
+
+        // Track sub-project for project-level calculation
+        insertedSubProjects.push({
+          id: subProjectId,
+          progress_percent: spProgress,
+          weight_contribution: 1,
+        } as SubProject)
+
         setImportProgress(Math.round(10 + (spIdx + 1) * progressPerSP))
       }
 
-      // 3. Recalculate project progress
-      const { data: allTasks } = await supabase
-        .from('tasks')
-        .select('status')
-        .eq('project_id', projectId)
-
-      const total = allTasks?.length ?? 0
-      const done = allTasks?.filter(t => t.status === 'done').length ?? 0
-      const progress = total > 0 ? Math.round((done / total) * 100) : 0
-
+      // 3. Recalculate project progress using the same formula as the app
+      const projectProgress = calculateProjectProgress(insertedSubProjects, [])
       await supabase
         .from('projects')
-        .update({ progress_percentage: progress })
+        .update({ progress_percentage: projectProgress })
         .eq('id', projectId)
 
       setImportProgress(100)
