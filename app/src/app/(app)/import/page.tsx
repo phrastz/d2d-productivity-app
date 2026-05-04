@@ -382,6 +382,27 @@ export default function ImportPage() {
         .update({ progress_percentage: projectProgress })
         .eq('id', projectId)
 
+      // 4. Backfill project dates from actual DB task data
+      // Uses COALESCE logic: start_date falls back to due_date and vice versa,
+      // so projects with only due_date populated still get correct date range.
+      const { data: taskDateRows } = await supabase
+        .from('tasks')
+        .select('start_date, due_date')
+        .eq('project_id', projectId)
+      if (taskDateRows && taskDateRows.length > 0) {
+        const allDates = taskDateRows
+          .flatMap(t => [t.start_date, t.due_date])
+          .filter(Boolean) as string[]
+        if (allDates.length > 0) {
+          const dbMinDate = [...allDates].sort()[0]
+          const dbMaxDate = [...allDates].sort().at(-1)!
+          await supabase.from('projects').update({
+            start_date: dbMinDate,
+            end_date:   dbMaxDate,
+          }).eq('id', projectId)
+        }
+      }
+
       setImportProgress(100)
 
       setSummary({
