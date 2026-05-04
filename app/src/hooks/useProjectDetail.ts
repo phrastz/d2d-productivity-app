@@ -148,11 +148,32 @@ export function useProjectDetail(projectId: string | null, refreshKey?: number) 
           sub_projects: enrichedSubProjects,
           directTasks,
           progress: overallProgress,
+          progress_percentage: overallProgress, // override stale DB value for live display
           tasks_total: totalTasks,
           tasks_done: doneTasks,
         }
 
         setProject(enrichedProject)
+
+        // Self-heal: write corrected progress back to DB if stale.
+        // Fire-and-forget — keeps Projects list, Timeline and Reports accurate
+        // without blocking the UI render.
+        if (overallProgress !== projectData.progress_percentage) {
+          supabase.from('projects')
+            .update({ progress_percentage: overallProgress })
+            .eq('id', projectId)
+            .then(() => {}, () => {})
+        }
+        // Sub-project progress write-back (only rows where DB value is stale)
+        enrichedSubProjects.forEach((sp) => {
+          const dbProgress = subProjectsData.find(d => d.id === sp.id)?.progress_percent ?? 0
+          if (sp.progress_percent !== dbProgress) {
+            supabase.from('sub_projects')
+              .update({ progress_percent: sp.progress_percent })
+              .eq('id', sp.id)
+              .then(() => {}, () => {})
+          }
+        })
 
       } catch (err) {
         console.error('Error fetching project detail:', err)
