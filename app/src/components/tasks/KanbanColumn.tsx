@@ -8,10 +8,10 @@ import { cn } from '@/lib/utils'
 import { Plus } from 'lucide-react'
 
 const columnConfig: Record<TaskStatus, { label: string; color: string; bg: string; ring: string }> = {
-  todo:        { label: 'To Do',       color: 'text-slate-300',   bg: 'bg-slate-500/10',   ring: 'border-slate-500/20' },
-  in_progress: { label: 'In Progress', color: 'text-amber-300',   bg: 'bg-amber-500/10',   ring: 'border-amber-500/20' },
-  done:        { label: 'Done',        color: 'text-emerald-300', bg: 'bg-emerald-500/10', ring: 'border-emerald-500/20' },
-  cancelled:   { label: 'Cancelled',   color: 'text-rose-300',    bg: 'bg-rose-500/10',    ring: 'border-rose-500/20' },
+  todo:        { label: 'To Do',       color: 'text-slate-600 dark:text-slate-300',   bg: 'bg-slate-500/10',   ring: 'border-slate-500/20' },
+  in_progress: { label: 'In Progress', color: 'text-amber-700 dark:text-amber-300',   bg: 'bg-amber-500/10',   ring: 'border-amber-500/20' },
+  done:        { label: 'Done',        color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-500/10', ring: 'border-emerald-500/20' },
+  cancelled:   { label: 'Cancelled',   color: 'text-rose-700 dark:text-rose-300',    bg: 'bg-rose-500/10',    ring: 'border-rose-500/20' },
 }
 
 interface KanbanColumnProps {

@@ -37,7 +37,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        'task-card glass bg-slate-900/90 border border-slate-800 p-4 rounded-2xl group select-none hover:border-slate-700 transition-colors',
+        'task-card glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl group select-none hover:border-slate-300 dark:hover:border-slate-700 transition-colors',
         isDragging && 'ring-2 ring-violet-500/50 scale-105',
         overdue && 'border-red-500/30'
       )}

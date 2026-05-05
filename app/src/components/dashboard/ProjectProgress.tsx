@@ -6,10 +6,10 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 const statusColors = {
-  active:    'bg-violet-500/20 text-violet-300 border-violet-500/30',
-  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  on_hold:   'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  archived:  'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  active:    'bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30',
+  completed: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+  on_hold:   'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30',
+  archived:  'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30',
 }
 
 const progressColors = [
@@ -27,9 +27,9 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
   const active = projects.filter(p => p.status === 'active').slice(0, 4)
 
   return (
-    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-violet-400" />
           Project Progress
         </h2>
@@ -45,7 +45,7 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
         {active.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-3xl mb-2">📁</p>
-            <p className="text-sm text-slate-300">No active projects</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">No active projects</p>
           </div>
         ) : (
           active.map((project, i) => (
@@ -58,11 +58,11 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
                   )}>
                     {project.status.replace('_', ' ')}
                   </span>
-                  <span className="text-sm font-medium text-white truncate">
+                  <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
                     {project.name}
                   </span>
                 </div>
-                <span className="text-sm font-bold text-white ml-2 flex-shrink-0">
+                <span className="text-sm font-bold text-slate-900 dark:text-white ml-2 flex-shrink-0">
                   {project.progress_percentage}%
                 </span>
               </div>
@@ -73,7 +73,7 @@ export default function ProjectProgress({ projects }: ProjectProgressProps) {
                 />
               </div>
               {project.end_date && (
-                <p className="text-[10px] text-slate-300 mt-1">
+                <p className="text-[10px] text-slate-600 dark:text-slate-300 mt-1">
                   Due {new Date(project.end_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
                 </p>
               )}

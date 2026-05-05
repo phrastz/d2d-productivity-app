@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, Cell
 } from 'recharts'
 import { TrendingUp } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 interface DayData {
   day: string
@@ -19,29 +20,31 @@ interface WeeklyChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="glass bg-slate-900/90 rounded-xl p-3 border border-slate-800 text-xs">
-      <p className="font-semibold text-white mb-1">{label}</p>
-      <p className="text-emerald-400">{payload[0].value} completed</p>
-      <p className="text-slate-400">{payload[1]?.value ?? 0} remaining</p>
+    <div className="bg-white dark:bg-slate-900/90 rounded-xl p-3 border border-slate-200 dark:border-slate-800 text-xs shadow-md">
+      <p className="font-semibold text-slate-900 dark:text-white mb-1">{label}</p>
+      <p className="text-emerald-600 dark:text-emerald-400">{payload[0].value} completed</p>
+      <p className="text-slate-500 dark:text-slate-400">{payload[1]?.value ?? 0} remaining</p>
     </div>
   )
 }
 
 export default function WeeklyChart({ data }: WeeklyChartProps) {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
   const totalCompleted = data.reduce((s, d) => s + d.completed, 0)
 
   return (
-    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-violet-400" />
             Weekly Progress
           </h2>
-          <p className="text-xs text-slate-300 mt-0.5">Tasks completed this week</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Tasks completed this week</p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold text-white">{totalCompleted}</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{totalCompleted}</p>
           <p className="text-[10px] text-slate-400">this week</p>
         </div>
       </div>
@@ -52,7 +55,7 @@ export default function WeeklyChart({ data }: WeeklyChartProps) {
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke="rgba(255,255,255,0.05)"
+              stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'}
             />
             <XAxis
               dataKey="day"
@@ -70,7 +73,7 @@ export default function WeeklyChart({ data }: WeeklyChartProps) {
                 />
               ))}
             </Bar>
-            <Bar dataKey="remaining" stackId="a" radius={[4, 4, 0, 0]} fill="hsl(222 47% 15%)" />
+            <Bar dataKey="remaining" stackId="a" radius={[4, 4, 0, 0]} fill={isDark ? 'hsl(222 47% 15%)' : 'hsl(220 13% 91%)'} />
           </BarChart>
         </ResponsiveContainer>
       </div>

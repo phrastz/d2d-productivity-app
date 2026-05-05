@@ -14,10 +14,10 @@ import { cn } from '@/lib/utils'
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 
 const statusColors = {
-  active:    'bg-violet-500/20 text-violet-300 border-violet-500/30 dark:text-violet-100',
-  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 dark:text-emerald-100',
-  on_hold:   'bg-amber-500/20 text-amber-300 border-amber-500/30 dark:text-amber-100',
-  archived:  'bg-gray-500/20 text-gray-400 border-gray-500/30 dark:text-slate-200',
+  active:    'bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30',
+  completed: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+  on_hold:   'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30',
+  archived:  'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30',
 }
 
 type ViewMode = 'list' | 'timeline'

@@ -37,20 +37,20 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
   }
 
   return (
-    <div className="glass bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
             <Clock className="w-4 h-4 text-violet-400" />
             Today&apos;s Focus
           </h2>
-          <p className="text-xs text-slate-300 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
             {format(new Date(), 'EEEE, d MMMM')}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold text-white">{completed}/{todayTasks.length}</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{completed}/{todayTasks.length}</p>
           <p className="text-[10px] text-slate-400">completed</p>
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
         {todayTasks.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-3xl mb-2">🎉</p>
-            <p className="text-sm text-slate-300">No tasks due today!</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">No tasks due today!</p>
             <p className="text-xs text-slate-400">Add tasks via the + button</p>
           </div>
         ) : (
@@ -96,7 +96,7 @@ export default function TodaysFocus({ tasks, onToggle }: TodaysFocusProps) {
                 <span className="flex-1 min-w-0">
                   <span className={cn(
                     'text-sm font-medium block truncate',
-                    done ? 'line-through text-slate-500' : 'text-white'
+                    done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
                   )}>
                     {task.title}
                   </span>
