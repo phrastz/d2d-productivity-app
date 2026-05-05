@@ -121,10 +121,10 @@ export default function ProjectDetailPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 p-10">
+    <div className="min-h-screen bg-gray-50 p-3 md:p-10">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-12">
-          <h1 className="text-4xl font-bold mb-3">🎯 Project Deep Dive Report</h1>
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-5 md:p-12">
+          <h1 className="text-2xl md:text-4xl font-bold mb-3">🎯 Project Deep Dive Report</h1>
           
           {projects.length > 0 && (
             <div className="mt-6">
@@ -144,44 +144,44 @@ export default function ProjectDetailPage() {
             </div>
           )}
           
-          <div className="grid grid-cols-6 gap-4 mt-8 bg-white/15 backdrop-blur-lg p-6 rounded-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-6 md:mt-8 bg-white/15 backdrop-blur-lg p-4 md:p-6 rounded-2xl">
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Progress</div>
-              <div className="text-3xl font-bold">{data.stats?.progress || 0}%</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Progress</div>
+              <div className="text-2xl md:text-3xl font-bold">{data.stats?.progress || 0}%</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Total Tasks</div>
-              <div className="text-3xl font-bold">{data.stats?.totalTasks || 0}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Total Tasks</div>
+              <div className="text-2xl md:text-3xl font-bold">{data.stats?.totalTasks || 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Completed</div>
-              <div className="text-3xl font-bold">{data.stats?.completedTasks || 0}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Completed</div>
+              <div className="text-2xl md:text-3xl font-bold">{data.stats?.completedTasks || 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">In Progress</div>
-              <div className="text-3xl font-bold">{data.stats?.inProgressTasks || 0}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">In Progress</div>
+              <div className="text-2xl md:text-3xl font-bold">{data.stats?.inProgressTasks || 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Blocked</div>
-              <div className="text-3xl font-bold text-red-300">{data.stats?.blockedTasks || 0}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Blocked</div>
+              <div className="text-2xl md:text-3xl font-bold text-red-300">{data.stats?.blockedTasks || 0}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Sub-Projects</div>
-              <div className="text-3xl font-bold">{data.sub_projects?.length || 0}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Sub-Projects</div>
+              <div className="text-2xl md:text-3xl font-bold">{data.sub_projects?.length || 0}</div>
             </div>
           </div>
         </div>
         
-        <div className="p-12">
+        <div className="p-4 md:p-12">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">{data.name}</h2>
+            <h2 className="text-xl md:text-3xl font-bold mb-2">{data.name}</h2>
             {data.description && (
               <p className="text-gray-600">{data.description}</p>
             )}
           </div>
           
           <div className="mb-12">
-            <h3 className="text-xl font-bold mb-4 border-b-3 border-purple-600 pb-2">
+            <h3 className="text-base md:text-xl font-bold mb-4 border-b-3 border-purple-600 pb-2">
               📊 Overall Progress
             </h3>
             <div className="h-12 bg-gray-200 rounded-full overflow-hidden relative">
@@ -190,15 +190,15 @@ export default function ProjectDetailPage() {
                 style={{ width: `${data.stats?.progress || 0}%` }}
               ></div>
               
-              <div className="absolute inset-0 flex items-center justify-between px-6">
-                <span className={`font-bold text-lg ${
+              <div className="absolute inset-0 flex items-center justify-between px-3 md:px-6">
+                <span className={`font-bold text-sm md:text-lg ${
                   (data.stats?.progress || 0) >= 30
                     ? 'text-white'
                     : 'text-purple-600'
                 }`}>
                   {data.stats?.progress || 0}% Complete
                 </span>
-                <span className={`text-sm font-semibold ${
+                <span className={`text-xs md:text-sm font-semibold ${
                   (data.stats?.progress || 0) >= 30
                     ? 'text-white'
                     : 'text-gray-600'
@@ -211,11 +211,11 @@ export default function ProjectDetailPage() {
           
           {data.sub_projects?.map((subProject: any, idx: number) => (
             <div key={subProject.id} className="mb-8 bg-gray-50 rounded-xl p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-purple-700">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-1">
+                <h3 className="text-base md:text-xl font-bold text-purple-700">
                   {subProject.name}
                 </h3>
-                <span className="text-sm text-gray-500">
+                <span className="text-xs sm:text-sm text-gray-500">
                   {subProject.tasks?.length || 0} tasks
                 </span>
               </div>
@@ -235,7 +235,7 @@ export default function ProjectDetailPage() {
                           {task.notes}
                         </div>
                       )}
-                      <div className="text-xs text-gray-500 flex gap-4">
+                      <div className="text-xs text-gray-500 flex flex-wrap gap-2 md:gap-4">
                         {task.due_date && (
                           <span>📅 Due: {new Date(task.due_date).toLocaleDateString()}</span>
                         )}
@@ -262,18 +262,18 @@ export default function ProjectDetailPage() {
             </div>
           ))}
           
-          <div className="mt-12 flex gap-4">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => router.push('/reports')}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+              className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
             >
               ← Back to Reports
             </button>
             <button
               onClick={() => window.print()}
-              className="px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
+              className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
             >
-              🖨️ Print / Save as PDF
+              �️ Print / Save as PDF
             </button>
           </div>
         </div>

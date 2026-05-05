@@ -59,55 +59,55 @@ export default function ExecutiveSummaryPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-purple-800 p-10">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-purple-800 p-3 md:p-10">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-12 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-5 md:p-12 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48"></div>
           
           <div className="relative z-10">
-            <h1 className="text-5xl font-bold mb-3 tracking-tight">
+            <h1 className="text-2xl md:text-5xl font-bold mb-3 tracking-tight">
               📊 Executive Summary
             </h1>
-            <div className="text-lg opacity-95">
+            <div className="text-sm md:text-lg opacity-95">
               Performance Overview & Strategic Insights
             </div>
             <div className="text-sm opacity-90 mt-4">
               📅 Report Period: Last 30 Days | Generated: {new Date().toLocaleDateString()}
             </div>
             
-            <div className="grid grid-cols-4 gap-5 mt-8 bg-white/15 backdrop-blur-lg p-8 rounded-2xl">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 md:mt-8 bg-white/15 backdrop-blur-lg p-4 md:p-8 rounded-2xl">
               <div className="text-center">
-                <div className="text-sm opacity-90 mb-3 uppercase tracking-wide">Total Projects</div>
-                <div className="text-5xl font-bold">{data.totalProjects}</div>
+                <div className="text-xs md:text-sm opacity-90 mb-2 uppercase tracking-wide">Total Projects</div>
+                <div className="text-3xl md:text-5xl font-bold">{data.totalProjects}</div>
               </div>
               <div className="text-center">
-                <div className="text-sm opacity-90 mb-3 uppercase tracking-wide">Completion Rate</div>
-                <div className="text-5xl font-bold">{data.completionRate}%</div>
+                <div className="text-xs md:text-sm opacity-90 mb-2 uppercase tracking-wide">Completion Rate</div>
+                <div className="text-3xl md:text-5xl font-bold">{data.completionRate}%</div>
               </div>
               <div className="text-center">
-                <div className="text-sm opacity-90 mb-3 uppercase tracking-wide">Total Tasks</div>
-                <div className="text-5xl font-bold">{data.totalTasks}</div>
+                <div className="text-xs md:text-sm opacity-90 mb-2 uppercase tracking-wide">Total Tasks</div>
+                <div className="text-3xl md:text-5xl font-bold">{data.totalTasks}</div>
               </div>
               <div className="text-center">
-                <div className="text-sm opacity-90 mb-3 uppercase tracking-wide">In Progress</div>
-                <div className="text-5xl font-bold">{data.inProgressTasks}</div>
+                <div className="text-xs md:text-sm opacity-90 mb-2 uppercase tracking-wide">In Progress</div>
+                <div className="text-3xl md:text-5xl font-bold">{data.inProgressTasks}</div>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="p-12">
-          <h2 className="text-3xl font-bold mb-8 border-b-4 border-indigo-600 pb-4">
+        <div className="p-5 md:p-12">
+          <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-8 border-b-4 border-indigo-600 pb-4">
             📈 Key Performance Indicators
           </h2>
           
-          <div className="grid grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 md:mb-12">
             <div className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-7 hover:border-violet-400 hover:shadow-xl transition-all duration-200">
-              <div className="text-5xl mb-4">🎯</div>
+              <div className="text-4xl mb-3">🎯</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide mb-3">
                 Projects Completed
               </div>
-              <div className="text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <div className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 {data.completedTasks}
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -123,11 +123,11 @@ export default function ExecutiveSummaryPage() {
             </div>
             
             <div className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-7 hover:border-violet-400 hover:shadow-xl transition-all duration-200">
-              <div className="text-5xl mb-4">✅</div>
+              <div className="text-4xl mb-3">✅</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide mb-3">
                 Task Completion Rate
               </div>
-              <div className="text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <div className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 {data.completionRate}%
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -142,11 +142,11 @@ export default function ExecutiveSummaryPage() {
             </div>
             
             <div className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-7 hover:border-violet-400 hover:shadow-xl transition-all duration-200">
-              <div className="text-5xl mb-4">⚡</div>
+              <div className="text-4xl mb-3">⚡</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide mb-3">
                 Active Tasks
               </div>
-              <div className="text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <div className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 {data.inProgressTasks}
               </div>
               <div className="text-sm text-gray-600 mt-4">
@@ -155,16 +155,16 @@ export default function ExecutiveSummaryPage() {
             </div>
           </div>
           
-          <div className="mt-12 flex gap-4">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => router.push('/reports')}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
             >
               ← Back to Reports
             </button>
             <button
               onClick={() => window.print()}
-              className="px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 transition-colors"
             >
               🖨️ Print / Save as PDF
             </button>

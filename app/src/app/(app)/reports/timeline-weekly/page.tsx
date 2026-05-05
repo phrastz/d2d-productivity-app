@@ -63,20 +63,20 @@ export default function TimelineWeeklyPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-100 p-10">
+    <div className="min-h-screen bg-gray-100 p-3 md:p-10">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-12">
-          <h1 className="text-4xl font-bold mb-3">📌 Weekly Timeline - Detailed View</h1>
-          <div className="text-lg opacity-95">Daily Task Breakdown & Progress Tracking</div>
+        <div className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-5 md:p-12">
+          <h1 className="text-2xl md:text-4xl font-bold mb-3">📌 Weekly Timeline - Detailed View</h1>
+          <div className="text-sm md:text-lg opacity-95">Daily Task Breakdown & Progress Tracking</div>
           
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-6">
             <button
               onClick={goToPreviousWeek}
               className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30"
             >
               ← Previous Week
             </button>
-            <div className="px-6 py-2 bg-white/20 rounded-lg backdrop-blur-lg font-semibold">
+            <div className="px-3 md:px-6 py-2 bg-white/20 rounded-lg backdrop-blur-lg font-semibold text-sm md:text-base">
               Week of {weekStart.toLocaleDateString()}
             </div>
             <button
@@ -87,31 +87,31 @@ export default function TimelineWeeklyPage() {
             </button>
           </div>
           
-          <div className="grid grid-cols-4 gap-4 mt-6 bg-white/15 backdrop-blur-lg p-6 rounded-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 bg-white/15 backdrop-blur-lg p-4 md:p-6 rounded-2xl">
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Total Tasks</div>
-              <div className="text-3xl font-bold">{totalTasks}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Total Tasks</div>
+              <div className="text-2xl md:text-3xl font-bold">{totalTasks}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Completed</div>
-              <div className="text-3xl font-bold">{completedTasks}</div>
+              <div className="text-xs md:text-sm opacity-90 mb-1">Completed</div>
+              <div className="text-2xl md:text-3xl font-bold">{completedTasks}</div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">In Progress</div>
-              <div className="text-3xl font-bold">
+              <div className="text-xs md:text-sm opacity-90 mb-1">In Progress</div>
+              <div className="text-2xl md:text-3xl font-bold">
                 {Object.values(data).flat().filter(t => t.status === 'in_progress').length}
               </div>
             </div>
             <div className="text-center">
-              <div className="text-sm opacity-90 mb-2">Completion Rate</div>
-              <div className="text-3xl font-bold">
+              <div className="text-xs md:text-sm opacity-90 mb-1">Completion Rate</div>
+              <div className="text-2xl md:text-3xl font-bold">
                 {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
               </div>
             </div>
           </div>
         </div>
         
-        <div className="p-12">
+        <div className="p-4 md:p-12">
           {Object.keys(data).length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📭</div>
@@ -132,9 +132,9 @@ export default function TimelineWeeklyPage() {
             <div className="space-y-8">
               {Object.entries(data).map(([day, tasks]) => (
                 <div key={day}>
-                  <div className="bg-gradient-to-r from-purple-100 to-indigo-100 px-6 py-4 rounded-xl mb-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold text-purple-900">
+                  <div className="bg-gradient-to-r from-purple-100 to-indigo-100 px-4 md:px-6 py-3 md:py-4 rounded-xl mb-4">
+                    <div className="flex flex-wrap justify-between items-center gap-1">
+                      <h3 className="text-base md:text-xl font-bold text-purple-900">
                         {day}
                       </h3>
                       <div className="text-sm text-purple-700 font-semibold">
@@ -161,7 +161,7 @@ export default function TimelineWeeklyPage() {
                                 {task.description.length > 100 ? task.description.slice(0, 100) + '…' : task.description}
                               </div>
                             )}
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-gray-500">
                               {task.sub_projects?.projects?.name && (
                                 <span className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded font-medium">
                                   <span>📁</span>
@@ -200,18 +200,18 @@ export default function TimelineWeeklyPage() {
             </div>
           )}
           
-          <div className="mt-12 flex gap-4">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => router.push('/reports')}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+              className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
             >
               ← Back to Reports
             </button>
             <button
               onClick={() => window.print()}
-              className="px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
+              className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
             >
-              🖨️ Print / Save as PDF
+              �️ Print / Save as PDF
             </button>
           </div>
         </div>

@@ -61,11 +61,11 @@ export default function TimelineMonthlyPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-100 p-10">
+    <div className="min-h-screen bg-gray-100 p-3 md:p-10">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-12">
-          <h1 className="text-4xl font-bold mb-3">📅 Project Timeline - Monthly View</h1>
-          <div className="text-lg opacity-95">12-Month Roadmap & Milestones</div>
+        <div className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-5 md:p-12">
+          <h1 className="text-2xl md:text-4xl font-bold mb-3">📅 Project Timeline - Monthly View</h1>
+          <div className="text-sm md:text-lg opacity-95">12-Month Roadmap & Milestones</div>
           
           <div className="mt-6">
             <label className="text-sm opacity-90 mb-2 block">Select Year:</label>
@@ -83,9 +83,9 @@ export default function TimelineMonthlyPage() {
           </div>
         </div>
         
-        <div className="p-12">
+        <div className="p-4 md:p-12">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-lg md:text-2xl font-bold mb-2">
               Projects for {selectedYear}
             </h2>
             <p className="text-gray-600">
@@ -110,7 +110,9 @@ export default function TimelineMonthlyPage() {
               </button>
             </div>
           ) : (
-            <div className="bg-white rounded-lg p-6 mb-6">
+            <div className="bg-white rounded-lg p-3 md:p-6 mb-6">
+              <div className="overflow-x-auto w-full">
+              <div className="min-w-[700px]">
               <div className="grid grid-cols-12 gap-0 border-b-2 border-gray-300 pb-2 mb-4">
                 {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => (
                   <div key={month} className="text-center text-sm font-semibold text-gray-600">
@@ -121,8 +123,8 @@ export default function TimelineMonthlyPage() {
               
               {data.map((project: any, idx: number) => (
                 <div key={project.id} className="mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-64 flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-40 md:w-64 flex-shrink-0">
                       <div className="font-bold text-gray-900">{project.name}</div>
                       <div className="text-xs text-gray-500">
                         {project.start_date && new Date(project.start_date).toLocaleDateString()} - {project.end_date && new Date(project.end_date).toLocaleDateString()}
@@ -149,8 +151,7 @@ export default function TimelineMonthlyPage() {
                         </div>
                       )}
                     </div>
-                    
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                       project.status === 'done'
                         ? 'bg-green-100 text-green-700'
                         : project.status === 'in_progress'
@@ -162,21 +163,26 @@ export default function TimelineMonthlyPage() {
                   </div>
                 </div>
               ))}
+              </div>
+              </div>
+              <p className="text-xs text-gray-400 text-center mt-3 md:hidden">
+                ← Scroll to see full timeline →
+              </p>
             </div>
           )}
           
-          <div className="mt-12 flex gap-4">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => router.push('/reports')}
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+              className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
             >
               ← Back to Reports
             </button>
             <button
               onClick={() => window.print()}
-              className="px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
+              className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
             >
-              🖨️ Print / Save as PDF
+              �️ Print / Save as PDF
             </button>
           </div>
         </div>
