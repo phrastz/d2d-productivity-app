@@ -101,37 +101,60 @@ export function getEffortSummary(tasks: Task[]) {
 }
 
 /**
- * Calculate project progress from sub-projects + direct tasks
- * Weighted average for sub-projects, simple average for direct tasks
+ * Calculate project progress from sub-projects + direct tasks.
+ *
+ * Weighting: by task count, not item count.
+ *   total_weight   = Σ(sp.non_cancelled_task_count) + direct_non_cancelled_count
+ *   weighted_sum   = Σ(sp.progress_percent × sp.non_cancelled_task_count)
+ *                  + (direct_done / direct_total) × 100 × direct_total
+ *   project_progress = weighted_sum / total_weight
+ *
+ * Direct task progress is derived from status (done=100, in_progress=50, todo=0),
+ * NOT from progress_percent (which may be 0/null for status-toggled tasks).
+ *
+ * Cancelled tasks are excluded from all counts.
  */
 export function calculateProjectProgress(
   subProjects: SubProject[],
   directTasks: Task[]
 ): number {
-  const totalItems = subProjects.length + directTasks.length
-  if (totalItems === 0) return 0
+  // Exclude cancelled direct tasks
+  const activeDirectTasks = directTasks.filter(t => t.status !== 'cancelled')
 
-  let subContribution = 0
-  if (subProjects.length > 0) {
-    const totalWeight = subProjects.reduce(
-      (sum, sp) => sum + (sp.weight_contribution || 1), 0
-    )
-    const weightedProgress = subProjects.reduce(
-      (sum, sp) => sum + ((sp.progress_percent || 0) * (sp.weight_contribution || 1)), 0
-    )
-    const avgSubProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0
-    subContribution = avgSubProgress * (subProjects.length / totalItems)
-  }
+  // Build per-sub-project (progress, weight) pairs.
+  // Weight = number of non-cancelled tasks in the sub-project.
+  // sp.tasks is populated at runtime by useProjectDetail; fall back to tasks_total.
+  const subGroups = subProjects.map(sp => {
+    const spTasks = sp.tasks ?? []
+    const activeCount = spTasks.length > 0
+      ? spTasks.filter(t => t.status !== 'cancelled').length
+      : (sp.tasks_total ?? 0)
+    return {
+      progress: sp.progress_percent || 0,
+      weight: activeCount,
+    }
+  })
 
-  let directContribution = 0
-  if (directTasks.length > 0) {
-    const avgDirect = directTasks.reduce(
-      (sum, t) => sum + (t.progress_percent || 0), 0
-    ) / directTasks.length
-    directContribution = avgDirect * (directTasks.length / totalItems)
-  }
+  const subTotalWeight = subGroups.reduce((sum, g) => sum + g.weight, 0)
+  const totalWeight = subTotalWeight + activeDirectTasks.length
 
-  return Math.min(100, Math.max(0, Math.round(subContribution + directContribution)))
+  if (totalWeight === 0) return 0
+
+  // Sub-projects: weighted by task count
+  const subWeightedSum = subGroups.reduce(
+    (sum, g) => sum + (g.progress * g.weight), 0
+  )
+
+  // Direct tasks: completion rate from status, not progress_percent
+  const directDone = activeDirectTasks.filter(t => t.status === 'done').length
+  const directProgress = activeDirectTasks.length > 0
+    ? (directDone / activeDirectTasks.length) * 100
+    : 0
+  const directWeightedSum = directProgress * activeDirectTasks.length
+
+  return Math.min(100, Math.max(0, Math.round(
+    (subWeightedSum + directWeightedSum) / totalWeight
+  )))
 }
 
 /**

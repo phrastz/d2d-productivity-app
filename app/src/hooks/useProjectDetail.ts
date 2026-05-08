@@ -290,7 +290,7 @@ export function useProjectDetail(projectId: string | null, refreshKey?: number) 
 
     // 4. Always recalculate project progress
     const updatedTasks = allTasks.map(t => 
-      t.id === taskId ? { ...t, progress_percent: clampedProgress } : t
+      t.id === taskId ? { ...t, progress_percent: clampedProgress, status: newStatus } : t
     )
     const subProjects = project?.sub_projects || []
     const directTasks = updatedTasks.filter(t => !t.sub_project_id)
