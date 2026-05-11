@@ -15,6 +15,7 @@ import AddTaskForm from '@/components/projects/AddTaskForm'
 import TaskDialog from '@/components/tasks/TaskDialog'
 import { toast } from 'sonner'
 import { DatePicker } from '@/components/ui/DatePicker'
+import ProjectNotesSection from '@/components/projects/ProjectNotesSection'
 import {
   Dialog,
   DialogContent,
@@ -154,7 +155,7 @@ export default function ProjectDetailPage() {
     <div className="flex-1 flex flex-col">
       <TopNav title="Project Detail" />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
         {/* Back Button */}
         <button
           onClick={() => router.push('/projects')}
@@ -165,10 +166,10 @@ export default function ProjectDetailPage() {
         </button>
 
         {/* Project Header */}
-        <div className="glass rounded-2xl p-6">
+        <div className="glass rounded-2xl p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold gradient-text mb-2">{project.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold gradient-text mb-2">{project.name}</h1>
               {project.description && (
                 <p className="text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
               )}
@@ -182,7 +183,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Project Meta */}
-          <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mb-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600 dark:text-slate-400 mb-4">
             {project.end_date && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
@@ -284,7 +285,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Direct Tasks Section — always visible */}
-        <div className="glass rounded-2xl p-6">
+        <div className="glass rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Direct Tasks</h3>
             <span className="text-xs text-slate-500 dark:text-slate-400">{directTasks.length} task{directTasks.length !== 1 ? 's' : ''}</span>
@@ -317,12 +318,12 @@ export default function ProjectDetailPage() {
                   </div>
                   <span
                     onClick={() => handleEditTask(task)}
-                    className={`flex-1 text-sm cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded px-2 py-1 -mx-1 transition-colors ${
+                    className={`flex-1 min-w-0 text-sm cursor-pointer truncate hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded px-2 py-1 -mx-1 transition-colors ${
                       task.status === 'done' || task.status === 'cancelled'
                         ? 'text-slate-400 dark:text-slate-500 line-through'
                         : 'text-slate-900 dark:text-slate-100'
                     }`}
-                    title={task.status === 'cancelled' ? 'Cancelled task' : 'Click to edit task'}
+                    title={task.title}
                   >
                     {task.title}
                     {task.status === 'cancelled' && (
@@ -402,6 +403,9 @@ export default function ProjectDetailPage() {
             </Dialog>
           </div>
         </div>
+
+        {/* Notes & Comments Section */}
+        <ProjectNotesSection projectId={projectId} />
       </div>
 
       {/* Task Edit Dialog */}

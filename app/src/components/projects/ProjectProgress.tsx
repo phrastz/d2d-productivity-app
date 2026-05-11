@@ -55,24 +55,27 @@ export default function ProjectProgress({ project }: ProjectProgressProps) {
           {subProjects.map((sp) => {
             const progress = sp.progress_percent || 0
             return (
-              <div key={sp.id} className="flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-slate-800 dark:text-slate-100 truncate">
-                      {sp.name}
+              <div key={sp.id} className="w-full overflow-hidden">
+                <div className="flex flex-col gap-1 w-full">
+                  {/* Name — full width, wraps on long text */}
+                  <span className="text-xs font-medium text-slate-800 dark:text-slate-100 break-words">
+                    {sp.name}
+                  </span>
+                  {/* Tasks count + percentage on same line */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {sp.tasks_done || 0}/{sp.tasks_total || 0} tasks
                     </span>
-                    <span className={`text-xs font-bold ${getProgressTextColor(progress)}`}>
+                    <span className={`text-xs font-bold shrink-0 ${getProgressTextColor(progress)}`}>
                       {progress}%
                     </span>
                   </div>
-                  <div className="h-1.5 bg-slate-200 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                  {/* Progress bar — full width */}
+                  <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800/50 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${getProgressColor(progress)}`}
                       style={{ width: `${progress}%` }}
                     />
-                  </div>
-                  <div className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                    {sp.tasks_done || 0}/{sp.tasks_total || 0} tasks
                   </div>
                 </div>
               </div>

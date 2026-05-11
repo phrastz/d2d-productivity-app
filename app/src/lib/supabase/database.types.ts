@@ -45,6 +45,9 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          follow_up_date: string | null
+          follow_up_note: string | null
+          follow_up_status: string
           id: string
           owner_id: string
           project_id: string | null
@@ -53,6 +56,9 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          follow_up_date?: string | null
+          follow_up_note?: string | null
+          follow_up_status?: string
           id?: string
           owner_id: string
           project_id?: string | null
@@ -61,6 +67,9 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          follow_up_date?: string | null
+          follow_up_note?: string | null
+          follow_up_status?: string
           id?: string
           owner_id?: string
           project_id?: string | null

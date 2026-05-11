@@ -29,6 +29,7 @@ export default function ProjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [projectStats, setProjectStats] = useState<Record<string, { subProjects: number; tasks: number }>>({})
+  const [pendingFollowUps, setPendingFollowUps] = useState<Record<string, number>>({})
 
   const handleSaved = (p: Project) => {
     setProjects(prev => {
@@ -90,6 +91,22 @@ export default function ProjectsPage() {
       })
 
       setProjectStats(stats)
+
+      // Fetch pending follow-up counts across all projects in one query
+      const supabase2 = createClient()
+      const { data: pendingNotes, error: pendingError } = await supabase2
+        .from('notes')
+        .select('project_id')
+        .eq('follow_up_status', 'pending')
+        .not('project_id', 'is', null)
+      if (!pendingError && pendingNotes) {
+        const pendingMap: Record<string, number> = {}
+        pendingNotes.forEach((n: { project_id: string | null }) => {
+          if (n.project_id) pendingMap[n.project_id] = (pendingMap[n.project_id] || 0) + 1
+        })
+        setPendingFollowUps(pendingMap)
+      }
+      if (pendingError) console.error('[ProjectsPage] PENDING FOLLOW-UPS ERROR', pendingError)
     }
 
     if (projects.length > 0) {
@@ -172,8 +189,13 @@ export default function ProjectsPage() {
                   className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 cursor-pointer hover:glow transition-all duration-200 group"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-violet-400 transition-colors">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-violet-400 transition-colors flex items-center gap-1.5">
                       {project.name}
+                      {(pendingFollowUps[project.id] ?? 0) > 0 && (
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex-shrink-0" title={`${pendingFollowUps[project.id]} pending follow-up${pendingFollowUps[project.id] > 1 ? 's' : ''}`}>
+                          {pendingFollowUps[project.id]}
+                        </span>
+                      )}
                     </h3>
                     <span className={cn(
                       'text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ml-2',

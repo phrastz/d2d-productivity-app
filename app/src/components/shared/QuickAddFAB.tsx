@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, X, CheckSquare, BookOpen, Loader2, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -8,6 +8,7 @@ import { format } from 'date-fns'
 
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
+import type { SubProject } from '@/types'
 
 type QuickMode = 'task' | 'log' | 'note' | null
 
@@ -29,6 +30,20 @@ export default function QuickAddFAB() {
   const [noteText, setNoteText] = useState('')
   const [noteProjectId, setNoteProjectId] = useState<string>('')
   const [noteTaskId, setNoteTaskId] = useState<string>('')
+  const [taskSubProjectId, setTaskSubProjectId] = useState<string>('')
+  const [taskSubProjects, setTaskSubProjects] = useState<SubProject[]>([])
+
+  useEffect(() => {
+    if (!projectId) { setTaskSubProjects([]); setTaskSubProjectId(''); return }
+    supabase
+      .from('sub_projects')
+      .select('id, name, order_index, status, priority, description, project_id, owner_id, created_at, updated_at, progress_percent, weight_contribution, start_date, end_date')
+      .eq('project_id', projectId)
+      .order('order_index')
+      .then(({ data }) => { setTaskSubProjects(data || []); setTaskSubProjectId('') })
+  }, [projectId, supabase])
+
+  useEffect(() => { setNoteTaskId('') }, [noteProjectId])
 
   const moods = ['great', 'good', 'okay', 'bad', 'terrible']
   const moodEmoji: Record<string, string> = {
@@ -45,7 +60,8 @@ export default function QuickAddFAB() {
         status: 'todo', 
         priority: 'medium', 
         owner_id: user.id,
-        project_id: projectId || null
+        project_id: projectId || null,
+        sub_project_id: taskSubProjectId || null
       })
     }
     setSaving(false)
@@ -102,6 +118,8 @@ export default function QuickAddFAB() {
     setNoteText('')
     setNoteProjectId('')
     setNoteTaskId('')
+    setTaskSubProjectId('')
+    setTaskSubProjects([])
   }
 
   return (
@@ -175,13 +193,26 @@ export default function QuickAddFAB() {
               <select
                 value={projectId}
                 onChange={e => setProjectId(e.target.value)}
-                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-3"
+                className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-2"
               >
                 <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">No Project</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">{p.name}</option>
                 ))}
               </select>
+              {projectId && taskSubProjects.length > 0 && (
+                <select
+                  value={taskSubProjectId}
+                  onChange={e => setTaskSubProjectId(e.target.value)}
+                  className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-2"
+                >
+                  <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">No Sub-Project</option>
+                  {taskSubProjects.map(sp => (
+                    <option key={sp.id} value={sp.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">{sp.name}</option>
+                  ))}
+                </select>
+              )}
+              <div className="mb-3" />
               <button
                 onClick={handleSaveTask}
                 disabled={saving || !taskTitle.trim()}
@@ -223,9 +254,9 @@ export default function QuickAddFAB() {
                 className="w-full bg-slate-100 dark:bg-secondary/50 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-foreground focus:outline-none focus:border-violet-500/50 transition-colors mb-3"
               >
                 <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">-- Attach to Task (Optional) --</option>
-                {tasks.map(t => (
+                {(noteProjectId ? tasks.filter(t => t.project_id === noteProjectId) : tasks).map(t => (
                   <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-foreground">
-                    {t.title} {t.project_id ? `(Proj: ${projects.find(p => p.id === t.project_id)?.name})` : ''}
+                    {t.title}{!noteProjectId && t.project_id ? ` (${projects.find(p => p.id === t.project_id)?.name})` : ''}
                   </option>
                 ))}
               </select>

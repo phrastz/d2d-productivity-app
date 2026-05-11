@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, CheckSquare, FolderKanban,
-  BarChart3, BookOpen, Zap, Settings, LogOut, Calendar, Activity, Upload
+  BarChart3, BookOpen, Zap, Settings, LogOut, Calendar, Activity, Upload, RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Dashboard',  href: '/dashboard',  icon: LayoutDashboard },
   { label: 'Tasks',      href: '/tasks',       icon: CheckSquare },
   { label: 'Projects',   href: '/projects',    icon: FolderKanban },
+  { label: 'Routines',   href: '/routines',    icon: RefreshCw },
   { label: 'Calendar',   href: '/calendar',    icon: Calendar },
   { label: 'Habits',     href: '/habits',      icon: Activity },
   { label: 'Reports',    href: '/reports',     icon: BarChart3 },
@@ -30,6 +31,7 @@ export default function Sidebar() {
   const [userEmail, setUserEmail] = useState<string>('')
   const [initials, setInitials]   = useState<string>('U')
   const [signingOut, setSigningOut] = useState(false)
+  const [routineOverdue, setRoutineOverdue] = useState(0)
 
   useEffect(() => {
     const loadUser = async () => {
@@ -49,6 +51,24 @@ export default function Sidebar() {
       )
     }
     loadUser()
+  }, [supabase])
+
+  useEffect(() => {
+    const checkOverdue = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const today = new Date().toISOString().split('T')[0]
+      const { count } = await supabase
+        .from('routine_occurrences')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', user.id)
+        .eq('status', 'pending')
+        .lt('due_date', today)
+      setRoutineOverdue(count ?? 0)
+    }
+    checkOverdue()
+    const interval = setInterval(checkOverdue, 5 * 60 * 1000)
+    return () => clearInterval(interval)
   }, [supabase])
 
   const handleSignOut = async () => {
@@ -86,6 +106,7 @@ export default function Sidebar() {
         </p>
         {navItems.map(({ label, href, icon: Icon }) => {
           const active = pathname.startsWith(href)
+          const isRoutines = href === '/routines'
           return (
             <Link
               key={href}
@@ -94,6 +115,11 @@ export default function Sidebar() {
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               <span>{label}</span>
+              {isRoutines && routineOverdue > 0 && !active && (
+                <span className="ml-auto flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {routineOverdue > 9 ? '9+' : routineOverdue}
+                </span>
+              )}
               {active && (
                 <span
                   className="ml-auto w-1.5 h-1.5 rounded-full"

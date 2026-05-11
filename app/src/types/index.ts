@@ -133,6 +133,9 @@ export interface Note {
   content: string
   created_at: string
   updated_at: string
+  follow_up_status: 'pending' | 'in_progress' | 'resolved'
+  follow_up_date: string | null
+  follow_up_note: string | null
 }
 
 // ============================================================================
@@ -154,4 +157,71 @@ export interface ProjectEfficiency {
   subProjectEfficiency: { id: string; name: string; ratio: number }[]
   onTrackTasks: number
   overEffortTasks: number
+}
+
+// ============================================================================
+// Routine Types
+// ============================================================================
+
+export type RoutineStatus   = 'active' | 'paused' | 'archived'
+export type RoutineFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'
+export type OccurrenceStatus = 'pending' | 'completed' | 'delayed'
+export type FollowUpStatus  = 'pending' | 'in_progress' | 'resolved'
+
+export interface Routine {
+  id: string
+  owner_id: string
+  title: string
+  description: string | null
+  category: string | null
+  frequency_type: RoutineFrequency | null
+  frequency_interval: number
+  frequency_day_of_week: number | null
+  frequency_day_of_month: number | null
+  status: RoutineStatus
+  next_due_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface RoutineOccurrence {
+  id: string
+  routine_id: string
+  owner_id: string
+  due_date: string
+  completed_at: string | null
+  status: OccurrenceStatus
+  delay_reason: string | null
+  notes: string | null
+  created_at: string
+}
+
+export interface RoutineChecklistItem {
+  id: string
+  routine_id: string
+  owner_id: string
+  label: string
+  is_default: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface RoutineOccurrenceCheck {
+  id: string
+  occurrence_id: string
+  checklist_item_id: string
+  is_checked: boolean
+  checked_at: string | null
+}
+
+export interface RoutineNote {
+  id: string
+  routine_id: string
+  occurrence_id: string | null
+  owner_id: string
+  content: string
+  follow_up_status: FollowUpStatus
+  follow_up_date: string | null
+  follow_up_note: string | null
+  created_at: string
 }
