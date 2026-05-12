@@ -52,7 +52,7 @@ export default function TimelineMonthlyPage() {
   const [routineOccs, setRoutineOccs] = useState<any[]>([]);
   const [loading, setLoading]         = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [activeTab, setActiveTab]     = useState<'projects' | 'routines'>('projects');
+  const [activeTab, setActiveTab]     = useState<'all' | 'projects' | 'routines'>('all');
 
   useEffect(() => {
     async function loadData() {
@@ -113,11 +113,11 @@ export default function TimelineMonthlyPage() {
               </select>
             </div>
             {/* Tab switcher */}
-            <div className="flex gap-2">
-              {(['projects', 'routines'] as const).map(tab => (
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'projects', 'routines'] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === tab ? 'bg-white text-purple-700' : 'bg-white/20 hover:bg-white/30'}`}>
-                  {tab === 'projects' ? '📁 Projects Timeline' : '🔄 Routines Schedule'}
+                  {tab === 'all' ? '🗓️ All' : tab === 'projects' ? '📁 Projects Timeline' : '🔄 Routines Schedule'}
                 </button>
               ))}
             </div>
@@ -126,7 +126,7 @@ export default function TimelineMonthlyPage() {
 
         <div className="p-4 md:p-12">
           {/* ── Projects Tab ── */}
-          {activeTab === 'projects' && (
+          {(activeTab === 'projects' || activeTab === 'all') && (
             <>
               <div className="mb-6">
                 <h2 className="text-lg md:text-2xl font-bold mb-1">Projects for {selectedYear}</h2>
@@ -137,7 +137,7 @@ export default function TimelineMonthlyPage() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 inline-block" /> Overdue</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-400 inline-block" /> No Dates Set</span>
                   <span className="flex items-center gap-1.5"><span className="w-0.5 h-3 bg-red-500 inline-block" /> Today</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm border-2 border-amber-400 inline-block" style={{background:'repeating-linear-gradient(90deg,rgba(251,191,36,0.3) 0px,rgba(251,191,36,0.3) 3px,transparent 3px,transparent 6px)'}} /> Tasks beyond end</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm border-2 border-amber-400 inline-block" style={{background:'repeating-linear-gradient(90deg,rgba(251,191,36,0.3) 0px,rgba(251,191,36,0.3) 3px,transparent 3px,transparent 6px)'}} /> Task scope exceeds deadline</span>
                 </div>
               </div>
 
@@ -208,21 +208,22 @@ export default function TimelineMonthlyPage() {
                                   </div>
                                   {/* Dashed extension: tasks scheduled beyond project end_date */}
                                   {project.max_task_due_date && project.max_task_due_date > project.end_date && (() => {
-                                    const endD  = new Date(project.end_date          + 'T00:00:00');
-                                    const maxD  = new Date(project.max_task_due_date + 'T00:00:00');
-                                    const endMo = (endD.getFullYear() - selectedYear) * 12 + endD.getMonth();
-                                    const maxMo = (maxD.getFullYear() - selectedYear) * 12 + maxD.getMonth();
+                                    const endD      = new Date(project.end_date          + 'T00:00:00');
+                                    const maxD      = new Date(project.max_task_due_date + 'T00:00:00');
+                                    const endMo     = (endD.getFullYear() - selectedYear) * 12 + endD.getMonth();
+                                    const rawMaxMo  = (maxD.getFullYear() - selectedYear) * 12 + maxD.getMonth();
+                                    const maxMo     = Math.min(rawMaxMo, 11); // cap at Dec of selected year
                                     if (maxMo <= endMo) return null;
                                     const extLeft  = ((endMo + 1) / 12) * 100;
                                     const extWidth = ((maxMo - endMo) / 12) * 100;
                                     return (
-                                      <div className="absolute top-1 bottom-1 rounded border-2 border-amber-400 pointer-events-none"
+                                      <div className="absolute top-3 bottom-3 rounded border-2 border-amber-400 pointer-events-none"
                                         style={{
                                           left: `${Math.min(extLeft, 97)}%`,
                                           width: `${extWidth}%`,
                                           background: 'repeating-linear-gradient(90deg,rgba(251,191,36,0.25) 0px,rgba(251,191,36,0.25) 5px,transparent 5px,transparent 10px)',
                                         }}
-                                        title={`Tasks extend to ${project.max_task_due_date}`}
+                                        title={`Some tasks are planned beyond this project's end date. Consider updating the project deadline.\nLatest task: ${project.max_task_due_date}`}
                                       />
                                     );
                                   })()}
@@ -246,7 +247,7 @@ export default function TimelineMonthlyPage() {
           )}
 
           {/* ── Routines Schedule Tab ── */}
-          {activeTab === 'routines' && (
+          {(activeTab === 'routines' || activeTab === 'all') && (
             <>
               <div className="mb-6 flex items-center gap-4 flex-wrap">
                 <h2 className="text-lg md:text-2xl font-bold">Routines Schedule {selectedYear}</h2>

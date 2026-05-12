@@ -6,10 +6,13 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
   const startStr = dateRange.start.toISOString().split('T')[0];
   const endStr   = dateRange.end.toISOString().split('T')[0];
 
+  const currentYear = new Date().getFullYear();
+
   const [
     { data: projects, error: pErr },
     { data: routines, error: rErr },
     { data: occurrences, error: oErr },
+    { count: yearOccCount, error: ycErr },
   ] = await Promise.all([
     supabase.from('projects').select('*, tasks(*)').eq('owner_id', userId)
       .gte('created_at', dateRange.start.toISOString())
@@ -17,11 +20,17 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
     supabase.from('routines').select('*').eq('owner_id', userId),
     supabase.from('routine_occurrences').select('*').eq('owner_id', userId)
       .gte('due_date', startStr).lte('due_date', endStr),
+    supabase.from('routine_occurrences').select('id', { count: 'exact', head: true })
+      .eq('owner_id', userId)
+      .gte('due_date', `${currentYear}-01-01`)
+      .lte('due_date', `${currentYear}-12-31`),
   ]);
 
   if (pErr) { console.error('Error fetching executive summary data:', pErr); return null; }
-  if (rErr) console.error('Error fetching routines:', rErr);
-  if (oErr) console.error('Error fetching occurrences:', oErr);
+  if (rErr)  console.error('Error fetching routines:', rErr);
+  if (oErr)  console.error('Error fetching occurrences:', oErr);
+  if (ycErr) console.error('Error fetching year occ count:', ycErr);
+  console.log('[ExecutiveSummary] yearOccCount:', yearOccCount, 'totalRoutines:', routines?.length, 'occs in dateRange:', (occurrences ?? []).length);
 
   const totalProjects   = projects?.length || 0;
   const totalTasks      = projects?.reduce((s, p) => s + (p.tasks?.length || 0), 0) || 0;
@@ -37,11 +46,14 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
   const routineOnTimeRate = occs.length > 0 ? Math.round((completedOccs / occs.length) * 100) : 0;
   const routineDelayRate  = occs.length > 0 ? Math.round((delayedOccs / occs.length) * 100) : 0;
 
-  const totalOccs = occs.length;
-  const wTotal = totalTasks + totalOccs;
+  // For workload distribution use the full-year occurrence count so future
+  // occurrences (outside the dateRange window) are included. Fall back to
+  // active routine count if no occurrences have been generated yet.
+  const workloadOccs = (yearOccCount ?? 0) > 0 ? (yearOccCount as number) : (totalRoutines || 0);
+  const wTotal = totalTasks + workloadOccs;
   const workDistribution = wTotal > 0 ? [
-    { name: 'Projects', value: totalTasks,  pct: Math.round((totalTasks  / wTotal) * 100) },
-    { name: 'Routines', value: totalOccs,   pct: Math.round((totalOccs   / wTotal) * 100) },
+    { name: 'Projects', value: totalTasks,    pct: Math.round((totalTasks    / wTotal) * 100) },
+    { name: 'Routines', value: workloadOccs,  pct: Math.round((workloadOccs  / wTotal) * 100) },
   ] : [];
 
   return {

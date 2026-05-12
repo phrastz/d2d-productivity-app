@@ -18,7 +18,7 @@ export default function TimelineWeeklyPage() {
   const [routineStats, setRoutineStats] = useState({ totalOccs: 0, completedOccs: 0, delayedOccs: 0, routineOnTimeRate: 0 });
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(getStartOfWeek(new Date()));
-  const [activeTab, setActiveTab] = useState<'tasks' | 'routines'>('tasks');
+  const [activeTab, setActiveTab] = useState<'all' | 'tasks' | 'routines'>('all');
 
   function getStartOfWeek(date: Date) {
     const d = new Date(date);
@@ -78,7 +78,22 @@ export default function TimelineWeeklyPage() {
           </div>
 
           {/* KPI banner — shows whichever tab is active */}
-          {activeTab === 'tasks' ? (
+          {activeTab === 'all' ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 bg-white/15 backdrop-blur-lg p-4 md:p-6 rounded-2xl">
+              {(() => {
+                const allTotal     = totalTasks + routineStats.totalOccs;
+                const allCompleted = completedTasks + routineStats.completedOccs;
+                const allPending   = (totalTasks - completedTasks) + (routineStats.totalOccs - routineStats.completedOccs);
+                const allRate      = allTotal > 0 ? Math.round((allCompleted / allTotal) * 100) : 0;
+                return (<>
+                  <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Total Items Due</div><div className="text-2xl md:text-3xl font-bold">{allTotal}</div></div>
+                  <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Completed</div><div className="text-2xl md:text-3xl font-bold">{allCompleted}</div></div>
+                  <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Pending</div><div className="text-2xl md:text-3xl font-bold">{allPending}</div></div>
+                  <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Completion Rate</div><div className="text-2xl md:text-3xl font-bold">{allRate}%</div></div>
+                </>);
+              })()}
+            </div>
+          ) : activeTab === 'tasks' ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 bg-white/15 backdrop-blur-lg p-4 md:p-6 rounded-2xl">
               <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Total Tasks</div><div className="text-2xl md:text-3xl font-bold">{totalTasks}</div></div>
               <div className="text-center"><div className="text-xs md:text-sm opacity-90 mb-1">Completed</div><div className="text-2xl md:text-3xl font-bold">{completedTasks}</div></div>
@@ -97,14 +112,96 @@ export default function TimelineWeeklyPage() {
 
         <div className="p-4 md:p-12">
           {/* Tab switcher */}
-          <div className="flex gap-2 mb-8">
-            {(['tasks', 'routines'] as const).map(tab => (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {(['all', 'tasks', 'routines'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${activeTab === tab ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'}`}>
-                {tab === 'tasks' ? '📋 Project Tasks This Week' : '🔄 Routines This Week'}
+                {tab === 'all' ? '🗓️ All This Week' : tab === 'tasks' ? '📋 Project Tasks' : '🔄 Routines'}
               </button>
             ))}
           </div>
+
+          {/* ── All Tab ── */}
+          {activeTab === 'all' && (() => {
+            const weekDayLabels = Array.from({ length: 7 }, (_, i) => {
+              const d = new Date(weekStart);
+              d.setDate(d.getDate() + i);
+              return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            });
+            const allDaysSet  = new Set([...Object.keys(tasksByDay), ...Object.keys(occsByDay)]);
+            const sortedDays  = weekDayLabels.filter(d => allDaysSet.has(d));
+            if (sortedDays.length === 0) {
+              return (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">📭</div>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">Nothing This Week</p>
+                  <p className="text-gray-500">No tasks or routines scheduled for this week</p>
+                </div>
+              );
+            }
+            return (
+              <div className="space-y-8">
+                {sortedDays.map(day => {
+                  const dayTasks = tasksByDay[day] || [];
+                  const dayOccs  = occsByDay[day]  || [];
+                  const totalItems     = dayTasks.length + dayOccs.length;
+                  const completedItems = dayTasks.filter((t: any) => t.status === 'done').length
+                                       + dayOccs.filter((o: any) => o.status === 'completed').length;
+                  return (
+                    <div key={day}>
+                      <div className="bg-gradient-to-r from-purple-100 via-indigo-50 to-emerald-100 px-4 md:px-6 py-3 md:py-4 rounded-xl mb-4">
+                        <div className="flex flex-wrap justify-between items-center gap-1">
+                          <h3 className="text-base md:text-xl font-bold text-purple-900">{day}</h3>
+                          <div className="text-sm text-gray-600 font-semibold">{totalItems} item{totalItems !== 1 ? 's' : ''} · {completedItems} completed</div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {dayTasks.map((task: any) => (
+                          <div key={task.id} className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-purple-400 transition-colors">
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold">� Task</span>
+                                  <span className="font-semibold text-gray-900">{task.title}</span>
+                                </div>
+                                {task.sub_projects?.projects?.name && (
+                                  <span className="text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded">📁 {task.sub_projects.projects.name}</span>
+                                )}
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase whitespace-nowrap ${
+                                task.status === 'done' ? 'bg-green-100 text-green-700'
+                                : task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-blue-100 text-blue-700'
+                              }`}>{task.status?.replace('_', ' ')}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {dayOccs.map((occ: any) => (
+                          <div key={occ.id} className={`border-2 rounded-lg p-4 transition-colors ${OCC_STATUS_COLOR[occ.status] ?? OCC_STATUS_COLOR.pending}`}>
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">🔄 Routine</span>
+                                  <span className="font-semibold text-gray-900">{occ.routines?.title ?? '—'}</span>
+                                </div>
+                                {occ.routines?.category && <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">{occ.routines.category}</span>}
+                                {occ.delay_reason && <p className="text-xs text-red-600 mt-1">⚠ {occ.delay_reason}</p>}
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase whitespace-nowrap ${
+                                occ.status === 'completed' ? 'bg-green-100 text-green-700'
+                                : occ.status === 'delayed' ? 'bg-amber-100 text-amber-700'
+                                : 'bg-gray-100 text-gray-600'
+                              }`}>{occ.status}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* ── Tasks Tab ── */}
           {activeTab === 'tasks' && (
