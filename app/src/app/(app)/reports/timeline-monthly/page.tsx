@@ -148,18 +148,19 @@ export default function TimelineMonthlyPage() {
                   <button onClick={() => router.push('/projects')} className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700">Create New Project</button>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg p-3 md:p-6 mb-6">
-                  <div className="overflow-x-auto w-full">
-                    <div className="min-w-[800px]">
+                <div className="bg-white rounded-lg p-3 md:p-6 mb-6 overflow-visible">
+                  <div className="overflow-x-auto w-full overflow-visible">
+                    <div className="min-w-[800px] relative overflow-visible pt-6">
                       {/* Header row: spacer for name column + 12 month labels + spacer for status badge */}
                       <div className="flex items-center gap-3 border-b-2 border-gray-300 pb-2 mb-4">
+                        {todayPct !== null && (
+                          <div className="absolute top-0 z-50 flex flex-col items-center pointer-events-none"
+                            style={{ left: `calc(12rem + 0.75rem + (100% - 18.5rem) * ${todayPct / 100})`, transform: 'translateX(-50%)' }}>
+                            <span className="text-[10px] font-bold text-white whitespace-nowrap leading-none bg-red-500 px-2 py-0.5 rounded-full shadow-sm">▼ TODAY</span>
+                          </div>
+                        )}
                         <div className="w-48 shrink-0" />
-                        <div className="flex-1 relative overflow-visible">
-                          {todayPct !== null && (
-                            <div className="absolute -top-1 flex flex-col items-center pointer-events-none z-10" style={{ left: `${todayPct}%`, transform: 'translateX(-50%)' }}>
-                              <span className="text-[10px] font-bold text-red-500 whitespace-nowrap leading-none bg-white px-1 rounded shadow-sm">▼ TODAY</span>
-                            </div>
-                          )}
+                        <div className="flex-1 relative">
                           <div className="grid grid-cols-12 gap-0">
                             {MONTHS.map(m => <div key={m} className="text-center text-xs font-semibold text-gray-600">{m}</div>)}
                           </div>
