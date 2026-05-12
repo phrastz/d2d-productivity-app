@@ -329,9 +329,12 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
                           ? 'border-red-500/30 bg-red-50/20 dark:bg-red-500/5'
                           : 'border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20'
                       )}>
-                        <button
+                        <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setExpandedOccId(isExpanded ? null : occ.id)}
-                          className="w-full flex items-center gap-3 p-3 text-left"
+                          onKeyDown={e => e.key === 'Enter' && setExpandedOccId(isExpanded ? null : occ.id)}
+                          className="w-full flex items-center gap-3 p-3 text-left cursor-pointer"
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -368,7 +371,7 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
                             )}
                             {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
                           </div>
-                        </button>
+                        </div>
 
                         {isExpanded && (
                           <div className="px-3 pb-3 pt-1 border-t border-slate-200 dark:border-slate-700/50 space-y-2">
