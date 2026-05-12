@@ -19,31 +19,40 @@ export function useRoutines() {
 
   const fetchRoutines = useCallback(async () => {
     setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+    try {
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (!user) { setLoading(false); return }
 
-    const today = format(new Date(), 'yyyy-MM-dd')
+      const today = format(new Date(), 'yyyy-MM-dd')
 
-    const [{ data: routinesData }, { data: occData }] = await Promise.all([
-      supabase.from('routines').select('*').eq('owner_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('routine_occurrences').select('*').eq('owner_id', user.id).order('due_date', { ascending: false }),
-    ])
+      const [{ data: routinesData, error: rErr }, { data: occData, error: oErr }] = await Promise.all([
+        sb.from('routines').select('*').eq('owner_id', user.id).order('created_at', { ascending: false }),
+        sb.from('routine_occurrences').select('*').eq('owner_id', user.id).order('due_date', { ascending: false }),
+      ])
 
-    if (!routinesData) { setLoading(false); return }
+      if (rErr) { console.error('[useRoutines] fetchRoutines routines error:', rErr); setLoading(false); return }
+      if (oErr) console.error('[useRoutines] fetchRoutines occurrences error:', oErr)
 
-    const occurrences: RoutineOccurrence[] = occData ?? []
+      if (!routinesData) { setLoading(false); return }
 
-    const enriched: RoutineWithLatestOccurrence[] = routinesData.map(r => {
-      const routineOccs = occurrences.filter(o => o.routine_id === r.id)
-      const latestOccurrence = routineOccs[0] ?? null
-      const overdueCount = routineOccs.filter(o => o.status === 'pending' && o.due_date < today).length
-      return { ...r, latestOccurrence, overdueCount }
-    })
+      const occurrences: RoutineOccurrence[] = occData ?? []
 
-    const totalOverdue = enriched.reduce((sum, r) => sum + (r.overdueCount ?? 0), 0)
-    setRoutines(enriched)
-    setOverdueCount(totalOverdue)
-    setLoading(false)
+      const enriched: RoutineWithLatestOccurrence[] = routinesData.map(r => {
+        const routineOccs = occurrences.filter(o => o.routine_id === r.id)
+        const latestOccurrence = routineOccs[0] ?? null
+        const overdueCount = routineOccs.filter(o => o.status === 'pending' && o.due_date < today).length
+        return { ...r, latestOccurrence, overdueCount }
+      })
+
+      const totalOverdue = enriched.reduce((sum, r) => sum + (r.overdueCount ?? 0), 0)
+      setRoutines(enriched)
+      setOverdueCount(totalOverdue)
+    } catch (err) {
+      console.error('[useRoutines] fetchRoutines unexpected error:', err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -56,66 +65,90 @@ export function useRoutines() {
   }, [fetchRoutines])
 
   const createRoutine = async (payload: Omit<Routine, 'id' | 'owner_id' | 'created_at' | 'updated_at'>, checklistLabels: string[]) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const sb = createClient()
+    const { data: { user } } = await sb.auth.getUser()
     if (!user) throw new Error('Not authenticated')
 
-    const { data: routine, error } = await supabase.from('routines').insert({
+    const { data: routine, error } = await sb.from('routines').insert({
       ...payload,
       owner_id: user.id,
     }).select().single()
-    if (error) throw error
+    if (error) {
+      console.error('[useRoutines] createRoutine insert error:', error)
+      throw error
+    }
+
+    const nonFatalInserts: PromiseLike<unknown>[] = []
 
     if (checklistLabels.length > 0) {
-      await supabase.from('routine_checklist_items').insert(
-        checklistLabels.map((label, i) => ({
-          routine_id: routine.id,
-          owner_id: user.id,
-          label,
-          sort_order: i,
-        }))
+      nonFatalInserts.push(
+        sb.from('routine_checklist_items').insert(
+          checklistLabels.map((label, i) => ({
+            routine_id: routine.id,
+            owner_id: user.id,
+            label,
+            sort_order: i,
+          }))
+        ).then(({ error: e }) => {
+          if (e) console.error('[useRoutines] checklist insert error:', e)
+        })
       )
     }
 
     if (routine.next_due_date) {
-      await supabase.from('routine_occurrences').insert({
-        routine_id: routine.id,
-        owner_id: user.id,
-        due_date: routine.next_due_date,
-        status: 'pending',
-      })
+      nonFatalInserts.push(
+        sb.from('routine_occurrences').insert({
+          routine_id: routine.id,
+          owner_id: user.id,
+          due_date: routine.next_due_date,
+          status: 'pending',
+        }).then(({ error: e }) => {
+          if (e) console.error('[useRoutines] occurrence insert error:', e)
+        })
+      )
     }
 
+    await Promise.all(nonFatalInserts)
+    await fetchRoutines()
     return routine as Routine
   }
 
   const markDone = async (routineId: string, occurrenceId: string) => {
+    const sb = createClient()
     const now = new Date().toISOString()
-    await supabase.from('routine_occurrences').update({
+
+    const { error: occErr } = await sb.from('routine_occurrences').update({
       status: 'completed',
       completed_at: now,
     }).eq('id', occurrenceId)
+    if (occErr) console.error('[useRoutines] markDone update occurrence error:', occErr)
 
     const routine = routines.find(r => r.id === routineId)
     if (routine) {
       const nextDate = format(computeNextDueDate(routine), 'yyyy-MM-dd')
-      await supabase.from('routines').update({ next_due_date: nextDate }).eq('id', routineId)
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const { error: rErr } = await sb.from('routines').update({ next_due_date: nextDate }).eq('id', routineId)
+      if (rErr) console.error('[useRoutines] markDone update routine error:', rErr)
+
+      const { data: { user } } = await sb.auth.getUser()
       if (user) {
-        await supabase.from('routine_occurrences').insert({
+        const { error: newOccErr } = await sb.from('routine_occurrences').insert({
           routine_id: routineId,
           owner_id: user.id,
           due_date: nextDate,
           status: 'pending',
         })
+        if (newOccErr) console.error('[useRoutines] markDone insert next occurrence error:', newOccErr)
       }
     }
-    fetchRoutines()
+    await fetchRoutines()
   }
 
   const deleteRoutine = async (id: string) => {
-    await supabase.from('routines').delete().eq('id', id)
-    fetchRoutines()
+    const sb = createClient()
+    const { error } = await sb.from('routines').delete().eq('id', id)
+    if (error) console.error('[useRoutines] deleteRoutine error:', error)
+    await fetchRoutines()
   }
 
   return { routines, loading, overdueCount, fetchRoutines, createRoutine, markDone, deleteRoutine }

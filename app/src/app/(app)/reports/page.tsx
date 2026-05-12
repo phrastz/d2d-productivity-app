@@ -114,19 +114,35 @@ export default function ReportsPage() {
       .slice(0, 6)
       .map(([name, count]) => ({ name, count }))
 
-    // Daily completions
+    // Daily completions — respects workFilter
     const dailyCompletions = Array.from({ length: 7 }, (_, i) => {
       const day = addDays(weekStart, i)
-      const dayTasks = tasks.filter(t => {
-        if (!t.due_date) return false
-        const d = parseISO(t.due_date)
-        return isWithinInterval(d, { start: day, end: addDays(day, 1) })
-      })
-      return {
-        day: format(day, 'EEE'),
-        completed: dayTasks.filter(t => t.status === 'done').length,
-        total: dayTasks.length,
+      const dayStr = format(day, 'yyyy-MM-dd')
+      const nextDayStr = format(addDays(day, 1), 'yyyy-MM-dd')
+
+      let completed = 0
+      let total = 0
+
+      if (workFilter !== 'routines') {
+        const sourceTasks = workFilter === 'projects'
+          ? tasks.filter(t => !!t.project_id)
+          : tasks
+        const dayTasks = sourceTasks.filter(t => {
+          if (!t.due_date) return false
+          const d = parseISO(t.due_date)
+          return isWithinInterval(d, { start: day, end: addDays(day, 1) })
+        })
+        completed += dayTasks.filter(t => t.status === 'done').length
+        total += dayTasks.length
       }
+
+      if (workFilter !== 'projects') {
+        const dayOccs = routineOccurrences.filter(o => o.due_date >= dayStr && o.due_date < nextDayStr)
+        completed += dayOccs.filter(o => o.status === 'completed').length
+        total += dayOccs.length
+      }
+
+      return { day: format(day, 'EEE'), completed, total }
     })
 
     // Mood trend
@@ -149,9 +165,13 @@ export default function ReportsPage() {
     )
   }
 
+  const completedLabel = workFilter === 'routines' ? 'Routines Completed' : 'Tasks Completed'
   const statCards = [
-    { label: 'Hours Worked',     value: report.totalHoursWorked.toFixed(1) + 'h', icon: Clock,        color: 'text-violet-400', bg: 'bg-violet-500/10' },
-    { label: 'Tasks Completed',  value: report.tasksCompleted,                     icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    ...(workFilter !== 'routines'
+      ? [{ label: 'Hours Worked', value: report.totalHoursWorked.toFixed(1) + 'h', icon: Clock, color: 'text-violet-400', bg: 'bg-violet-500/10' }]
+      : [{ label: 'On-time Rate', value: `${routineMetrics.onTimeRate}%`, icon: RefreshCw, color: 'text-violet-400', bg: 'bg-violet-500/10' }]
+    ),
+    { label: completedLabel,     value: report.tasksCompleted,                     icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     { label: 'Categories Active',value: report.topCategories.length,               icon: FolderOpen,   color: 'text-blue-400',    bg: 'bg-blue-500/10' },
     { label: 'Logs This Week',   value: logs.length,                               icon: TrendingUp,   color: 'text-amber-400',   bg: 'bg-amber-500/10' },
   ]
@@ -195,7 +215,9 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Daily completions bar chart */}
           <div className="lg:col-span-2 glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Daily Task Completions</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+              {workFilter === 'routines' ? 'Daily Routine Completions' : workFilter === 'projects' ? 'Daily Project Task Completions' : 'Daily Completions'}
+            </h3>
             <div style={{ width: '100%', height: 192, minHeight: 192, display: 'block' }}>
                 <ResponsiveContainer width="100%" height={192}>
                   <BarChart data={report.dailyCompletions} barSize={14} barGap={4}>
