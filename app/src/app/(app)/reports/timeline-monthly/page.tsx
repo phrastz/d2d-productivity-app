@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getMonthlyTimelineData } from '@/lib/reportData';
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const OCC_STATUS_COLOR: Record<string, string> = {
+  completed: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  delayed:   'bg-amber-100 text-amber-700 border-amber-300',
+  pending:   'bg-gray-100 text-gray-500 border-gray-300',
+};
+
 const getMonthPosition = (date: string, yearStart: Date) => {
   const d = new Date(date);
   const monthsDiff = (d.getFullYear() - yearStart.getFullYear()) * 12 + (d.getMonth() - yearStart.getMonth());
@@ -20,34 +27,24 @@ const getMonthWidth = (startDate: string, endDate: string) => {
 
 export default function TimelineMonthlyPage() {
   const router = useRouter();
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects]       = useState<any[]>([]);
+  const [routineOccs, setRoutineOccs] = useState<any[]>([]);
+  const [loading, setLoading]         = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  
+  const [activeTab, setActiveTab]     = useState<'projects' | 'routines'>('projects');
+
   useEffect(() => {
     async function loadData() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      
-      const projectsData = await getMonthlyTimelineData(user.id, selectedYear);
-      setData(projectsData || []);
+      if (!user) { router.push('/login'); return; }
+      const result = await getMonthlyTimelineData(user.id, selectedYear);
+      setProjects(result.projects ?? []);
+      setRoutineOccs(result.routineOccs ?? []);
       setLoading(false);
     }
-    
     loadData();
   }, [router, selectedYear]);
-  
-  const getMonthSpan = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-    return Math.max(1, months);
-  };
   
   if (loading) {
     return (
@@ -60,130 +57,163 @@ export default function TimelineMonthlyPage() {
     );
   }
   
+  // Group routine occurrences by month number
+  const occsByMonth: Record<number, any[]> = {};
+  routineOccs.forEach(occ => {
+    const m = new Date(occ.due_date + 'T00:00:00').getMonth();
+    if (!occsByMonth[m]) occsByMonth[m] = [];
+    occsByMonth[m].push(occ);
+  });
+
   return (
     <div className="min-h-screen bg-gray-100 p-3 md:p-10">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+        {/* Header */}
         <div className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-5 md:p-12">
-          <h1 className="text-2xl md:text-4xl font-bold mb-3">📅 Project Timeline - Monthly View</h1>
-          <div className="text-sm md:text-lg opacity-95">12-Month Roadmap & Milestones</div>
-          
-          <div className="mt-6">
-            <label className="text-sm opacity-90 mb-2 block">Select Year:</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-4 py-2 rounded-lg bg-white/20 backdrop-blur-lg text-white border-2 border-white/30"
-            >
-              {[2024, 2025, 2026, 2027].map(year => (
-                <option key={year} value={year} className="text-gray-900">
-                  {year}
-                </option>
+          <h1 className="text-2xl md:text-4xl font-bold mb-3">📅 Timeline - Monthly View</h1>
+          <div className="text-sm md:text-lg opacity-95">12-Month Roadmap & Routine Schedule</div>
+
+          <div className="flex flex-wrap items-end gap-6 mt-6">
+            <div>
+              <label className="text-sm opacity-90 mb-2 block">Select Year:</label>
+              <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
+                className="px-4 py-2 rounded-lg bg-white/20 backdrop-blur-lg text-white border-2 border-white/30">
+                {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="text-gray-900">{y}</option>)}
+              </select>
+            </div>
+            {/* Tab switcher */}
+            <div className="flex gap-2">
+              {(['projects', 'routines'] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === tab ? 'bg-white text-purple-700' : 'bg-white/20 hover:bg-white/30'}`}>
+                  {tab === 'projects' ? '📁 Projects Timeline' : '🔄 Routines Schedule'}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
         </div>
-        
+
         <div className="p-4 md:p-12">
-          <div className="mb-8">
-            <h2 className="text-lg md:text-2xl font-bold mb-2">
-              Projects for {selectedYear}
-            </h2>
-            <p className="text-gray-600">
-              Showing {data.length} projects scheduled this year
-            </p>
-          </div>
-          
-          {data.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">📭</div>
-              <div className="text-xl font-semibold text-gray-700 mb-2">
-                No Projects Found
+          {/* ── Projects Tab ── */}
+          {activeTab === 'projects' && (
+            <>
+              <div className="mb-8">
+                <h2 className="text-lg md:text-2xl font-bold mb-1">Projects for {selectedYear}</h2>
+                <p className="text-gray-600">Showing {projects.length} projects scheduled this year</p>
               </div>
-              <p className="text-gray-500 mb-6">
-                No projects scheduled for {selectedYear}
-              </p>
-              <button
-                onClick={() => router.push('/projects')}
-                className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
-              >
-                Create New Project
-              </button>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg p-3 md:p-6 mb-6">
-              <div className="overflow-x-auto w-full">
-              <div className="min-w-[700px]">
-              <div className="grid grid-cols-12 gap-0 border-b-2 border-gray-300 pb-2 mb-4">
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => (
-                  <div key={month} className="text-center text-sm font-semibold text-gray-600">
-                    {month}
-                  </div>
-                ))}
-              </div>
-              
-              {data.map((project: any, idx: number) => (
-                <div key={project.id} className="mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-40 md:w-64 flex-shrink-0">
-                      <div className="font-bold text-gray-900">{project.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {project.start_date && new Date(project.start_date).toLocaleDateString()} - {project.end_date && new Date(project.end_date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 relative h-10 bg-gray-100 rounded">
-                      {project.start_date && project.end_date && (
-                        <div
-                          className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
-                          style={{
-                            left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
-                            width: `${getMonthWidth(project.start_date, project.end_date)}%`,
-                            background: idx % 4 === 0 
-                              ? 'linear-gradient(90deg, #ec4899, #f472b6)'
-                              : idx % 4 === 1
-                              ? 'linear-gradient(90deg, #8b5cf6, #a78bfa)'
-                              : idx % 4 === 2
-                              ? 'linear-gradient(90deg, #06b6d4, #22d3ee)'
-                              : 'linear-gradient(90deg, #10b981, #34d399)'
-                          }}
-                        >
-                          {project.progress_percentage || 0}%
-                        </div>
-                      )}
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
-                      project.status === 'done'
-                        ? 'bg-green-100 text-green-700'
-                        : project.status === 'in_progress'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {project.status?.replace('_', ' ').toUpperCase()}
-                    </span>
-                  </div>
+
+              {projects.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">📭</div>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">No Projects Found</p>
+                  <p className="text-gray-500 mb-6">No projects scheduled for {selectedYear}</p>
+                  <button onClick={() => router.push('/projects')} className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700">Create New Project</button>
                 </div>
-              ))}
-              </div>
-              </div>
-              <p className="text-xs text-gray-400 text-center mt-3 md:hidden">
-                ← Scroll to see full timeline →
-              </p>
-            </div>
+              ) : (
+                <div className="bg-white rounded-lg p-3 md:p-6 mb-6">
+                  <div className="overflow-x-auto w-full">
+                    <div className="min-w-[700px]">
+                      <div className="grid grid-cols-12 gap-0 border-b-2 border-gray-300 pb-2 mb-4">
+                        {MONTHS.map(m => <div key={m} className="text-center text-sm font-semibold text-gray-600">{m}</div>)}
+                      </div>
+                      {projects.map((project: any, idx: number) => (
+                        <div key={project.id} className="mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-40 md:w-64 flex-shrink-0">
+                              <div className="font-bold text-gray-900">{project.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {project.start_date && new Date(project.start_date).toLocaleDateString()} – {project.end_date && new Date(project.end_date).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <div className="flex-1 relative h-10 bg-gray-100 rounded">
+                              {project.start_date && project.end_date && (
+                                <div className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
+                                  style={{
+                                    left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
+                                    width: `${getMonthWidth(project.start_date, project.end_date)}%`,
+                                    background: idx % 4 === 0 ? 'linear-gradient(90deg,#ec4899,#f472b6)'
+                                      : idx % 4 === 1 ? 'linear-gradient(90deg,#8b5cf6,#a78bfa)'
+                                      : idx % 4 === 2 ? 'linear-gradient(90deg,#06b6d4,#22d3ee)'
+                                      : 'linear-gradient(90deg,#10b981,#34d399)',
+                                  }}>
+                                  {project.progress_percentage || 0}%
+                                </div>
+                              )}
+                            </div>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                              project.status === 'done' ? 'bg-green-100 text-green-700'
+                              : project.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-blue-100 text-blue-700'
+                            }`}>{project.status?.replace('_', ' ').toUpperCase()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 text-center mt-3 md:hidden">← Scroll to see full timeline →</p>
+                </div>
+              )}
+            </>
           )}
-          
+
+          {/* ── Routines Schedule Tab ── */}
+          {activeTab === 'routines' && (
+            <>
+              <div className="mb-6 flex items-center gap-4 flex-wrap">
+                <h2 className="text-lg md:text-2xl font-bold">Routines Schedule {selectedYear}</h2>
+                <div className="flex gap-3 text-xs">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" /> Completed</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-400 inline-block" /> Delayed</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-300 inline-block" /> Pending</span>
+                </div>
+              </div>
+
+              {routineOccs.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">📭</div>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">No Routine Occurrences</p>
+                  <p className="text-gray-500 mb-6">No routine occurrences scheduled for {selectedYear}</p>
+                  <button onClick={() => router.push('/routines')} className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700">Manage Routines</button>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {MONTHS.map((monthName, mIdx) => {
+                    const monthOccs = occsByMonth[mIdx];
+                    if (!monthOccs || monthOccs.length === 0) return null;
+                    const completed = monthOccs.filter(o => o.status === 'completed').length;
+                    const onTimeRate = Math.round((completed / monthOccs.length) * 100);
+                    return (
+                      <div key={monthName}>
+                        <div className="flex items-center justify-between mb-3 border-b-2 border-purple-200 pb-2">
+                          <h3 className="text-base font-bold text-purple-800">{monthName} {selectedYear}</h3>
+                          <span className="text-sm text-gray-500">{monthOccs.length} occurrences · {onTimeRate}% on-time</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {monthOccs.map((occ: any) => (
+                            <div key={occ.id} className={`flex items-center gap-3 p-3 rounded-xl border ${OCC_STATUS_COLOR[occ.status] ?? OCC_STATUS_COLOR.pending}`}>
+                              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                occ.status === 'completed' ? 'bg-emerald-500'
+                                : occ.status === 'delayed' ? 'bg-amber-500' : 'bg-gray-400'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold truncate">{occ.routines?.title ?? '—'}</p>
+                                <p className="text-[10px] text-gray-500">{new Date(occ.due_date + 'T00:00:00').toLocaleDateString()}</p>
+                                {occ.delay_reason && <p className="text-[10px] text-red-500 truncate">⚠ {occ.delay_reason}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
           <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <button
-              onClick={() => router.push('/reports')}
-              className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
-            >
-              ← Back to Reports
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700"
-            >
-              �️ Print / Save as PDF
-            </button>
+            <button onClick={() => router.push('/reports')} className="w-full sm:w-auto px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">← Back to Reports</button>
+            <button onClick={() => window.print()} className="w-full sm:w-auto px-6 py-3 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700">🖨️ Print / Save as PDF</button>
           </div>
         </div>
       </div>
