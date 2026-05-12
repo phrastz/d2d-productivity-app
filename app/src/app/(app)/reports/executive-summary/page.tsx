@@ -180,7 +180,7 @@ export default function ExecutiveSummaryPage() {
                       <div className="w-4 h-4 rounded-full shrink-0" style={{ background: WORK_COLORS[i] }} />
                       <div className="flex-1">
                         <p className="font-bold text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-500">{item.value} {item.name === 'Projects' ? 'tasks' : 'scheduled occurrences'} · {item.pct}% of workload</p>
+                        <p className="text-sm text-gray-500">{item.value} {item.name === 'Projects' ? 'project tasks' : 'routine occurrences'} · {item.pct}% of workload</p>
                         <div className="h-2 bg-gray-200 rounded-full mt-1">
                           <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: WORK_COLORS[i] }} />
                         </div>

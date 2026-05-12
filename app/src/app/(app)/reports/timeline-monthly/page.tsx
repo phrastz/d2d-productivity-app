@@ -137,7 +137,6 @@ export default function TimelineMonthlyPage() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 inline-block" /> Overdue</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-400 inline-block" /> No Dates Set</span>
                   <span className="flex items-center gap-1.5"><span className="w-0.5 h-3 bg-red-500 inline-block" /> Today</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm border-2 border-amber-400 inline-block" style={{background:'repeating-linear-gradient(90deg,rgba(251,191,36,0.3) 0px,rgba(251,191,36,0.3) 3px,transparent 3px,transparent 6px)'}} /> Task scope exceeds deadline</span>
                 </div>
               </div>
 
@@ -200,33 +199,9 @@ export default function TimelineMonthlyPage() {
                                       width: `${getMonthWidth(project.start_date, project.end_date)}%`,
                                       background: getBarColor(project),
                                     }}
-                                    title={project.max_task_due_date
-                                      ? `Project end: ${project.end_date} | Latest task: ${project.max_task_due_date}`
-                                      : `${project.start_date} → ${project.end_date}`
-                                    }>
+                                    title={`Project end: ${project.end_date}`}>
                                     {project.progress_percentage || 0}%
                                   </div>
-                                  {/* Dashed extension: tasks scheduled beyond project end_date */}
-                                  {project.max_task_due_date && project.max_task_due_date > project.end_date && (() => {
-                                    const endD      = new Date(project.end_date          + 'T00:00:00');
-                                    const maxD      = new Date(project.max_task_due_date + 'T00:00:00');
-                                    const endMo     = (endD.getFullYear() - selectedYear) * 12 + endD.getMonth();
-                                    const rawMaxMo  = (maxD.getFullYear() - selectedYear) * 12 + maxD.getMonth();
-                                    const maxMo     = Math.min(rawMaxMo, 11); // cap at Dec of selected year
-                                    if (maxMo <= endMo) return null;
-                                    const extLeft  = ((endMo + 1) / 12) * 100;
-                                    const extWidth = ((maxMo - endMo) / 12) * 100;
-                                    return (
-                                      <div className="absolute top-3 bottom-3 rounded border-2 border-amber-400 pointer-events-none"
-                                        style={{
-                                          left: `${Math.min(extLeft, 97)}%`,
-                                          width: `${extWidth}%`,
-                                          background: 'repeating-linear-gradient(90deg,rgba(251,191,36,0.25) 0px,rgba(251,191,36,0.25) 5px,transparent 5px,transparent 10px)',
-                                        }}
-                                        title={`Some tasks are planned beyond this project's end date. Consider updating the project deadline.\nLatest task: ${project.max_task_due_date}`}
-                                      />
-                                    );
-                                  })()}
                                 </>
                               )}
                             </div>
