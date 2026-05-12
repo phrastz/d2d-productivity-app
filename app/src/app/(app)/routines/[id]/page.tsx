@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect } from 'react'
+import { use, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRoutineDetail } from '@/hooks/useRoutineDetail'
 import { useRoutines } from '@/hooks/useRoutines'
@@ -31,6 +31,7 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
     routine, occurrences, checklistItems, loading, error,
     toggleCheck, addChecklistItem, deleteChecklistItem,
     updateRoutine, markOccurrenceDone, markOccurrenceDelayed,
+    overdueOccurrences, upcomingOccurrence,
   } = useRoutineDetail(id)
   const { createRoutine, deleteRoutine } = useRoutines()
 
@@ -42,14 +43,6 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
   const [historyExpanded, setHistoryExpanded] = useState(true)
 
   const today = format(new Date(), 'yyyy-MM-dd')
-
-  useEffect(() => {
-    if (!occurrences.length) return
-    const overdue = occurrences.filter(o => o.status === 'pending' && o.due_date < today)
-    if (overdue.length > 0 && !delayModal) {
-      setDelayModal(overdue[0])
-    }
-  }, [occurrences])
 
   const handleAddCheckItem = async () => {
     if (!newCheckItem.trim()) return
@@ -100,7 +93,10 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const pendingOcc = occurrences.find(o => o.status === 'pending')
+  const pendingOcc = upcomingOccurrence
+  const earliestPendingDate = occurrences
+    .filter(o => o.status === 'pending')
+    .sort((a, b) => a.due_date.localeCompare(b.due_date))[0]?.due_date ?? routine.next_due_date
   const completedCount = occurrences.filter(o => o.status === 'completed').length
   const delayedCount = occurrences.filter(o => o.status === 'delayed').length
   const onTimeRate = occurrences.length > 0
@@ -163,11 +159,11 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{getFrequencyLabel(routine)}</span>
             </div>
-            {routine.next_due_date && (
-              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg ${getDueDateBg(routine.next_due_date)}`}>
+            {earliestPendingDate && (
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg ${getDueDateBg(earliestPendingDate)}`}>
                 <Clock className="w-3 h-3" />
-                <span className={`font-medium ${getDueDateColor(routine.next_due_date)}`}>
-                  Next due: {format(new Date(routine.next_due_date + 'T00:00:00'), 'MMM d, yyyy')}
+                <span className={`font-medium ${getDueDateColor(earliestPendingDate)}`}>
+                  Next due: {format(new Date(earliestPendingDate + 'T00:00:00'), 'MMM d, yyyy')}
                 </span>
               </div>
             )}
@@ -188,7 +184,51 @@ export default function RoutineDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Current Occurrence / Mark Done */}
+        {/* Overdue Occurrences — require explicit action */}
+        {overdueOccurrences.length > 0 && routine.status === 'active' && (
+          <div className="glass rounded-2xl p-4 sm:p-5 border-2 border-red-500/40 bg-red-50/30 dark:bg-red-500/5">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              <h3 className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
+                Overdue &middot; {overdueOccurrences.length} occurrence{overdueOccurrences.length !== 1 ? 's' : ''}
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {overdueOccurrences.map(occ => {
+                const daysOverdue = Math.round((Date.now() - new Date(occ.due_date + 'T00:00:00').getTime()) / 86400000)
+                return (
+                  <div key={occ.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/60 dark:bg-slate-900/30 border border-red-500/20 flex-wrap">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        Due {format(new Date(occ.due_date + 'T00:00:00'), 'EEEE, MMM d, yyyy')}
+                      </p>
+                      <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
+                        {daysOverdue} day{daysOverdue !== 1 ? 's' : ''} overdue
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => setDelayModal(occ)}
+                        className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-colors font-medium"
+                      >
+                        Delayed?
+                      </button>
+                      <button
+                        onClick={() => markOccurrenceDone(occ.id)}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors font-medium"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Mark Done
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming Occurrence / Mark Done */}
         {pendingOcc && routine.status === 'active' && (
           <div className={`glass rounded-2xl p-4 sm:p-5 border ${
             pendingOcc.due_date < today

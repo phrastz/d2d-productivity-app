@@ -125,9 +125,18 @@ export function useRoutineDetail(routineId: string | null) {
     fetchAll()
   }
 
+  const todayDate = new Date().toISOString().split('T')[0]
+  const overdueOccurrences: OccurrenceWithChecks[] = occurrences
+    .filter(o => o.status === 'pending' && o.due_date < todayDate)
+    .sort((a, b) => a.due_date.localeCompare(b.due_date))
+  const upcomingOccurrence: OccurrenceWithChecks | null = occurrences
+    .filter(o => o.status === 'pending' && o.due_date >= todayDate)
+    .sort((a, b) => a.due_date.localeCompare(b.due_date))[0] ?? null
+
   return {
     routine, occurrences, checklistItems, loading, error,
     toggleCheck, addChecklistItem, deleteChecklistItem,
     updateRoutine, markOccurrenceDone, markOccurrenceDelayed, fetchAll,
+    overdueOccurrences, upcomingOccurrence,
   }
 }
