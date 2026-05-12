@@ -154,10 +154,10 @@ export default function TimelineMonthlyPage() {
                       {/* Header row: spacer for name column + 12 month labels + spacer for status badge */}
                       <div className="flex items-center gap-3 border-b-2 border-gray-300 pb-2 mb-4">
                         <div className="w-48 shrink-0" />
-                        <div className="flex-1 relative">
+                        <div className="flex-1 relative overflow-visible">
                           {todayPct !== null && (
                             <div className="absolute -top-1 flex flex-col items-center pointer-events-none z-10" style={{ left: `${todayPct}%`, transform: 'translateX(-50%)' }}>
-                              <span className="text-[9px] font-bold text-red-500 whitespace-nowrap leading-none">▼ TODAY</span>
+                              <span className="text-[10px] font-bold text-red-500 whitespace-nowrap leading-none bg-white px-1 rounded shadow-sm">▼ TODAY</span>
                             </div>
                           )}
                           <div className="grid grid-cols-12 gap-0">
