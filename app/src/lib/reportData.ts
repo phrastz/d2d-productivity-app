@@ -178,10 +178,10 @@ export async function getMonthlyTimelineData(userId: string, year: number) {
     { data: routines,    error: rtErr },
   ] = await Promise.all([
     supabase.from('projects')
-      .select('*, sub_projects(*, tasks(*))')
+      .select('*')
       .eq('owner_id', userId)
-      .gte('start_date', `${year}-01-01`)
-      .lte('end_date', `${year}-12-31`)
+      .not('start_date', 'is', null)
+      .lte('start_date', `${year}-12-31`)
       .order('start_date', { ascending: true }),
     supabase.from('routine_occurrences')
       .select('*, routines(title, category)')
@@ -196,8 +196,14 @@ export async function getMonthlyTimelineData(userId: string, year: number) {
   if (rErr)  console.error('Error fetching monthly routine occs:', rErr);
   if (rtErr) console.error('Error fetching monthly routines:', rtErr);
 
+  // Keep only projects that overlap the selected year:
+  // started before Dec 31 of year (already filtered in query) AND
+  // ended on or after Jan 1 of year (or ongoing with no end_date)
+  const yearStart = `${year}-01-01`;
+  const filteredProjects = (projects ?? []).filter(p => !p.end_date || p.end_date >= yearStart);
+
   return {
-    projects:    projects    ?? [],
+    projects:    filteredProjects,
     routineOccs: routineOccs ?? [],
     routines:    routines    ?? [],
   };

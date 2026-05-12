@@ -22,6 +22,7 @@ export interface Project {
   end_date: string | null
   status: ProjectStatus
   progress_percentage: number
+  timeline_change_reason?: string | null
   created_at: string
   updated_at: string
   status_changed_at?: string

@@ -25,6 +25,27 @@ const getMonthWidth = (startDate: string, endDate: string) => {
   return (months / 12) * 100;
 };
 
+const calcExpectedProgress = (startDate: string, endDate: string): number => {
+  const start = new Date(startDate + 'T00:00:00').getTime();
+  const end   = new Date(endDate   + 'T00:00:00').getTime();
+  const now   = Date.now();
+  if (now <= start) return 0;
+  if (now >= end)   return 100;
+  return Math.round(((now - start) / (end - start)) * 100);
+};
+
+const getBarColor = (project: any): string => {
+  if (!project.start_date || !project.end_date) return 'linear-gradient(90deg,#8b5cf6,#a78bfa)';
+  const today   = new Date();
+  const endDate = new Date(project.end_date + 'T00:00:00');
+  if (endDate < today) return 'linear-gradient(90deg,#ef4444,#f87171)';  // overdue
+  const expected = calcExpectedProgress(project.start_date, project.end_date);
+  const actual   = project.progress_percentage ?? 0;
+  return actual >= expected
+    ? 'linear-gradient(90deg,#10b981,#34d399)'   // on track
+    : 'linear-gradient(90deg,#f59e0b,#fbbf24)';  // behind schedule
+};
+
 export default function TimelineMonthlyPage() {
   const router = useRouter();
   const [projects, setProjects]       = useState<any[]>([]);
@@ -57,6 +78,16 @@ export default function TimelineMonthlyPage() {
     );
   }
   
+  // TODAY position as percentage of the selected year (day-precise)
+  const todayPct: number | null = (() => {
+    const today = new Date();
+    if (today.getFullYear() !== selectedYear) return null;
+    const month      = today.getMonth();
+    const day        = today.getDate();
+    const daysInMonth = new Date(today.getFullYear(), month + 1, 0).getDate();
+    return ((month + (day - 1) / daysInMonth) / 12) * 100;
+  })();
+
   // Group routine occurrences by month number
   const occsByMonth: Record<number, any[]> = {};
   routineOccs.forEach(occ => {
@@ -97,9 +128,16 @@ export default function TimelineMonthlyPage() {
           {/* ── Projects Tab ── */}
           {activeTab === 'projects' && (
             <>
-              <div className="mb-8">
+              <div className="mb-6">
                 <h2 className="text-lg md:text-2xl font-bold mb-1">Projects for {selectedYear}</h2>
-                <p className="text-gray-600">Showing {projects.length} projects scheduled this year</p>
+                <p className="text-gray-600 mb-3">Showing {projects.length} project{projects.length !== 1 ? 's' : ''} overlapping this year</p>
+                <div className="flex flex-wrap gap-4 text-xs">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-400 inline-block" /> On Track</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" /> Behind Schedule</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 inline-block" /> Overdue</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-400 inline-block" /> No Dates Set</span>
+                  <span className="flex items-center gap-1.5"><span className="w-0.5 h-3 bg-red-500 inline-block" /> Today</span>
+                </div>
               </div>
 
               {projects.length === 0 ? (
@@ -116,8 +154,15 @@ export default function TimelineMonthlyPage() {
                       {/* Header row: spacer for name column + 12 month labels + spacer for status badge */}
                       <div className="flex items-center gap-3 border-b-2 border-gray-300 pb-2 mb-4">
                         <div className="w-48 shrink-0" />
-                        <div className="flex-1 grid grid-cols-12 gap-0">
-                          {MONTHS.map(m => <div key={m} className="text-center text-xs font-semibold text-gray-600">{m}</div>)}
+                        <div className="flex-1 relative">
+                          {todayPct !== null && (
+                            <div className="absolute -top-1 flex flex-col items-center pointer-events-none z-10" style={{ left: `${todayPct}%`, transform: 'translateX(-50%)' }}>
+                              <span className="text-[9px] font-bold text-red-500 whitespace-nowrap leading-none">▼ TODAY</span>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-12 gap-0">
+                            {MONTHS.map(m => <div key={m} className="text-center text-xs font-semibold text-gray-600">{m}</div>)}
+                          </div>
                         </div>
                         <div className="w-20 shrink-0" />
                       </div>
@@ -125,21 +170,32 @@ export default function TimelineMonthlyPage() {
                         <div key={project.id} className="mb-4">
                           <div className="flex items-center gap-3">
                             <div className="w-48 shrink-0">
-                              <div className="font-bold text-gray-900 text-sm truncate">{project.name}</div>
+                              <div className="font-bold text-gray-900 text-sm flex items-center gap-1">
+                                <span className="truncate">{project.name}</span>
+                                {project.timeline_change_reason && (
+                                  <span title={project.timeline_change_reason}
+                                    className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold cursor-help flex-shrink-0"
+                                  >ℹ</span>
+                                )}
+                              </div>
                               <div className="text-xs text-gray-500">
-                                {project.start_date && new Date(project.start_date).toLocaleDateString()} – {project.end_date && new Date(project.end_date).toLocaleDateString()}
+                                {project.start_date && new Date(project.start_date + 'T00:00:00').toLocaleDateString()} – {project.end_date && new Date(project.end_date + 'T00:00:00').toLocaleDateString()}
                               </div>
                             </div>
-                            <div className="flex-1 relative h-10 bg-gray-100 rounded">
+                            <div className="flex-1 relative h-10 bg-gray-100 rounded overflow-hidden">
+                              {/* TODAY vertical line */}
+                              {todayPct !== null && (
+                                <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 opacity-70"
+                                  style={{ left: `${todayPct}%` }}
+                                  title={`Today: ${new Date().toLocaleDateString()}`}
+                                />
+                              )}
                               {project.start_date && project.end_date && (
                                 <div className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
                                   style={{
                                     left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
                                     width: `${getMonthWidth(project.start_date, project.end_date)}%`,
-                                    background: idx % 4 === 0 ? 'linear-gradient(90deg,#ec4899,#f472b6)'
-                                      : idx % 4 === 1 ? 'linear-gradient(90deg,#8b5cf6,#a78bfa)'
-                                      : idx % 4 === 2 ? 'linear-gradient(90deg,#06b6d4,#22d3ee)'
-                                      : 'linear-gradient(90deg,#10b981,#34d399)',
+                                    background: getBarColor(project),
                                   }}>
                                   {project.progress_percentage || 0}%
                                 </div>

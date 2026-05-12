@@ -174,10 +174,14 @@ export default function ProjectDetailPage() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
               )}
             </div>
-            <ProjectActions 
-              projectId={project.id} 
-              currentName={project.name} 
+            <ProjectActions
+              projectId={project.id}
+              currentName={project.name}
               currentDescription={project.description}
+              currentStartDate={project.start_date}
+              currentEndDate={project.end_date}
+              currentStatus={project.status}
+              currentTimelineReason={project.timeline_change_reason}
               onUpdated={() => router.refresh()}
             />
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client'; // Sesuaikan path supabase client kamu
 import { MoreVertical, Pencil, Trash2, Loader2 } from 'lucide-react';
@@ -36,10 +36,23 @@ type ProjectActionsProps = {
   projectId: string;
   currentName: string;
   currentDescription?: string | null;
+  currentStartDate?: string | null;
+  currentEndDate?: string | null;
+  currentStatus?: string | null;
+  currentTimelineReason?: string | null;
   onUpdated?: () => void;
 };
 
-export default function ProjectActions({ projectId, currentName, currentDescription, onUpdated }: ProjectActionsProps) {
+export default function ProjectActions({
+  projectId,
+  currentName,
+  currentDescription,
+  currentStartDate,
+  currentEndDate,
+  currentStatus,
+  currentTimelineReason,
+  onUpdated,
+}: ProjectActionsProps) {
   const router = useRouter();
   const supabase = createClient();
   const [openEdit, setOpenEdit] = useState(false);
@@ -49,21 +62,45 @@ export default function ProjectActions({ projectId, currentName, currentDescript
   // Form state
   const [name, setName] = useState(currentName);
   const [desc, setDesc] = useState(currentDescription || '');
+  const [startDate, setStartDate] = useState(currentStartDate || '');
+  const [endDate, setEndDate] = useState(currentEndDate || '');
+  const [status, setStatus] = useState(currentStatus || 'active');
+  const [timelineReason, setTimelineReason] = useState(currentTimelineReason || '');
+
+  // Sync form state whenever the dialog is opened
+  useEffect(() => {
+    if (openEdit) {
+      setName(currentName);
+      setDesc(currentDescription || '');
+      setStartDate(currentStartDate || '');
+      setEndDate(currentEndDate || '');
+      setStatus(currentStatus || 'active');
+      setTimelineReason(currentTimelineReason || '');
+    }
+  }, [openEdit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpdate = async () => {
     setLoading(true);
     const { error } = await supabase
       .from('projects')
-      .update({ name, description: desc, updated_at: new Date().toISOString() })
+      .update({
+        name,
+        description: desc,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        status,
+        timeline_change_reason: timelineReason || null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', projectId);
     
     setLoading(false);
     if (!error) {
       setOpenEdit(false);
       onUpdated?.();
-      router.refresh(); // Refresh server data
+      router.refresh();
     } else {
-      alert('Gagal update project: ' + error.message);
+      alert('Failed to update project: ' + error.message);
     }
   };
 
@@ -72,9 +109,9 @@ export default function ProjectActions({ projectId, currentName, currentDescript
     const { error } = await supabase.from('projects').delete().eq('id', projectId);
     setLoading(false);
     if (!error) {
-      router.push('/projects'); // Kembali ke list project
+      router.push('/projects');
     } else {
-      alert('Gagal delete project: ' + error.message);
+      alert('Failed to delete project: ' + error.message);
     }
   };
 
@@ -96,26 +133,73 @@ export default function ProjectActions({ projectId, currentName, currentDescript
 
       {/* Dialog Edit */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Edit Project</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label className="text-slate-700 dark:text-slate-300">Project Name</Label>
-              <Input 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10"
               />
             </div>
             <div>
               <Label className="text-slate-700 dark:text-slate-300">Description</Label>
-              <Textarea 
-                value={desc} 
-                onChange={(e) => setDesc(e.target.value)} 
-                rows={3} 
+              <Textarea
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                rows={3}
                 className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-slate-700 dark:text-slate-300">Start Date</Label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full mt-1 px-3 py-2 rounded-md bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+              <div>
+                <Label className="text-slate-700 dark:text-slate-300">End Date</Label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate || undefined}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full mt-1 px-3 py-2 rounded-md bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300">Status</Label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full mt-1 px-3 py-2 rounded-md bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+              >
+                <option value="active">Active</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300">
+                Reason for timeline change{' '}
+                <span className="text-slate-400 dark:text-slate-500 font-normal">(optional)</span>
+              </Label>
+              <Textarea
+                value={timelineReason}
+                onChange={(e) => setTimelineReason(e.target.value)}
+                rows={2}
+                placeholder="e.g. Scope expanded, waiting for external dependency..."
+                className="bg-white dark:bg-slate-800/50 text-slate-900 dark:text-white border-slate-300 dark:border-white/10 placeholder:text-slate-400"
               />
             </div>
           </div>
