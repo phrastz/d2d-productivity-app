@@ -137,6 +137,7 @@ export default function TimelineMonthlyPage() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 inline-block" /> Overdue</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-400 inline-block" /> No Dates Set</span>
                   <span className="flex items-center gap-1.5"><span className="w-0.5 h-3 bg-red-500 inline-block" /> Today</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm border-2 border-amber-400 inline-block" style={{background:'repeating-linear-gradient(90deg,rgba(251,191,36,0.3) 0px,rgba(251,191,36,0.3) 3px,transparent 3px,transparent 6px)'}} /> Tasks beyond end</span>
                 </div>
               </div>
 
@@ -191,14 +192,41 @@ export default function TimelineMonthlyPage() {
                                 />
                               )}
                               {project.start_date && project.end_date && (
-                                <div className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
-                                  style={{
-                                    left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
-                                    width: `${getMonthWidth(project.start_date, project.end_date)}%`,
-                                    background: getBarColor(project),
-                                  }}>
-                                  {project.progress_percentage || 0}%
-                                </div>
+                                <>
+                                  {/* Main Gantt bar */}
+                                  <div className="absolute h-full rounded flex items-center px-3 text-white text-xs font-semibold"
+                                    style={{
+                                      left: `${getMonthPosition(project.start_date, new Date(selectedYear, 0, 1))}%`,
+                                      width: `${getMonthWidth(project.start_date, project.end_date)}%`,
+                                      background: getBarColor(project),
+                                    }}
+                                    title={project.max_task_due_date
+                                      ? `Project end: ${project.end_date} | Latest task: ${project.max_task_due_date}`
+                                      : `${project.start_date} → ${project.end_date}`
+                                    }>
+                                    {project.progress_percentage || 0}%
+                                  </div>
+                                  {/* Dashed extension: tasks scheduled beyond project end_date */}
+                                  {project.max_task_due_date && project.max_task_due_date > project.end_date && (() => {
+                                    const endD  = new Date(project.end_date          + 'T00:00:00');
+                                    const maxD  = new Date(project.max_task_due_date + 'T00:00:00');
+                                    const endMo = (endD.getFullYear() - selectedYear) * 12 + endD.getMonth();
+                                    const maxMo = (maxD.getFullYear() - selectedYear) * 12 + maxD.getMonth();
+                                    if (maxMo <= endMo) return null;
+                                    const extLeft  = ((endMo + 1) / 12) * 100;
+                                    const extWidth = ((maxMo - endMo) / 12) * 100;
+                                    return (
+                                      <div className="absolute top-1 bottom-1 rounded border-2 border-amber-400 pointer-events-none"
+                                        style={{
+                                          left: `${Math.min(extLeft, 97)}%`,
+                                          width: `${extWidth}%`,
+                                          background: 'repeating-linear-gradient(90deg,rgba(251,191,36,0.25) 0px,rgba(251,191,36,0.25) 5px,transparent 5px,transparent 10px)',
+                                        }}
+                                        title={`Tasks extend to ${project.max_task_due_date}`}
+                                      />
+                                    );
+                                  })()}
+                                </>
                               )}
                             </div>
                             <span className={`w-20 shrink-0 text-center px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${

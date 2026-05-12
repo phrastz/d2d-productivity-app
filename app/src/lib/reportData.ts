@@ -74,11 +74,21 @@ export async function getProjectDetailData(projectId: string) {
   const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress').length;
   const blockedTasks    = allTasks.filter((t: any) => t.status === 'blocked').length;
 
+  const taskDatesSorted = allTasks
+    .flatMap((t: any) => [t.due_date, t.end_date].filter(Boolean))
+    .map((d: string) => d.substring(0, 10))
+    .sort();
+  const max_task_due_date = taskDatesSorted.length > 0
+    ? taskDatesSorted[taskDatesSorted.length - 1]
+    : null;
+
   return {
     ...project,
+    max_task_due_date,
     stats: {
       totalTasks, completedTasks, inProgressTasks, blockedTasks,
       progress: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+      max_task_due_date,
     },
   };
 }
@@ -202,8 +212,33 @@ export async function getMonthlyTimelineData(userId: string, year: number) {
   const yearStart = `${year}-01-01`;
   const filteredProjects = (projects ?? []).filter(p => !p.end_date || p.end_date >= yearStart);
 
+  // Fetch the latest task due/end date per project (for Gantt extension indicator)
+  const projectIds = filteredProjects.map((p: any) => p.id);
+  const taskMaxDates: Record<string, string> = {};
+  if (projectIds.length > 0) {
+    const { data: projTasks } = await supabase
+      .from('tasks')
+      .select('project_id, due_date, end_date')
+      .in('project_id', projectIds);
+    (projTasks ?? []).forEach((t: any) => {
+      const best = [t.due_date, t.end_date]
+        .filter(Boolean)
+        .map((d: string) => d.substring(0, 10))
+        .sort()
+        .pop();
+      if (best && (!taskMaxDates[t.project_id] || best > taskMaxDates[t.project_id])) {
+        taskMaxDates[t.project_id] = best;
+      }
+    });
+  }
+
+  const enrichedProjects = filteredProjects.map((p: any) => ({
+    ...p,
+    max_task_due_date: taskMaxDates[p.id] ?? null,
+  }));
+
   return {
-    projects:    filteredProjects,
+    projects:    enrichedProjects,
     routineOccs: routineOccs ?? [],
     routines:    routines    ?? [],
   };

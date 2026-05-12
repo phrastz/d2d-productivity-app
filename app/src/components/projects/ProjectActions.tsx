@@ -99,6 +99,8 @@ export default function ProjectActions({
       setOpenEdit(false);
       onUpdated?.();
       router.refresh();
+    } else if ((error.message || '').includes('timeline_change_reason')) {
+      alert('Please run migration 013 in Supabase SQL Editor first, then reload the page.');
     } else {
       alert('Failed to update project: ' + error.message);
     }

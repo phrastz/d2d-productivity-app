@@ -151,6 +151,18 @@ export default function ProjectDetailPage() {
   const subProjects = project.sub_projects || []
   const directTasks = project.directTasks || []
 
+  // Latest task due date across all tasks in this project (sub-project tasks + direct tasks)
+  const maxTaskDue: string | null = (() => {
+    const dates = [
+      ...subProjects.flatMap((sp: any) => sp.tasks || []),
+      ...directTasks,
+    ]
+      .flatMap((t: any) => [t.due_date, t.end_date].filter(Boolean))
+      .map((d: string) => d.substring(0, 10))
+      .sort();
+    return dates.length > 0 ? dates[dates.length - 1] : null;
+  })();
+
   return (
     <div className="flex-1 flex flex-col">
       <TopNav title="Project Detail" />
@@ -191,7 +203,22 @@ export default function ProjectDetailPage() {
             {project.end_date && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Due: {format(new Date(project.end_date), 'MMM d, yyyy')}</span>
+                <span>Due: {format(new Date(project.end_date + 'T00:00:00'), 'MMM d, yyyy')}</span>
+              </div>
+            )}
+            {maxTaskDue && (
+              <div className={`flex items-center gap-1 font-medium ${
+                project.end_date && maxTaskDue > project.end_date
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : 'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                <span>{project.end_date && maxTaskDue > project.end_date ? '⚠' : '✓'}</span>
+                <span>
+                  {project.end_date && maxTaskDue > project.end_date
+                    ? `Tasks extend beyond project end · Latest: ${format(new Date(maxTaskDue + 'T00:00:00'), 'MMM d, yyyy')}`
+                    : `Latest task due: ${format(new Date(maxTaskDue + 'T00:00:00'), 'MMM d, yyyy')}`
+                  }
+                </span>
               </div>
             )}
             <div className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-[10px] font-semibold">
