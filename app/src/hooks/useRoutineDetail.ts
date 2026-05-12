@@ -103,13 +103,25 @@ export function useRoutineDetail(routineId: string | null) {
     fetchAll()
   }
 
+  const updateNextDueDate = async (excludeOccurrenceId: string) => {
+    if (!routineId) return
+    const nextPending = occurrences
+      .filter(o => o.id !== excludeOccurrenceId && o.status === 'pending')
+      .sort((a, b) => a.due_date.localeCompare(b.due_date))[0]
+    await supabase.from('routines')
+      .update({ next_due_date: nextPending?.due_date ?? null, updated_at: new Date().toISOString() })
+      .eq('id', routineId)
+  }
+
   const markOccurrenceDone = async (occurrenceId: string) => {
     await supabase.from('routine_occurrences').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', occurrenceId)
+    await updateNextDueDate(occurrenceId)
     fetchAll()
   }
 
   const markOccurrenceDelayed = async (occurrenceId: string, reason: string, newExpected?: string) => {
     await supabase.from('routine_occurrences').update({ status: 'delayed', delay_reason: reason }).eq('id', occurrenceId)
+    await updateNextDueDate(occurrenceId)
     fetchAll()
   }
 

@@ -112,15 +112,20 @@ export default function TimelineMonthlyPage() {
               ) : (
                 <div className="bg-white rounded-lg p-3 md:p-6 mb-6">
                   <div className="overflow-x-auto w-full">
-                    <div className="min-w-[700px]">
-                      <div className="grid grid-cols-12 gap-0 border-b-2 border-gray-300 pb-2 mb-4">
-                        {MONTHS.map(m => <div key={m} className="text-center text-sm font-semibold text-gray-600">{m}</div>)}
+                    <div className="min-w-[800px]">
+                      {/* Header row: spacer for name column + 12 month labels + spacer for status badge */}
+                      <div className="flex items-center gap-3 border-b-2 border-gray-300 pb-2 mb-4">
+                        <div className="w-48 shrink-0" />
+                        <div className="flex-1 grid grid-cols-12 gap-0">
+                          {MONTHS.map(m => <div key={m} className="text-center text-xs font-semibold text-gray-600">{m}</div>)}
+                        </div>
+                        <div className="w-20 shrink-0" />
                       </div>
                       {projects.map((project: any, idx: number) => (
                         <div key={project.id} className="mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-40 md:w-64 flex-shrink-0">
-                              <div className="font-bold text-gray-900">{project.name}</div>
+                            <div className="w-48 shrink-0">
+                              <div className="font-bold text-gray-900 text-sm truncate">{project.name}</div>
                               <div className="text-xs text-gray-500">
                                 {project.start_date && new Date(project.start_date).toLocaleDateString()} – {project.end_date && new Date(project.end_date).toLocaleDateString()}
                               </div>
@@ -140,7 +145,7 @@ export default function TimelineMonthlyPage() {
                                 </div>
                               )}
                             </div>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                            <span className={`w-20 shrink-0 text-center px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                               project.status === 'done' ? 'bg-green-100 text-green-700'
                               : project.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700'
                               : 'bg-blue-100 text-blue-700'

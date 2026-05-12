@@ -37,10 +37,11 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
   const routineOnTimeRate = occs.length > 0 ? Math.round((completedOccs / occs.length) * 100) : 0;
   const routineDelayRate  = occs.length > 0 ? Math.round((delayedOccs / occs.length) * 100) : 0;
 
-  const wTotal = completedTasks + completedOccs;
+  const totalOccs = occs.length;
+  const wTotal = totalTasks + totalOccs;
   const workDistribution = wTotal > 0 ? [
-    { name: 'Projects', value: completedTasks, pct: Math.round((completedTasks / wTotal) * 100) },
-    { name: 'Routines', value: completedOccs,  pct: Math.round((completedOccs  / wTotal) * 100) },
+    { name: 'Projects', value: totalTasks,  pct: Math.round((totalTasks  / wTotal) * 100) },
+    { name: 'Routines', value: totalOccs,   pct: Math.round((totalOccs   / wTotal) * 100) },
   ] : [];
 
   return {
@@ -53,15 +54,21 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
 export async function getProjectDetailData(projectId: string) {
   const supabase = createClient();
 
-  const { data: project, error } = await supabase
-    .from('projects')
-    .select('*, sub_projects(*, tasks(*))')
-    .eq('id', projectId)
-    .single();
+  const [
+    { data: project, error: pErr },
+    { data: directTasks, error: tErr },
+  ] = await Promise.all([
+    supabase.from('projects').select('*, sub_projects(*, tasks(*))').eq('id', projectId).single(),
+    supabase.from('tasks').select('*').eq('project_id', projectId).is('sub_project_id', null),
+  ]);
 
-  if (error) { console.error('Error fetching project detail:', error); return null; }
+  if (pErr) { console.error('Error fetching project detail:', pErr); return null; }
+  if (tErr) console.error('Error fetching direct tasks:', tErr);
 
-  const allTasks        = project.sub_projects?.flatMap((sp: any) => sp.tasks || []) || [];
+  const subTasks    = project?.sub_projects?.flatMap((sp: any) => sp.tasks || []) || [];
+  const subTaskIds  = new Set(subTasks.map((t: any) => t.id));
+  const allTasks    = [...subTasks, ...(directTasks ?? []).filter((t: any) => !subTaskIds.has(t.id))];
+
   const totalTasks      = allTasks.length;
   const completedTasks  = allTasks.filter((t: any) => t.status === 'done').length;
   const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress').length;
@@ -105,13 +112,20 @@ export async function getRoutinesReportData(userId: string) {
   return enriched;
 }
 
+const toLocalDateStr = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export async function getWeeklyTimelineData(userId: string, weekStart: Date) {
   const supabase = createClient();
 
-  const weekEnd    = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-  const startStr   = weekStart.toISOString().split('T')[0];
-  const endStr     = weekEnd.toISOString().split('T')[0];
+  const weekEndTimestamp = new Date(weekStart);
+  weekEndTimestamp.setDate(weekEndTimestamp.getDate() + 7); // next Monday for timestamp comparisons
+
+  const weekSunday = new Date(weekStart);
+  weekSunday.setDate(weekSunday.getDate() + 6); // Sunday of the same week
+
+  const startStr = toLocalDateStr(weekStart);  // Monday (local)
+  const endStr   = toLocalDateStr(weekSunday); // Sunday (local)
 
   const [
     { data: tasks,       error: tErr },
@@ -120,13 +134,13 @@ export async function getWeeklyTimelineData(userId: string, weekStart: Date) {
     supabase.from('tasks')
       .select('*, sub_projects(*, projects(*))')
       .gte('due_date', weekStart.toISOString())
-      .lt('due_date', weekEnd.toISOString())
+      .lt('due_date', weekEndTimestamp.toISOString())
       .order('due_date', { ascending: true }),
     supabase.from('routine_occurrences')
       .select('*, routines(title, category, frequency_type)')
       .eq('owner_id', userId)
       .gte('due_date', startStr)
-      .lt('due_date', endStr)
+      .lte('due_date', endStr)
       .order('due_date', { ascending: true }),
   ]);
 

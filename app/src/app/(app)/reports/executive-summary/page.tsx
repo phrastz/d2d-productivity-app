@@ -158,10 +158,11 @@ export default function ExecutiveSummaryPage() {
             ))}
           </div>
 
-          {/* Work Distribution Pie Chart */}
+          {/* Workload Distribution Pie Chart */}
           {data.workDistribution?.length > 0 && workFilter === 'all' && (
             <div className="mb-10">
-              <h2 className="text-xl md:text-2xl font-bold mb-6 border-b-4 border-indigo-600 pb-4">🥧 Work Distribution</h2>
+              <h2 className="text-xl md:text-2xl font-bold mb-1 border-b-4 border-indigo-600 pb-4">🥧 Workload Distribution</h2>
+              <p className="text-sm text-gray-500 mb-6">Total tasks vs scheduled routine occurrences</p>
               <div className="bg-gray-50 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-8">
                 <div style={{ width: '100%', maxWidth: 280, height: 220 }}>
                   <ResponsiveContainer width="100%" height={220}>
@@ -169,7 +170,7 @@ export default function ExecutiveSummaryPage() {
                       <Pie data={data.workDistribution} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} label={(p: any) => `${p.name} ${p.pct ?? 0}%`} labelLine={false}>
                         {data.workDistribution.map((_: any, i: number) => <Cell key={i} fill={WORK_COLORS[i % WORK_COLORS.length]} />)}
                       </Pie>
-                      <Tooltip formatter={(v: any) => [`${v} completed`, '']} contentStyle={{ borderRadius: 8, fontSize: 12 }} />
+                      <Tooltip formatter={(v: any, name: any) => [`${v} items`, name]} contentStyle={{ borderRadius: 8, fontSize: 12 }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -179,7 +180,7 @@ export default function ExecutiveSummaryPage() {
                       <div className="w-4 h-4 rounded-full shrink-0" style={{ background: WORK_COLORS[i] }} />
                       <div className="flex-1">
                         <p className="font-bold text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-500">{item.value} completed · {item.pct}% of work</p>
+                        <p className="text-sm text-gray-500">{item.value} {item.name === 'Projects' ? 'tasks' : 'scheduled occurrences'} · {item.pct}% of workload</p>
                         <div className="h-2 bg-gray-200 rounded-full mt-1">
                           <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: WORK_COLORS[i] }} />
                         </div>
