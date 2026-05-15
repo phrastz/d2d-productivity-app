@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Plus, X, CheckSquare, BookOpen, Loader2, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 import { useRealtimeProjects } from '@/hooks/useRealtimeProjects'
 import { useRealtimeTasks } from '@/hooks/useRealtimeTasks'
@@ -92,14 +93,23 @@ export default function QuickAddFAB() {
   const handleSaveNote = async () => {
     if (!noteText.trim()) return
     setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('notes').insert({
-        content: noteText.trim(),
-        owner_id: user.id,
-        project_id: noteProjectId || null,
-        task_id: noteTaskId || null
-      })
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      toast.error('You must be signed in to add a note.')
+      setSaving(false)
+      return
+    }
+    const { data, error } = await supabase.from('notes').insert({
+      content: noteText.trim(),
+      owner_id: user.id,
+      project_id: noteProjectId || null,
+      task_id: noteTaskId || null
+    }).select().single()
+    if (error) {
+      console.error('[QuickAddFAB] Note insert error:', error)
+      toast.error(`Failed to save note: ${error.message}`)
+    } else {
+      toast.success('Note saved!')
     }
     setSaving(false)
     setNoteText('')

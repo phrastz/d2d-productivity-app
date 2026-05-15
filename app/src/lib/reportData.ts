@@ -13,6 +13,8 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
     { data: routines, error: rErr },
     { data: occurrences, error: oErr },
     { count: yearOccCount, error: ycErr },
+    { count: totalNotes,    error: nErr },
+    { data: notes,         error: pnErr },
   ] = await Promise.all([
     supabase.from('projects').select('*, tasks(*)').eq('owner_id', userId)
       .gte('created_at', dateRange.start.toISOString())
@@ -24,12 +26,16 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
       .eq('owner_id', userId)
       .gte('due_date', `${currentYear}-01-01`)
       .lte('due_date', `${currentYear}-12-31`),
+    supabase.from('notes').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+    supabase.from('notes').select('follow_up_status').eq('owner_id', userId),
   ]);
 
   if (pErr) { console.error('Error fetching executive summary data:', pErr); return null; }
   if (rErr)  console.error('Error fetching routines:', rErr);
   if (oErr)  console.error('Error fetching occurrences:', oErr);
   if (ycErr) console.error('Error fetching year occ count:', ycErr);
+  if (nErr)  console.error('Error fetching notes count:', nErr);
+  if (pnErr) console.error('Error fetching notes statuses:', pnErr);
   console.log('[ExecutiveSummary] yearOccCount:', yearOccCount, 'totalRoutines:', routines?.length, 'occs in dateRange:', (occurrences ?? []).length);
 
   const totalProjects   = projects?.length || 0;
@@ -56,10 +62,14 @@ export async function getExecutiveSummaryData(userId: string, dateRange: { start
     { name: 'Routines', value: workloadOccs,  pct: Math.round((workloadOccs  / wTotal) * 100) },
   ] : [];
 
+  const noteList        = notes ?? [];
+  const pendingNotes    = noteList.filter((n: any) => (n.follow_up_status ?? 'pending') === 'pending').length;
+
   return {
     totalProjects, completionRate, totalTasks, completedTasks, inProgressTasks, projects,
     totalRoutines, completedOccs, delayedOccs, pendingOccs, routineOnTimeRate, routineDelayRate,
     workDistribution,
+    totalNotes: totalNotes ?? 0, pendingNotes,
   };
 }
 

@@ -66,14 +66,17 @@ export default function ExecutiveSummaryPage() {
   const showProjects = workFilter !== 'routines';
   const showRoutines = workFilter !== 'projects';
 
+  const notesCard = { emoji: '📝', label: 'Total Notes/Comments', value: data.totalNotes ?? 0, sub: `${data.pendingNotes ?? 0} pending follow-up`, bar: null };
   const kpiCards = showProjects ? [
     { emoji: '🎯', label: 'Tasks Completed', value: data.completedTasks, sub: `${data.completionRate}% completion rate`, bar: data.completionRate },
     { emoji: '✅', label: 'Task Completion Rate', value: `${data.completionRate}%`, sub: `${data.completedTasks} of ${data.totalTasks} tasks`, bar: data.completionRate },
     { emoji: '⚡', label: 'Active Tasks', value: data.inProgressTasks, sub: 'Currently in progress', bar: null },
+    notesCard,
   ] : [
     { emoji: '🔄', label: 'Routines Completed', value: data.completedOccs, sub: `${data.routineOnTimeRate}% on-time rate`, bar: data.routineOnTimeRate },
     { emoji: '✅', label: 'On-Time Rate', value: `${data.routineOnTimeRate}%`, sub: `${data.completedOccs} completed, ${data.delayedOccs} delayed`, bar: data.routineOnTimeRate },
     { emoji: '⏳', label: 'Pending Occurrences', value: data.pendingOccs, sub: 'Awaiting completion', bar: null },
+    notesCard,
   ];
 
   return (

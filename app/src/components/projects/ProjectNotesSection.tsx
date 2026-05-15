@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Note } from '@/types'
 import { format } from 'date-fns'
@@ -23,7 +23,8 @@ interface ProjectNotesSectionProps {
 }
 
 export default function ProjectNotesSection({ projectId }: ProjectNotesSectionProps) {
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<FilterType>('all')
@@ -35,16 +36,23 @@ export default function ProjectNotesSection({ projectId }: ProjectNotesSectionPr
   const [resolutionNote, setResolutionNote] = useState('')
 
   useEffect(() => {
+    if (!projectId) {
+      console.warn('[ProjectNotesSection] projectId is empty — skipping fetch')
+      setLoading(false)
+      return
+    }
     let mounted = true
     const fetchNotes = async () => {
       setLoading(true)
+      console.log('[ProjectNotesSection] fetching for projectId:', projectId)
       const { data, error: fetchError } = await supabase
         .from('notes')
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false })
+      console.log('[ProjectNotesSection] result — rows:', data?.length ?? 'null', 'error:', fetchError)
       if (fetchError) console.error('[ProjectNotesSection] FETCH ERROR', fetchError)
-      if (mounted && data) setNotes(data as Note[])
+      if (mounted) setNotes((data ?? []) as Note[])
       if (mounted) setLoading(false)
     }
     fetchNotes()
@@ -55,6 +63,7 @@ export default function ProjectNotesSection({ projectId }: ProjectNotesSectionPr
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notes', filter: `project_id=eq.${projectId}` },
         (payload) => {
+          console.log('[ProjectNotesSection] realtime event:', payload.eventType, payload.new)
           if (payload.eventType === 'INSERT')
             setNotes(prev => [payload.new as Note, ...prev])
           else if (payload.eventType === 'UPDATE')
@@ -63,10 +72,12 @@ export default function ProjectNotesSection({ projectId }: ProjectNotesSectionPr
             setNotes(prev => prev.filter(n => n.id !== payload.old.id))
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[ProjectNotesSection] realtime channel status:', status)
+      })
 
     return () => { mounted = false; supabase.removeChannel(channel) }
-  }, [projectId, supabase])
+  }, [projectId])
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault()
