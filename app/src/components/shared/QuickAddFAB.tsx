@@ -27,6 +27,7 @@ export default function QuickAddFAB() {
   
   const [logText, setLogText] = useState('')
   const [mood, setMood] = useState('okay')
+  const [existingLogId, setExistingLogId] = useState<string | null>(null)
   
   const [noteText, setNoteText] = useState('')
   const [noteProjectId, setNoteProjectId] = useState<string>('')
@@ -45,6 +46,26 @@ export default function QuickAddFAB() {
   }, [projectId, supabase])
 
   useEffect(() => { setNoteTaskId('') }, [noteProjectId])
+
+  useEffect(() => {
+    if (mode !== 'log') { setExistingLogId(null); return }
+    const fetchTodayLog = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('daily_logs')
+        .select('id, summary, mood')
+        .eq('owner_id', user.id)
+        .eq('date', format(new Date(), 'yyyy-MM-dd'))
+        .maybeSingle()
+      if (data) {
+        setExistingLogId(data.id)
+        setLogText(data.summary ?? '')
+        setMood((data as any).mood ?? 'okay')
+      }
+    }
+    fetchTodayLog()
+  }, [mode, supabase])
 
   const moods = ['great', 'good', 'okay', 'bad', 'terrible']
   const moodEmoji: Record<string, string> = {
@@ -81,20 +102,31 @@ export default function QuickAddFAB() {
       setSaving(false)
       return
     }
-    const { error } = await supabase.from('daily_logs').upsert({
-      owner_id: user.id,
-      date: format(new Date(), 'yyyy-MM-dd'),
-      summary: logText,
-      mood,
-    }, { onConflict: 'owner_id,date' })
-    if (error) {
-      console.error('[QuickAddFAB] Log upsert error:', error)
-      toast.error(`Failed to save log: ${error.message}`)
+    let saveError = null
+    if (existingLogId) {
+      const { error } = await supabase
+        .from('daily_logs')
+        .update({ summary: logText, mood })
+        .eq('id', existingLogId)
+      saveError = error
     } else {
-      toast.success('Daily log saved!')
+      const { error } = await supabase.from('daily_logs').insert({
+        owner_id: user.id,
+        date: format(new Date(), 'yyyy-MM-dd'),
+        summary: logText,
+        mood,
+      })
+      saveError = error
+    }
+    if (saveError) {
+      console.error('[QuickAddFAB] Log save error:', saveError)
+      toast.error(`Failed to save log: ${saveError.message}`)
+    } else {
+      toast.success(existingLogId ? "Today's log updated!" : 'Daily log saved!')
     }
     setSaving(false)
     setLogText('')
+    setExistingLogId(null)
     setOpen(false)
     setMode(null)
   }
@@ -139,6 +171,7 @@ export default function QuickAddFAB() {
     setNoteTaskId('')
     setTaskSubProjectId('')
     setTaskSubProjects([])
+    setExistingLogId(null)
   }
 
   return (
@@ -291,7 +324,9 @@ export default function QuickAddFAB() {
           ) : (
             <>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold gradient-text">Today&apos;s Log</p>
+                <p className="text-sm font-semibold gradient-text">
+                  {existingLogId ? 'Updating Today\'s Log' : 'Today\'s Log'}
+                </p>
                 <button onClick={() => setMode(null)} className="text-muted-foreground hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DailyLog } from '@/types'
 import TopNav from '@/components/layout/TopNav'
 import { format, parseISO } from 'date-fns'
-import { BookOpen, Plus, Loader2 } from 'lucide-react'
+import { BookOpen, Plus, Loader2, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -72,11 +72,18 @@ export default function DailyLogPage() {
     return () => { supabase.removeChannel(channel) }
   }, [supabase])
 
-  const openNew = () => {
-    setEditing(null)
-    setSummary('')
-    setMood('okay')
-    setShowForm(true)
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const todayLog = logs.find(l => l.date === today) ?? null
+
+  const openTodayLog = () => {
+    if (todayLog) {
+      openEdit(todayLog)
+    } else {
+      setEditing(null)
+      setSummary('')
+      setMood('okay')
+      setShowForm(true)
+    }
   }
 
   const openEdit = (log: DailyLog) => {
@@ -146,11 +153,11 @@ export default function DailyLogPage() {
       <div className="p-6 space-y-5 animate-fade-in">
         <div className="flex items-center gap-3">
           <button
-            onClick={openNew}
+            onClick={openTodayLog}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/20"
           >
-            <Plus className="w-4 h-4" />
-            Today&apos;s Log
+            {todayLog ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {todayLog ? 'Edit Today\'s Log' : 'Today\'s Log'}
           </button>
         </div>
 
@@ -158,7 +165,11 @@ export default function DailyLogPage() {
         {showForm && (
           <div className="glass bg-white dark:bg-slate-900/90 border border-violet-200 dark:border-violet-500/20 rounded-2xl p-5 animate-fade-in">
             <p className="text-sm font-semibold gradient-text mb-4">
-              {editing ? `Edit: ${editing.date}` : `Today — ${format(new Date(), 'EEEE, d MMMM yyyy')}`}
+              {editing
+                ? editing.date === today
+                  ? `Editing today's log — ${format(new Date(), 'EEEE, d MMMM yyyy')}`
+                  : `Editing: ${format(parseISO(editing.date), 'EEEE, d MMMM yyyy')}`
+                : `New log — ${format(new Date(), 'EEEE, d MMMM yyyy')}`}
             </p>
             <textarea
               value={summary}
@@ -216,7 +227,12 @@ export default function DailyLogPage() {
               <button
                 key={log.id}
                 onClick={() => openEdit(log)}
-                className="w-full glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-left hover:glow transition-all duration-200 group"
+                className={cn(
+                  'w-full glass bg-white dark:bg-slate-900/90 border rounded-2xl p-4 text-left hover:glow transition-all duration-200 group',
+                  log.date === today
+                    ? 'border-violet-300 dark:border-violet-500/40'
+                    : 'border-slate-200 dark:border-slate-800'
+                )}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -224,6 +240,11 @@ export default function DailyLogPage() {
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {format(parseISO(log.date), 'EEEE, d MMMM yyyy')}
                     </p>
+                    {log.date === today && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 font-semibold tracking-wide">
+                        TODAY
+                      </span>
+                    )}
                   </div>
                   {log.mood && (
                     <span className={cn('text-xs px-2.5 py-1 rounded-full font-medium', moodColors[log.mood])}>
