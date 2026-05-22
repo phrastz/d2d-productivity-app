@@ -114,7 +114,7 @@ export default function DailyLogPage() {
     } else {
       const { data, error } = await supabase
         .from('daily_logs')
-        .upsert({ user_id: user.id, date: today, summary, mood }, { onConflict: 'user_id,date' })
+        .upsert({ owner_id: user.id, date: today, summary, mood }, { onConflict: 'owner_id,date' })
         .select()
         .single()
       if (error) {

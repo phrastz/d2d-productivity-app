@@ -21,7 +21,7 @@ export type Database = {
           id: string
           mood: string | null
           summary: string | null
-          user_id: string
+          owner_id: string
         }
         Insert: {
           created_at?: string
@@ -29,7 +29,7 @@ export type Database = {
           id?: string
           mood?: string | null
           summary?: string | null
-          user_id: string
+          owner_id: string
         }
         Update: {
           created_at?: string
@@ -37,7 +37,7 @@ export type Database = {
           id?: string
           mood?: string | null
           summary?: string | null
-          user_id?: string
+          owner_id?: string
         }
         Relationships: []
       }

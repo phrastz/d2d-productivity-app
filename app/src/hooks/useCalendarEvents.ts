@@ -114,7 +114,7 @@ export function useCalendarEvents() {
           supabase
             .from('daily_logs')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('owner_id', user.id)
         ])
 
         if (isMounted) {

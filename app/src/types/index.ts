@@ -111,7 +111,7 @@ export interface Task {
 
 export interface DailyLog {
   id: string
-  user_id: string
+  owner_id: string
   date: string
   summary: string | null
   mood: Mood | null

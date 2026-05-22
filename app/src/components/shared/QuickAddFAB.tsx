@@ -82,11 +82,11 @@ export default function QuickAddFAB() {
       return
     }
     const { error } = await supabase.from('daily_logs').upsert({
-      user_id: user.id,
+      owner_id: user.id,
       date: format(new Date(), 'yyyy-MM-dd'),
       summary: logText,
       mood,
-    }, { onConflict: 'user_id,date' })
+    }, { onConflict: 'owner_id,date' })
     if (error) {
       console.error('[QuickAddFAB] Log upsert error:', error)
       toast.error(`Failed to save log: ${error.message}`)

@@ -115,19 +115,19 @@ export default function SettingsPage() {
       // 3. Create Daily Logs (Past 3 days)
       await supabase.from('daily_logs').insert([
         {
-          user_id: user.id,
+          owner_id: user.id,
           date: format(today, 'yyyy-MM-dd'),
           summary: 'Made good progress on the new project setup. Feeling productive.',
           mood: 'great'
         },
         {
-          user_id: user.id,
+          owner_id: user.id,
           date: format(subDays(today, 1), 'yyyy-MM-dd'),
           summary: "Lots of meetings today, couldn't focus on deep work.",
           mood: 'okay'
         },
         {
-          user_id: user.id,
+          owner_id: user.id,
           date: format(subDays(today, 2), 'yyyy-MM-dd'),
           summary: 'Started the new redesign project. Excited for the new tech stack!',
           mood: 'good'
