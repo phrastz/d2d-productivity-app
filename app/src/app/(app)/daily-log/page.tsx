@@ -56,13 +56,27 @@ export default function DailyLogPage() {
           if (payload.eventType === 'INSERT') {
             const inserted = payload.new as DailyLog
             setLogs(prev => {
+              // Supabase realtime can fire INSERT for an upsert that updated an existing row.
+              // Guard: if the ID already exists in state, treat as an in-place update.
+              if (prev.some(l => l.id === inserted.id)) {
+                return prev.map(l => l.id === inserted.id ? inserted : l)
+              }
+              // Truly new row: deduplicate by date (one entry per day) then prepend.
               const deduped = prev.filter(l => l.date !== inserted.date)
               return [inserted, ...deduped].sort(
                 (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
               )
             })
           } else if (payload.eventType === 'UPDATE') {
-            setLogs(prev => prev.map(l => l.id === payload.new.id ? payload.new as DailyLog : l))
+            setLogs(prev => {
+              if (prev.some(l => l.id === payload.new.id)) {
+                return prev.map(l => l.id === payload.new.id ? payload.new as DailyLog : l)
+              }
+              // Row not yet in list (loaded after the insert) — add and sort.
+              return [...prev, payload.new as DailyLog].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+              )
+            })
           } else if (payload.eventType === 'DELETE') {
             setLogs(prev => prev.filter(l => l.id !== (payload.old as DailyLog).id))
           }
@@ -117,6 +131,7 @@ export default function DailyLogPage() {
         setLogs(prev => prev.map(l => l.id === data.id ? data as DailyLog : l))
         toast.success('Log updated!')
         setShowForm(false)
+        setEditing(null)
       }
     } else {
       const { data, error } = await supabase
@@ -128,7 +143,18 @@ export default function DailyLogPage() {
         console.error('[DailyLog] upsert error:', error)
         toast.error(`Failed to save log: ${error.message}`)
       } else if (data) {
-        setLogs(prev => [data as DailyLog, ...prev.filter(l => l.date !== (data as DailyLog).date)])
+        const saved = data as DailyLog
+        setLogs(prev => {
+          // If the row already exists (upsert updated an existing entry), replace by ID.
+          if (prev.some(l => l.id === saved.id)) {
+            return prev.map(l => l.id === saved.id ? saved : l)
+          }
+          // Truly new entry: deduplicate by date then prepend.
+          const deduped = prev.filter(l => l.date !== saved.date)
+          return [saved, ...deduped].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+        })
         toast.success('Log saved!')
         setShowForm(false)
       }
