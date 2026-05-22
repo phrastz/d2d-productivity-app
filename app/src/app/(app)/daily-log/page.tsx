@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DailyLog } from '@/types'
 import TopNav from '@/components/layout/TopNav'
 import { format, parseISO } from 'date-fns'
-import { BookOpen, Plus, Loader2, Pencil } from 'lucide-react'
+import { BookOpen, Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -37,8 +37,8 @@ export default function DailyLogPage() {
     const { data, error } = await supabase
       .from('daily_logs')
       .select('*')
-      .order('date', { ascending: false })
-      .limit(30)
+      .order('created_at', { ascending: false })
+      .limit(100)
     if (error) console.error('[DailyLog] fetchLogs error:', error)
     setLogs(data ?? [])
     setLoading(false)
@@ -56,26 +56,17 @@ export default function DailyLogPage() {
           if (payload.eventType === 'INSERT') {
             const inserted = payload.new as DailyLog
             setLogs(prev => {
-              // Supabase realtime can fire INSERT for an upsert that updated an existing row.
-              // Guard: if the ID already exists in state, treat as an in-place update.
               if (prev.some(l => l.id === inserted.id)) {
                 return prev.map(l => l.id === inserted.id ? inserted : l)
               }
-              // Truly new row: deduplicate by date (one entry per day) then prepend.
-              const deduped = prev.filter(l => l.date !== inserted.date)
-              return [inserted, ...deduped].sort(
-                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-              )
+              return [inserted, ...prev]
             })
           } else if (payload.eventType === 'UPDATE') {
             setLogs(prev => {
               if (prev.some(l => l.id === payload.new.id)) {
                 return prev.map(l => l.id === payload.new.id ? payload.new as DailyLog : l)
               }
-              // Row not yet in list (loaded after the insert) — add and sort.
-              return [...prev, payload.new as DailyLog].sort(
-                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-              )
+              return [payload.new as DailyLog, ...prev]
             })
           } else if (payload.eventType === 'DELETE') {
             setLogs(prev => prev.filter(l => l.id !== (payload.old as DailyLog).id))
@@ -87,17 +78,12 @@ export default function DailyLogPage() {
   }, [supabase])
 
   const today = format(new Date(), 'yyyy-MM-dd')
-  const todayLog = logs.find(l => l.date === today) ?? null
 
-  const openTodayLog = () => {
-    if (todayLog) {
-      openEdit(todayLog)
-    } else {
-      setEditing(null)
-      setSummary('')
-      setMood('okay')
-      setShowForm(true)
-    }
+  const openNew = () => {
+    setEditing(null)
+    setSummary('')
+    setMood('okay')
+    setShowForm(true)
   }
 
   const openEdit = (log: DailyLog) => {
@@ -116,7 +102,6 @@ export default function DailyLogPage() {
       setSaving(false)
       return
     }
-    const today = format(new Date(), 'yyyy-MM-dd')
     if (editing) {
       const { data, error } = await supabase
         .from('daily_logs')
@@ -136,31 +121,29 @@ export default function DailyLogPage() {
     } else {
       const { data, error } = await supabase
         .from('daily_logs')
-        .upsert({ owner_id: user.id, date: today, summary, mood }, { onConflict: 'owner_id,date' })
+        .insert({ owner_id: user.id, date: today, summary, mood })
         .select()
         .single()
       if (error) {
-        console.error('[DailyLog] upsert error:', error)
+        console.error('[DailyLog] insert error:', error)
         toast.error(`Failed to save log: ${error.message}`)
       } else if (data) {
-        const saved = data as DailyLog
-        setLogs(prev => {
-          // If the row already exists (upsert updated an existing entry), replace by ID.
-          if (prev.some(l => l.id === saved.id)) {
-            return prev.map(l => l.id === saved.id ? saved : l)
-          }
-          // Truly new entry: deduplicate by date then prepend.
-          const deduped = prev.filter(l => l.date !== saved.date)
-          return [saved, ...deduped].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-        })
+        setLogs(prev => [data as DailyLog, ...prev])
         toast.success('Log saved!')
         setShowForm(false)
       }
     }
     setSaving(false)
   }
+
+  const grouped: Record<string, DailyLog[]> = {}
+  for (const log of logs) {
+    if (!grouped[log.date]) grouped[log.date] = []
+    grouped[log.date].push(log)
+  }
+  const sortedDates = Object.keys(grouped).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
+  )
 
   if (loading) {
     return (
@@ -179,11 +162,11 @@ export default function DailyLogPage() {
       <div className="p-6 space-y-5 animate-fade-in">
         <div className="flex items-center gap-3">
           <button
-            onClick={openTodayLog}
+            onClick={openNew}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/20"
           >
-            {todayLog ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {todayLog ? 'Edit Today\'s Log' : 'Today\'s Log'}
+            <Plus className="w-4 h-4" />
+            New Log
           </button>
         </div>
 
@@ -192,9 +175,7 @@ export default function DailyLogPage() {
           <div className="glass bg-white dark:bg-slate-900/90 border border-violet-200 dark:border-violet-500/20 rounded-2xl p-5 animate-fade-in">
             <p className="text-sm font-semibold gradient-text mb-4">
               {editing
-                ? editing.date === today
-                  ? `Editing today's log — ${format(new Date(), 'EEEE, d MMMM yyyy')}`
-                  : `Editing: ${format(parseISO(editing.date), 'EEEE, d MMMM yyyy')}`
+                ? `Editing: ${format(parseISO(editing.date), 'EEEE, d MMMM yyyy')} at ${format(parseISO(editing.created_at), 'HH:mm')}`
                 : `New log — ${format(new Date(), 'EEEE, d MMMM yyyy')}`}
             </p>
             <textarea
@@ -240,48 +221,57 @@ export default function DailyLogPage() {
           </div>
         )}
 
-        {/* Log entries */}
-        <div className="space-y-3">
-          {logs.length === 0 ? (
+        {/* Log entries grouped by date */}
+        <div className="space-y-6">
+          {sortedDates.length === 0 ? (
             <div className="glass bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
               <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No logs yet</p>
               <p className="text-xs text-slate-400 dark:text-slate-500">Start journaling your day!</p>
             </div>
           ) : (
-            logs.map(log => (
-              <button
-                key={log.id}
-                onClick={() => openEdit(log)}
-                className={cn(
-                  'w-full glass bg-white dark:bg-slate-900/90 border rounded-2xl p-4 text-left hover:glow transition-all duration-200 group',
-                  log.date === today
-                    ? 'border-violet-300 dark:border-violet-500/40'
-                    : 'border-slate-200 dark:border-slate-800'
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-violet-400" />
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {format(parseISO(log.date), 'EEEE, d MMMM yyyy')}
-                    </p>
-                    {log.date === today && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 font-semibold tracking-wide">
-                        TODAY
-                      </span>
-                    )}
-                  </div>
-                  {log.mood && (
-                    <span className={cn('text-xs px-2.5 py-1 rounded-full font-medium', moodColors[log.mood])}>
-                      {moodEmoji[log.mood]} {log.mood}
+            sortedDates.map(date => (
+              <div key={date} className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    {format(parseISO(date), 'EEEE, d MMMM yyyy')}
+                  </p>
+                  {date === today && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 font-semibold tracking-wide">
+                      TODAY
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                  {log.summary}
-                </p>
-              </button>
+                {grouped[date].map(log => (
+                  <button
+                    key={log.id}
+                    onClick={() => openEdit(log)}
+                    className={cn(
+                      'w-full glass bg-white dark:bg-slate-900/90 border rounded-2xl p-4 text-left hover:glow transition-all duration-200 group',
+                      date === today
+                        ? 'border-violet-300 dark:border-violet-500/40'
+                        : 'border-slate-200 dark:border-slate-800'
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-violet-400" />
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                          {format(parseISO(log.created_at), 'HH:mm')}
+                        </p>
+                      </div>
+                      {log.mood && (
+                        <span className={cn('text-xs px-2.5 py-1 rounded-full font-medium', moodColors[log.mood])}>
+                          {moodEmoji[log.mood]} {log.mood}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                      {log.summary}
+                    </p>
+                  </button>
+                ))}
+              </div>
             ))
           )}
         </div>
