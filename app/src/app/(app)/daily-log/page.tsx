@@ -46,6 +46,32 @@ export default function DailyLogPage() {
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('daily-log-page-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'daily_logs' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const inserted = payload.new as DailyLog
+            setLogs(prev => {
+              const deduped = prev.filter(l => l.date !== inserted.date)
+              return [inserted, ...deduped].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+              )
+            })
+          } else if (payload.eventType === 'UPDATE') {
+            setLogs(prev => prev.map(l => l.id === payload.new.id ? payload.new as DailyLog : l))
+          } else if (payload.eventType === 'DELETE') {
+            setLogs(prev => prev.filter(l => l.id !== (payload.old as DailyLog).id))
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
+
   const openNew = () => {
     setEditing(null)
     setSummary('')
