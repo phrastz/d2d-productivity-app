@@ -1,12 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { DailyLog } from '@/types'
 import TopNav from '@/components/layout/TopNav'
 import { format, parseISO } from 'date-fns'
 import { BookOpen, Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const moodEmoji: Record<string, string> = {
   great: '😄', good: '🙂', okay: '😐', bad: '😕', terrible: '😞'
@@ -20,7 +21,8 @@ const moodColors: Record<string, string> = {
 }
 
 export default function DailyLogPage() {
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
   const [logs, setLogs] = useState<DailyLog[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<DailyLog | null>(null)
@@ -32,14 +34,15 @@ export default function DailyLogPage() {
   const moods = ['great', 'good', 'okay', 'bad', 'terrible']
 
   const fetchLogs = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('daily_logs')
       .select('*')
       .order('date', { ascending: false })
       .limit(30)
+    if (error) console.error('[DailyLog] fetchLogs error:', error)
     setLogs(data ?? [])
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
 
@@ -60,16 +63,44 @@ export default function DailyLogPage() {
   const handleSave = async () => {
     if (!summary.trim()) return
     setSaving(true)
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      toast.error('You must be signed in to save a log.')
+      setSaving(false)
+      return
+    }
     const today = format(new Date(), 'yyyy-MM-dd')
     if (editing) {
-      const { data } = await supabase.from('daily_logs').update({ summary, mood }).eq('id', editing.id).select().single()
-      if (data) setLogs(prev => prev.map(l => l.id === data.id ? data : l))
+      const { data, error } = await supabase
+        .from('daily_logs')
+        .update({ summary, mood })
+        .eq('id', editing.id)
+        .select()
+        .single()
+      if (error) {
+        console.error('[DailyLog] update error:', error)
+        toast.error(`Failed to update log: ${error.message}`)
+      } else if (data) {
+        setLogs(prev => prev.map(l => l.id === data.id ? data as DailyLog : l))
+        toast.success('Log updated!')
+        setShowForm(false)
+      }
     } else {
-      const { data } = await supabase.from('daily_logs').upsert({ date: today, summary, mood }, { onConflict: 'user_id,date' }).select().single()
-      if (data) setLogs(prev => [data, ...prev.filter(l => l.date !== data.date)])
+      const { data, error } = await supabase
+        .from('daily_logs')
+        .upsert({ user_id: user.id, date: today, summary, mood }, { onConflict: 'user_id,date' })
+        .select()
+        .single()
+      if (error) {
+        console.error('[DailyLog] upsert error:', error)
+        toast.error(`Failed to save log: ${error.message}`)
+      } else if (data) {
+        setLogs(prev => [data as DailyLog, ...prev.filter(l => l.date !== (data as DailyLog).date)])
+        toast.success('Log saved!')
+        setShowForm(false)
+      }
     }
     setSaving(false)
-    setShowForm(false)
   }
 
   if (loading) {

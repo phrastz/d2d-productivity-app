@@ -75,14 +75,23 @@ export default function QuickAddFAB() {
   const handleSaveLog = async () => {
     if (!logText.trim()) return
     setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('daily_logs').upsert({
-        user_id: user.id,
-        date: format(new Date(), 'yyyy-MM-dd'),
-        summary: logText,
-        mood,
-      }, { onConflict: 'user_id,date' })
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      toast.error('You must be signed in to save a log.')
+      setSaving(false)
+      return
+    }
+    const { error } = await supabase.from('daily_logs').upsert({
+      user_id: user.id,
+      date: format(new Date(), 'yyyy-MM-dd'),
+      summary: logText,
+      mood,
+    }, { onConflict: 'user_id,date' })
+    if (error) {
+      console.error('[QuickAddFAB] Log upsert error:', error)
+      toast.error(`Failed to save log: ${error.message}`)
+    } else {
+      toast.success('Daily log saved!')
     }
     setSaving(false)
     setLogText('')
