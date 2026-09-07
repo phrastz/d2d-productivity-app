@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST() {
+  console.log("GROQ KEY PRESENT:", !!process.env.GROQ_API_KEY, "LENGTH:", process.env.GROQ_API_KEY?.trim().length)
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -60,7 +61,9 @@ Write a friendly morning briefing (max 120 words):
 
 Be warm, conversational, and encouraging.`
 
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY?.trim()
+    })
     
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
@@ -78,9 +81,6 @@ Be warm, conversational, and encouraging.`
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error)
     console.error('AI Briefing error:', errMsg)
-    return NextResponse.json(
-      { error: errMsg }, 
-      { status: 500 }
-    )
+    return Response.json({ error: errMsg }, { status: 500 })
   }
 }
