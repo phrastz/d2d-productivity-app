@@ -67,7 +67,7 @@ Be warm, conversational, and encouraging.`
     
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       max_tokens: 300,
       temperature: 0.7,
     })
