@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Sparkles, RefreshCw, X } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
 export default function AIBriefingCard() {
   const [briefing, setBriefing] = useState<string | null>(null)
@@ -92,10 +93,9 @@ export default function AIBriefingCard() {
 
       {briefing && (
         <div>
-          <p className="text-slate-700 dark:text-slate-200 text-sm 
-            leading-relaxed whitespace-pre-line">
-            {briefing}
-          </p>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>{briefing}</ReactMarkdown>
+          </div>
           <button
             onClick={generateBriefing}
             className="mt-3 inline-flex items-center gap-1 text-xs 
