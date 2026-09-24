@@ -104,6 +104,13 @@ export async function POST(request: NextRequest) {
     let ownerId: string
 
     if (existingProject) {
+      console.log('sync/from-hub: updating project', {
+        id: existingProject.id,
+        name,
+        start_date,
+        end_date,
+      })
+
       const { error: updateError } = await supabase
         .from('projects')
         .update({ name, start_date, end_date })
@@ -122,6 +129,15 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         )
       }
+
+      console.log('sync/from-hub: inserting project', {
+        owner_id: defaultOwnerId,
+        name,
+        start_date,
+        end_date,
+        external_id: hub_project_id,
+        external_source: EXTERNAL_SOURCE,
+      })
 
       const { data: newProject, error: insertError } = await supabase
         .from('projects')
@@ -184,19 +200,21 @@ export async function POST(request: NextRequest) {
       )
 
       if (tasksToInsert.length > 0) {
+        const taskInsertRows = tasksToInsert.map((t) => ({
+          owner_id: ownerId,
+          project_id: projectId,
+          title: t.name,
+          start_date: t.start_date,
+          due_date: t.due_date,
+          external_id: t.id,
+          external_source: EXTERNAL_SOURCE,
+        }))
+
+        console.log('sync/from-hub: inserting tasks', taskInsertRows)
+
         const { data: insertedTasks, error: insertTasksError } = await supabase
           .from('tasks')
-          .insert(
-            tasksToInsert.map((t) => ({
-              owner_id: ownerId,
-              project_id: projectId,
-              title: t.name,
-              start_date: t.start_date,
-              due_date: t.due_date,
-              external_id: t.id,
-              external_source: EXTERNAL_SOURCE,
-            }))
-          )
+          .insert(taskInsertRows)
           .select('id, external_id')
 
         if (insertTasksError) throw insertTasksError
@@ -231,7 +249,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, project_id: projectId })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
-    console.error('sync/from-hub error:', message)
+    console.error('sync/from-hub error:', JSON.stringify(error, null, 2))
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
