@@ -13,7 +13,23 @@ Your `.env.local` file should contain the following variables:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# Marketing Hub sync (POST /api/sync/from-hub)
+SYNC_SECRET=your-shared-sync-secret-here
+SYNC_DEFAULT_OWNER_ID=uuid-of-the-user-who-should-own-hub-synced-projects
 ```
+
+See `.env.local.example` for a copy-pasteable template.
+
+#### **SYNC_SECRET** ⚠️
+- Shared secret used to authenticate requests to `POST /api/sync/from-hub`.
+- The caller (Marketing Hub) must send it as the `x-sync-secret` header; requests with a missing/mismatched value get `401 Unauthorized`.
+- ⚠️ Treat like a password — generate a long random value and never commit it.
+
+#### **SYNC_DEFAULT_OWNER_ID**
+- The `auth.users.id` that newly-created hub-synced projects/tasks are attributed to.
+- Required because `projects.owner_id`/`tasks.owner_id` are `NOT NULL`, but the Hub sync request has no D2D user session to infer an owner from.
+- Only used when creating a brand new project (i.e. no existing row matches `external_id`); updates to already-synced projects keep their original owner.
 
 ---
 
